@@ -1,0 +1,28 @@
+{
+  "name": "Kit",
+  "ready": true,
+  "description": "The look the skill shipped with: DM Sans, frosted glass, cyan key words, amber money, magenta punchlines.",
+  "font": {
+    "family": "DM Sans",
+    "files": {
+      "400": "../assets/fonts/DMSans-400.woff2",
+      "500": "../assets/fonts/DMSans-500.woff2",
+      "700": "../assets/fonts/DMSans-700.woff2"
+    }
+  },
+  "colors": {
+    "cyan": "#0AF0F0",
+    "blue": "#0005EE",
+    "magenta": "#CD00EE",
+    "amber": "#FFB904",
+    "white": "#FFFFFF"
+  },
+  "roles": {
+    "cyan": "highlight: key words, ticks, bars",
+    "blue": "deep anchor: gradient end, a word-highlight block with white text",
+    "magenta": "punchline: the payoff word, the last step of a diagram",
+    "amber": "money and stakes: dollar figures, warnings",
+    "white": "text"
+  },
+  "rules": []
+}

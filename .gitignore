@@ -1,0 +1,21 @@
+# secrets
+.env
+
+# dependencies and caches
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+.claude/settings.local.json
+
+# your videos and everything made for them (footage, voiceovers, licensed music, renders)
+videos/*
+!videos/.gitkeep
+!videos/_shared/
+videos/_shared/*
+!videos/_shared/sfx/
+videos/_shared/sfx/*
+!videos/_shared/sfx/.gitkeep
+
+# downloaded by setup.sh, not ours to redistribute
+.claude/skills/youtube-edit/assets/vendor/

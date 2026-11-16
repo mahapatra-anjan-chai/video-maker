@@ -1,0 +1,14 @@
+{
+  "name": "video-maker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "My video editing system: HyperFrames + FFmpeg + Epidemic Sound + ElevenLabs, driven by the youtube-edit skill in Claude Code.",
+  "scripts": {
+    "ui": "node ui/server.mjs",
+    "test": "cd .claude/skills/youtube-edit/scripts && python3 -m unittest tests",
+    "doctor": "hyperframes doctor"
+  },
+  "devDependencies": {
+    "hyperframes": "0.8.149"
+  }
+}

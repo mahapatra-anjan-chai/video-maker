@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Glance palette only (brand.json): gradient #A049D0 -> #5A34F5, lavender #CCABFF, peach #FFB5A1, coral #FF9B99,
+     white text, and deeper shades of navy #1A1A2E for the dark workspace. */
+  :root {
+    --bg: #0B0A14;
+    --bg-2: #100F1D;
+    --panel: #15142A;
+    --panel-2: #1C1B33;
+    --panel-3: #24233D;
+    --navy: #1A1A2E;
+    --line: rgba(255,255,255,.08);
+    --line-2: rgba(255,255,255,.15);
+    --text: #F7F5FC;
+    --muted: rgba(247,245,252,.64);
+    --faint: rgba(247,245,252,.40);
+    --violet: #5A34F5;
+    --orchid: #A049D0;
+    --lav: #CCABFF;
+    --peach: #FFB5A1;
+    --coral: #FF9B99;
+    --grad: linear-gradient(135deg, #A049D0 0%, #5A34F5 100%);
+    --r: 14px;
+    --sans: "Poppins", ui-sans-serif, -apple-system, "Helvetica Neue", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 400 14px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+    background: radial-gradient(60% 40% at 18% 8%, rgba(90,52,245,.20), transparent 70%),
+                radial-gradient(50% 35% at 85% 4%, rgba(160,73,208,.16), transparent 70%); }
+  a { color: inherit; }
+  .wrap { max-width: 1260px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 640px) { .wrap { padding: 0 16px; } }
+  .mono { font-family: var(--mono); }
+  .label { font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--lav); }
+
+  /* ---- floating nav ---- */
+  .nav { position: sticky; top: 12px; z-index: 10; margin: 12px auto 0; max-width: 1212px; height: 56px; display: flex; align-items: center; gap: 18px;
+    padding: 0 10px 0 16px; border-radius: 14px; border: 1px solid var(--line); background: rgba(28,27,51,.72);
+    -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
+  @media (max-width: 1260px) { .nav { margin: 12px 24px 0; } }
+  @media (max-width: 640px) { .nav { margin: 8px 16px 0; gap: 10px; padding-left: 12px; } .brand { font-size: 14.5px; } #statusText, .btn kbd { display: none; } }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; letter-spacing: -.02em; text-decoration: none; white-space: nowrap; }
+  .brand i { width: 26px; height: 26px; border-radius: 8px; background: var(--grad); display: grid; place-items: center; }
+  .brand i::after { content: ""; border-left: 8px solid #fff; border-top: 5px solid transparent; border-bottom: 5px solid transparent; margin-left: 2px; }
+  .links { display: flex; gap: 22px; margin-left: auto; }
+  .links a { text-decoration: none; color: var(--muted); font-size: 13px; transition: color .15s; }
+  .links a:hover { color: var(--text); }
+  @media (max-width: 900px) { .links { display: none; } }
+  #savebar { display: flex; align-items: center; gap: 12px; margin-left: 8px; }
+  @media (max-width: 900px) { #savebar { margin-left: auto; } }
+  .status { display: inline-flex; align-items: center; gap: 7px; font: 400 11px/1 var(--mono); color: var(--muted); white-space: nowrap; }
+  .status i { width: 7px; height: 7px; border-radius: 50%; background: var(--lav); box-shadow: 0 0 0 3px rgba(204,171,255,.15); }
+  .status.dirty i { background: var(--peach); box-shadow: 0 0 0 3px rgba(255,181,161,.15); }
+  #saveTitle { display: none; }
+  .btn { border: 0; cursor: pointer; border-radius: 9px; height: 38px; padding: 0 16px; font: 500 13px/1 var(--sans); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: transform .1s, background .15s, border-color .15s, opacity .15s; }
+  .btn:active { transform: scale(.98); }
+  .btn.white { background: #fff; color: #15142A; }
+  .btn.grad { background: var(--grad); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line-2); }
+  .btn.ghost:hover { border-color: rgba(255,255,255,.35); }
+  .btn kbd { font: 400 10px/1 var(--mono); opacity: .5; }
+
+  /* ---- hero ---- */
+  .hero { text-align: center; padding: 64px 0 34px; position: relative; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 10px; }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--coral); }
+  @media (max-width: 640px) { .eyebrow::before { display: none; } .eyebrow { line-height: 1.6; } }
+  h1 { margin: 22px auto 0; max-width: 900px; font: 600 clamp(38px, 6vw, 68px)/1.04 var(--sans); letter-spacing: -.045em; }
+  h1 .g { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { margin: 18px auto 0; max-width: 560px; color: var(--muted); font-size: 15px; }
+  .newrow { display: flex; gap: 8px; max-width: 520px; margin: 26px auto 0; padding: 6px; border-radius: 14px; border: 1px solid var(--line-2);
+    background: rgba(28,27,51,.6); }
+  .newrow input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font: 14px var(--sans); padding: 0 10px; outline: none; }
+  .seg { display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); }
+  .seg button { border: 0; background: transparent; color: var(--muted); border-radius: 7px; padding: 0 11px; font: 500 12.5px/1 var(--sans); cursor: pointer; white-space: nowrap; }
+  .seg button[aria-checked="true"].personal { background: var(--peach); color: #15142A; }
+  .seg button[aria-checked="true"].office { background: var(--grad); color: #fff; }
+  .seg.nudge { animation: nudge .5s; border-color: var(--coral); }
+  @keyframes nudge { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  @media (max-width: 640px) { .newrow { flex-wrap: wrap; } .newrow input { flex-basis: 100%; height: 40px; } .seg { flex: 1; } .seg button { flex: 1; height: 32px; } }
+  .ptag { font: 500 9.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 6px; border-radius: 5px; }
+  .ptag.personal { background: rgba(255,181,161,.18); color: var(--peach); } .ptag.office { background: rgba(160,73,208,.25); color: var(--lav); }
+  .pill[aria-pressed="true"] .ptag.personal { background: var(--peach); color: #15142A; } .pill[aria-pressed="true"] .ptag.office { background: var(--grad); color: #fff; }
+  .projects { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px auto 0; max-width: 760px; }
+  .pill { border: 1px solid var(--line-2); background: transparent; color: var(--muted); border-radius: 999px; padding: 7px 13px; font: 500 12.5px/1 var(--sans);
+    cursor: pointer; display: inline-flex; gap: 8px; align-items: center; transition: all .15s; }
+  .pill:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+  .pill[aria-pressed="true"] { background: var(--text); color: #15142A; border-color: var(--text); }
+  .pill small { font: 400 10.5px/1 var(--mono); opacity: .6; }
+
+  /* ---- workspace window ---- */
+  .step.locked .lockable { opacity: .35; pointer-events: none; filter: saturate(.4); }
+  .window { border-radius: 18px; border: 1px solid var(--line); background: var(--panel); overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.02) inset; }
+  .winbar { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+  .crumbs { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); min-width: 0; }
+  .crumbs b { color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .grid { display: grid; grid-template-columns: 264px minmax(0, 1fr) 330px; min-height: 520px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 240px minmax(0, 1fr); } .claude { grid-column: 1 / -1; border-left: 0 !important; border-top: 1px solid var(--line); } }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .library { border-right: 0 !important; border-bottom: 1px solid var(--line); } }
+  .pane { padding: 14px; min-width: 0; }
+  .pane-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .pane-h b { font-weight: 500; font-size: 13px; }
+  .count { font: 400 10.5px/1 var(--mono); color: var(--muted); background: var(--panel-3); border-radius: 6px; padding: 4px 6px; }
+
+  /* library */
+  .library { border-right: 1px solid var(--line); background: rgba(0,0,0,.12); }
+  .drop { position: relative; display: grid; place-items: center; gap: 4px; text-align: center; padding: 18px 10px; border-radius: 12px;
+    border: 1.5px dashed var(--line-2); cursor: pointer; transition: all .15s; color: var(--muted); font-size: 12.5px; }
+  .drop b { color: var(--text); font-weight: 500; font-size: 13px; }
+  .drop:hover { border-color: var(--lav); color: var(--text); }
+  .drop.over { border-style: solid; border-color: var(--lav); background: rgba(204,171,255,.08); }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .files { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .file { position: relative; border-radius: 10px; overflow: hidden; background: var(--panel-2); border: 1px solid var(--line); }
+  .file .th { aspect-ratio: 16 / 10; background: var(--panel-3); display: grid; place-items: center; color: var(--lav); overflow: hidden; }
+  .file .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .file .th .k { position: absolute; top: 6px; left: 6px; font: 500 9px/1 var(--mono); letter-spacing: .06em; padding: 3px 5px; border-radius: 4px;
+    background: rgba(11,10,20,.72); color: var(--text); }
+  .file .name { padding: 7px 8px 8px; min-width: 0; }
+  .file .name div { font-size: 11.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file .name span { font: 400 10px/1.4 var(--mono); color: var(--faint); }
+  .file .x { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 6px; border: 0; background: rgba(11,10,20,.72); color: var(--text);
+    cursor: pointer; opacity: 0; transition: opacity .15s; font-size: 14px; line-height: 1; }
+  .file:hover .x, .file .x:focus { opacity: 1; }
+  .file .x:hover { background: var(--coral); color: #15142A; }
+  .file .bar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--grad); transition: width .2s; }
+  .empty { color: var(--faint); font-size: 12.5px; margin: 12px 0 0; }
+
+  /* preview */
+  .preview { display: flex; flex-direction: column; gap: 10px; }
+  .versions { display: flex; gap: 6px; align-items: center; overflow-x: auto; }
+  .versions .lbl { font: 400 11px/1 var(--mono); color: var(--faint); margin-right: 4px; }
+  .vtab { border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 8px; padding: 7px 11px; font: 500 12px/1 var(--sans);
+    cursor: pointer; white-space: nowrap; }
+  .vtab small { font: 400 10px/1 var(--mono); opacity: .7; margin-right: 6px; }
+  .vtab[aria-selected="true"] { background: var(--panel-3); color: var(--text); border-color: var(--line-2); }
+  .screen { position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 16 / 9; border: 1px solid var(--line); }
+  .screen video { width: 100%; height: 100%; display: block; background: #000; }
+  .screen .ph { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px;
+    background: radial-gradient(60% 60% at 50% 40%, rgba(90,52,245,.18), transparent 70%), var(--bg-2); color: var(--muted); }
+  .screen .ph b { display: block; color: var(--text); font: 500 17px/1.3 var(--sans); letter-spacing: -.02em; margin-bottom: 6px; }
+  .pmetaRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .pmetaRow .fn { min-width: 0; }
+  .pmetaRow .fn b { font-weight: 500; font-size: 13px; }
+  .pmetaRow .fn > span { font: 400 11px/1.4 var(--mono); color: var(--faint); display: block; }
+  .acts { display: flex; gap: 8px; }
+  .badge { display: inline-block; font: 500 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: #15142A;
+    background: var(--lav); border-radius: 999px; padding: 4px 7px; margin-left: 8px; vertical-align: 2px; }
+
+  /* claude panel */
+  .claude { border-left: 1px solid var(--line); background: rgba(0,0,0,.12); display: flex; flex-direction: column; gap: 14px; }
+  .who { display: flex; gap: 10px; align-items: center; }
+  .who .av { width: 30px; height: 30px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+  .who b { display: block; font-weight: 500; font-size: 13px; line-height: 1.2; }
+  .who span { font: 400 10.5px/1.3 var(--mono); color: var(--faint); }
+  .field { display: grid; gap: 7px; }
+  .choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .choice { position: relative; text-align: left; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 10px;
+    padding: 9px 10px; cursor: pointer; display: grid; gap: 6px; font: inherit; transition: border-color .15s, background .15s; }
+  .choice:hover { border-color: var(--line-2); }
+  .choice[aria-checked="true"] { border-color: var(--lav); background: rgba(204,171,255,.08); }
+  .choice b { font-weight: 500; font-size: 12.5px; }
+  .choice span { color: var(--faint); font-size: 11px; line-height: 1.3; }
+  .sw { display: flex; gap: 3px; height: 12px; align-items: center; }
+  .sw i { width: 12px; height: 12px; border-radius: 50%; }
+  .sw i.q { box-shadow: inset 0 0 0 1.5px var(--line-2); }
+  .sw .ask { font: 500 12px/12px var(--mono); color: var(--lav); }
+  .frame { border: 1.5px solid var(--text); border-radius: 3px; }
+  input[type=text], textarea { width: 100%; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 10px;
+    padding: 10px 12px; font: 13.5px/1.5 var(--sans); outline: none; transition: border-color .15s, box-shadow .15s; }
+  input[type=text]:focus, textarea:focus { border-color: var(--lav); box-shadow: 0 0 0 3px rgba(204,171,255,.12); }
+  ::placeholder { color: var(--faint); }
+  textarea { resize: vertical; min-height: 84px; }
+  .ask-box { margin-top: auto; border-radius: 12px; border: 1px solid var(--line-2); background: var(--panel-2); padding: 12px; display: grid; gap: 10px; }
+  .ask-box p { margin: 0; font-size: 12px; color: var(--muted); }
+  .say { display: flex; gap: 8px; align-items: center; }
+  .say code { flex: 1; font: 500 12.5px/1.4 var(--mono); color: var(--text); overflow-wrap: anywhere; }
+  .say .btn { height: 32px; padding: 0 12px; font-size: 12px; }
+
+  /* timeline */
+  .timeline { grid-column: 1 / -1; border-top: 1px solid var(--line); padding: 12px 14px 14px; background: var(--panel-2); }
+  .tl-h { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .tl-h b { font-weight: 500; font-size: 12.5px; }
+  .tl-h span { font: 400 11px/1 var(--mono); color: var(--faint); }
+  .tracks { position: relative; display: grid; grid-template-columns: 64px 1fr; row-gap: 6px; }
+  .tname { font: 400 10.5px/26px var(--mono); color: var(--faint); }
+  .lane { position: relative; height: 26px; border-radius: 6px; background: rgba(255,255,255,.03); }
+  .ruler { position: relative; height: 16px; }
+  .ruler i { position: absolute; top: 0; font: 400 9.5px/1 var(--mono); color: var(--faint); font-style: normal; transform: translateX(-50%); }
+  .ruler i::after { content: ""; position: absolute; left: 50%; top: 12px; width: 1px; height: 4px; background: var(--line-2); }
+  .blk { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; padding: 0 7px; font: 500 10.5px/22px var(--sans); color: #15142A;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 6px; }
+  .blk.planned, .blk.built { background: var(--lav); }
+  .blk.custom { background: var(--peach); }
+  .blk.voice { background: rgba(204,171,255,.28); color: var(--text); padding: 0; }
+  .blk.music { background: linear-gradient(90deg, rgba(160,73,208,.75), rgba(90,52,245,.75)); color: #fff; }
+  .playhead { position: absolute; top: 20px; bottom: 0; width: 2px; background: var(--coral); border-radius: 1px; pointer-events: none; display: none; }
+  .playhead::before { content: ""; position: absolute; top: -4px; left: -4px; width: 10px; height: 10px; border-radius: 3px; background: var(--coral); }
+  .tl-empty { font-size: 12.5px; color: var(--faint); padding: 6px 0 2px; }
+
+  /* ---- numbered sections ---- */
+  .sec { padding: 96px 0 0; scroll-margin-top: 60px; }
+  #workspace { scroll-margin-top: 84px; }
+  .sec-h { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: end; margin: 16px 0 28px; }
+  @media (max-width: 860px) { .sec-h { grid-template-columns: 1fr; gap: 14px; } .sec { padding-top: 64px; } }
+  h2 { margin: 0; font: 600 clamp(28px, 3.6vw, 44px)/1.08 var(--sans); letter-spacing: -.04em; }
+  h2 span { color: var(--faint); }
+  .sec-h p { margin: 0; color: var(--muted); font-size: 14.5px; max-width: 480px; }
+  .sec-h p b { color: var(--text); font-weight: 500; }
+  .panel { border-radius: 18px; border: 1px solid var(--line); background: var(--panel); padding: 18px; }
+  textarea.script { font: 13px/1.7 var(--mono); min-height: 170px; background: var(--bg-2); }
+
+  /* scenes */
+  .scenes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .scenes { grid-template-columns: minmax(0, 1fr); } }
+  .scene { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 10px; align-content: start; }
+  .scene-head { display: flex; align-items: center; gap: 10px; }
+  .scene-head b { font-weight: 500; font-size: 13px; }
+  .scene-head .x { margin-left: auto; border: 0; background: none; color: var(--faint); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 17px; }
+  .scene-head .x:hover { background: rgba(255,155,153,.15); color: var(--coral); }
+  .tag { font: 500 10px/1 var(--mono); letter-spacing: .03em; color: #15142A; background: var(--peach); border-radius: 999px; padding: 4px 7px; }
+  .fld { display: grid; gap: 6px; }
+  .fld > span, .attach > span { font: 400 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+  .scene textarea { min-height: 70px; }
+  .pickline { justify-self: stretch; width: 100%; min-width: 0; text-overflow: ellipsis; border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); border-radius: 8px;
+    padding: 6px 9px; font: 12px/1.3 var(--sans); cursor: pointer; }
+  .attach { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .fchip { border: 1px solid var(--line-2); background: transparent; border-radius: 999px; padding: 5px 10px; font: 12px/1 var(--sans); color: var(--muted);
+    cursor: pointer; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fchip[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: #15142A; }
+  .addscene { width: 100%; margin-top: 12px; border: 1.5px dashed var(--line-2); background: transparent; border-radius: 14px; height: 50px; color: var(--text);
+    font: 500 13.5px/1 var(--sans); cursor: pointer; transition: all .15s; }
+  .addscene:hover { border-color: var(--lav); background: rgba(204,171,255,.05); }
+  .plan { border-radius: 12px; background: var(--bg-2); padding: 11px 12px; display: grid; gap: 7px; border-left: 3px solid var(--lav); }
+  .plan.st-custom { border-left-color: var(--peach); } .plan.st-needs-info { border-left-color: var(--coral); } .plan.st-built { border-left-color: var(--violet); }
+  .plan p { margin: 0; font-size: 12.5px; color: var(--muted); } .plan p b { color: var(--text); font-weight: 500; }
+  .plan-head { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .pst { font: 600 11.5px/1 var(--sans); color: var(--lav); } .st-custom .pst { color: var(--peach); } .st-needs-info .pst { color: var(--coral); } .st-built .pst { color: var(--text); }
+  .pmeta { font: 400 10.5px/1 var(--mono); color: var(--faint); } .pmeta::before { content: "·"; margin: 0 6px 0 4px; }
+  .pq b { color: var(--coral) !important; } .pc b { color: var(--peach) !important; }
+  .thumbs { display: flex; gap: 6px; overflow-x: auto; }
+  .thumbs img { height: 78px; border-radius: 7px; border: 1px solid var(--line); cursor: zoom-in; background: #000; }
+
+  /* music */
+  .track { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: start; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px; }
+  .track.main { border-color: rgba(204,171,255,.45); background: linear-gradient(180deg, rgba(160,73,208,.10), rgba(90,52,245,.04)), var(--panel-2); }
+  .track .cover { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--panel-3); }
+  .track.alt { grid-template-columns: 44px 1fr auto; padding: 10px 12px; }
+  .track.alt .cover { width: 44px; height: 44px; border-radius: 8px; }
+  .tinfo { min-width: 0; display: grid; gap: 4px; }
+  .tinfo b { font-weight: 500; } .tinfo > span { color: var(--muted); font-size: 12.5px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+  .tags i { font: 400 10.5px/1 var(--mono); font-style: normal; color: var(--muted); background: var(--panel-3); border-radius: 999px; padding: 4px 8px; }
+  .why { margin: 4px 0 0; font-size: 13px; color: var(--muted); } .why b { font-weight: 500; color: var(--text); }
+  .tinfo audio { width: 100%; max-width: 380px; height: 34px; margin-top: 6px; color-scheme: dark; }
+  .alts { display: grid; gap: 8px; margin-top: 10px; }
+  .searched { font: 400 11px/1.5 var(--mono); color: var(--faint); margin: 12px 0 0; }
+  .reqnote { background: rgba(255,181,161,.12); color: var(--peach); border: 1px solid rgba(255,181,161,.3); border-radius: 12px; padding: 10px 14px; font-size: 13px; margin-top: 10px; }
+  .label-row { font: 400 10px/1 var(--mono); color: var(--faint); letter-spacing: .12em; text-transform: uppercase; margin: 18px 0 10px; }
+
+  /* deliver */
+  .renders { display: grid; gap: 8px; }
+  .rrow { display: grid; grid-template-columns: 56px 1fr auto; gap: 14px; align-items: center; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 10px 12px 10px 14px; }
+  .rrow .v { font: 600 18px/1 var(--sans); letter-spacing: -.03em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rrow .fn b { font-weight: 500; } .rrow .fn > span { display: block; font: 400 11px/1.4 var(--mono); color: var(--faint); }
+  @media (max-width: 640px) { .rrow { grid-template-columns: 1fr; } }
+
+  footer { margin: 110px 0 0; border-top: 1px solid var(--line); padding: 24px 0 44px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  footer span { font: 400 11px/1 var(--mono); color: var(--faint); letter-spacing: .06em; }
+  footer a { font-size: 12px; color: var(--muted); text-decoration: none; } footer a:hover { color: var(--text); }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--text); color: #15142A; z-index: 30;
+    padding: 11px 16px; border-radius: 11px; font: 500 13px/1.3 var(--sans); transition: all .25s; pointer-events: none; max-width: calc(100% - 32px); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.err { background: var(--coral); }
+  .lightbox { position: fixed; inset: 0; background: rgba(11,10,20,.88); display: grid; place-items: center; z-index: 40; cursor: zoom-out; padding: 24px; }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#top"><i></i>Video maker</a>
+  <div class="links"><a href="#workspace">Workspace</a><a href="#s3">Voiceover</a><a href="#s6">Scenes</a><a href="#s7">Music</a><a href="#sDone">Deliver</a></div>
+  <div id="savebar" hidden>
+    <span class="status" id="status"><i></i><span id="statusText"></span></span><span id="saveTitle"></span>
+    <button class="btn white" id="saveBtn" type="button">Save project <kbd>⌘S</kbd></button>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="hero">
+    <div class="label eyebrow">Your editing desk · HyperFrames · ElevenLabs · Epidemic Sound</div>
+    <h1>Drop in the footage.<br><span class="g">Get back a finished cut.</span></h1>
+    <p class="sub">Add your clips, a script and the moments you want animated. Claude cuts it, scores it and renders it on this Mac.</p>
+    <form class="newrow" id="newForm" autocomplete="off">
+      <input type="text" id="newName" placeholder="Name a new video, e.g. Glance widget launch" maxlength="80" aria-label="New video name">
+      <div class="seg" id="newPurpose" role="radiogroup" aria-label="Who is it for?">
+        <button type="button" role="radio" class="personal" data-v="personal" aria-checked="false">Personal</button>
+        <button type="button" role="radio" class="office" data-v="office" aria-checked="false">Office</button>
+      </div>
+      <button class="btn white" type="submit">Start a video</button>
+    </form>
+    <div class="projects" id="projects"></div>
+  </header>
+
+  <!-- the workspace: library · preview · Claude, with the timeline underneath -->
+  <section class="step locked" id="workspace">
+    <div class="window lockable">
+      <div class="winbar">
+        <div class="crumbs"><span>Videos</span><span>/</span><b id="crumbTitle">Pick or start a video</b><span class="ptag" id="crumbPurpose" hidden></span></div>
+      </div>
+      <div class="grid">
+        <aside class="pane library">
+          <div class="pane-h"><b>Library</b><span class="count" id="fileCount">0</span></div>
+          <label class="drop" id="drop"><input type="file" id="picker" multiple><b>+ Add files</b>Drop clips, screen recordings, images, music or docs</label>
+          <ul class="files" id="files"></ul>
+          <p class="empty" id="noFiles">Nothing added yet.</p>
+        </aside>
+
+        <div class="pane preview">
+          <div class="versions" id="versions"><span class="lbl">Versions</span></div>
+          <div class="screen" id="screen">
+            <video id="pv" controls preload="metadata" playsinline hidden></video>
+            <div class="ph" id="pvEmpty"><div><b>Your first cut shows up here.</b>Add files, then tell Claude to edit the video.</div></div>
+          </div>
+          <div class="pmetaRow" id="pvMeta" hidden>
+            <div class="fn"><b id="pvName"></b><span id="pvInfo"></span></div>
+            <div class="acts"><button class="btn ghost" type="button" id="pvReveal">Show in Finder</button><a class="btn white" id="pvDl" href="#" download>Download</a></div>
+          </div>
+        </div>
+
+        <aside class="pane claude">
+          <div class="who"><div class="av">C</div><div><b>Claude</b><span>editor · picks voice, music, animation</span></div></div>
+          <div class="field"><span class="label">Who is it for?</span>
+            <div class="choices" role="radiogroup" aria-label="Who is it for?" id="purpose">
+              <button class="choice" role="radio" data-v="personal" type="button"><b>Personal</b><span>Your own project</span></button>
+              <button class="choice" role="radio" data-v="office" type="button"><b>Office</b><span>For Glance: brand rules, company-use licences</span></button>
+            </div>
+          </div>
+          <div class="field"><span class="label">Look</span>
+            <div class="choices" role="radiogroup" aria-label="Style" id="styles">
+              <button class="choice" role="radio" data-v="ask" type="button"><div class="sw"><span class="ask">?</span></div><b>Ask me</b><span>Decide when Claude asks</span></button>
+              <button class="choice" role="radio" data-v="glance" type="button"><div class="sw"><i style="background:#CCABFF"></i><i style="background:#A049D0"></i><i style="background:#5A34F5"></i><i style="background:#FFB5A1"></i></div><b>Glance</b><span>Poppins, brand purple</span></button>
+              <button class="choice" role="radio" data-v="kit" type="button"><div class="sw"><i style="background:#0AF0F0"></i><i style="background:#0005EE"></i><i style="background:#CD00EE"></i><i style="background:#FFB904"></i></div><b>Kit</b><span>Glass cards, cyan</span></button>
+              <button class="choice" role="radio" data-v="mine" type="button"><div class="sw"><i class="q"></i><i class="q"></i><i class="q"></i><i class="q"></i></div><b>Mine</b><span>Your colours, font</span></button>
+            </div>
+          </div>
+          <div class="field"><span class="label">Shape</span>
+            <div class="choices" role="radiogroup" aria-label="Shape" id="shapes">
+              <button class="choice" role="radio" data-v="landscape" type="button"><div class="sw"><i class="frame" style="width:20px;height:12px;border-radius:3px"></i></div><b>Landscape</b><span>16:9, YouTube</span></button>
+              <button class="choice" role="radio" data-v="vertical" type="button"><div class="sw"><i class="frame" style="width:8px;height:13px;border-radius:2px"></i></div><b>Vertical</b><span>9:16, built by hand</span></button>
+            </div>
+          </div>
+          <div class="field"><span class="label">Notes for Claude</span>
+            <textarea id="notes" placeholder="What's it about, who is it for? Anything that must stay or can go?"></textarea>
+          </div>
+          <div class="ask-box" id="handoff" hidden>
+            <p id="handoffNote">Now open Claude Code in the Video maker folder and say:</p>
+            <div class="say"><code id="sayText"></code><button class="btn white" id="copy" type="button">Copy</button></div>
+          </div>
+          <div class="ask-box" id="handoffEmpty"><p>Add files or a script, and the sentence to give Claude appears here.</p></div>
+        </aside>
+
+        <div class="timeline">
+          <div class="tl-h"><b>Timeline</b><span id="tlInfo"></span></div>
+          <div id="tl"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec step locked" id="s3">
+    <div class="label">01 / Voiceover</div>
+    <div class="sec-h"><h2>Write the script.<br><span>Hear it in any voice.</span></h2>
+      <p>Paste a script and ElevenLabs voices it. Start a line with a name, like <b>HOST:</b>, and that speaker gets their own voice. Claude shows the cost before it spends credits.</p></div>
+    <div class="panel lockable"><textarea class="script" id="script" placeholder="HOST: Most product videos take a week to edit.&#10;GUEST: This one took ten minutes.&#10;&#10;A line without a name is read by the narrator."></textarea></div>
+  </section>
+
+  <section class="sec step locked" id="s6">
+    <div class="label">02 / Scenes</div>
+    <div class="sec-h"><h2>Describe the moment.<br><span>Claude animates it.</span></h2>
+      <p>One card per moment. Say <b>when</b> it happens and <b>what</b> to show, in your own words. Claude's plan and a still appear under each card before anything renders.</p></div>
+    <div class="lockable">
+      <div class="scenes" id="scenes"></div>
+      <p class="empty" id="noScenes">No scenes yet. Claude will choose the animations itself.</p>
+      <button class="addscene" id="addScene" type="button">+ Add a scene</button>
+    </div>
+  </section>
+
+  <section class="sec step locked" id="s7">
+    <div class="label">03 / Sound</div>
+    <div class="sec-h"><h2>Music picked for the cut.<br><span>Not just the mood.</span></h2>
+      <p>Claude searches Epidemic Sound for the video's length, pace and feel, then shows the pick, why it fits and two alternatives you can switch to.</p></div>
+    <div class="panel lockable">
+      <input type="text" id="musicNotes" placeholder="Music notes, optional: calm, no vocals, nothing too corporate" maxlength="300" aria-label="Music notes">
+      <div id="musicBox" hidden></div>
+      <p class="empty" id="musicEmpty">No track picked yet.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="sDone" hidden>
+    <div class="label">04 / Deliver</div>
+    <div class="sec-h"><h2>Every version kept.<br><span>Download any of them.</span></h2>
+      <p>Each edit Claude delivers is a new version. Play one in the workspace, show it in Finder, or download it.</p></div>
+    <div class="renders" id="renders"></div>
+  </section>
+
+  <footer>
+    <span>Video maker · runs on this Mac</span>
+    <a href="/light">Switch to the light version</a>
+  </footer>
+</main>
+<div class="toast" id="toast"></div>
+<div class="lightbox" id="lightbox" hidden><img alt=""></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const ICONS = {
+  raw: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/></svg>',
+  img: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M4 18l5.5-5 4 3.5L17 13l3 3"/></svg>',
+  audio: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></svg>',
+  docs: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg>',
+};
+const ICON_DL = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg>';
+const KIND_LABEL = { raw: "CLIP", img: "IMAGE", audio: "AUDIO", docs: "DOC" };
+let current = null, saveTimer = null, uploading = 0, scenesState = [], selected = null, knownSlugs = [];
+const queue = [];
+const enc = encodeURIComponent;
+
+function toast(msg, err) {
+  const t = $("#toast"); t.textContent = msg; t.className = "toast show" + (err ? " err" : "");
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = "toast"), err ? 4200 : 2200);
+}
+async function api(path, opts = {}) {
+  const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Something went wrong.");
+  return d;
+}
+function size(n) {
+  if (n < 1024) return n + " B";
+  const u = ["KB", "MB", "GB"]; let i = -1;
+  do { n /= 1024; i++; } while (n >= 1024 && i < 2);
+  return n.toFixed(n < 10 ? 1 : 0) + " " + u[i];
+}
+function when(ms) {
+  const d = new Date(ms), now = new Date();
+  return d.toDateString() === now.toDateString() ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : d.toLocaleDateString([], { day: "numeric", month: "short" });
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+const tc = (t) => { t = Math.max(0, +t || 0); return Math.floor(t / 60) + ":" + String(Math.floor(t % 60)).padStart(2, "0"); };
+
+const PURPOSE = { personal: "Personal", office: "Office" };
+function purposeTag(v) { return PURPOSE[v] ? `<span class="ptag ${v}">${PURPOSE[v]}</span>` : ""; }
+function showPurpose() {
+  const v = current && current.brief.purpose, t = $("#crumbPurpose");
+  t.hidden = !PURPOSE[v]; t.className = "ptag " + (v || ""); t.textContent = PURPOSE[v] || "";
+}
+async function loadProjects() {
+  const list = await api("/api/projects");
+  $("#projects").innerHTML = list.map((p) =>
+    `<button class="pill" type="button" data-slug="${esc(p.slug)}" aria-pressed="${current && current.slug === p.slug}">${esc(p.title)}${purposeTag(p.purpose)}<small>${p.files}</small></button>`).join("");
+  $("#projects").querySelectorAll(".pill").forEach((b) => b.onclick = () => openProject(b.dataset.slug));
+  knownSlugs = list.map((p) => p.slug);
+  return list;
+}
+async function openProject(slug) {
+  try { current = await api("/api/projects/" + enc(slug)); }
+  catch (e) { toast(e.message, true); return; }
+  try { localStorage.setItem("vm-last", slug); } catch {}
+  history.replaceState(null, "", "#" + slug);
+  document.querySelectorAll(".step.locked").forEach((s) => s.classList.remove("locked"));
+  $("#script").value = current.script;
+  $("#notes").value = current.brief.notes || "";
+  pick("#styles", current.brief.style || "ask");
+  pick("#shapes", current.brief.shape || "landscape");
+  pick("#purpose", current.brief.purpose || "");
+  showPurpose();
+  $("#musicNotes").value = current.brief.music_notes || "";
+  scenesState = JSON.parse(JSON.stringify(current.scenes || []));
+  selected = null;
+  $("#crumbTitle").textContent = current.brief.title || current.slug;
+  renderFiles(); renderRenders(); renderScenes(); renderMusic(); loadProjects();
+  $("#savebar").hidden = false;
+  $("#saveTitle").textContent = current.brief.title || current.slug;
+  setStatus(current.brief.updated ? "Saved " + when(Date.parse(current.brief.updated)) : "Saved");
+}
+function pick(group, v) {
+  document.querySelectorAll(group + " .choice").forEach((c) => c.setAttribute("aria-checked", c.dataset.v === v));
+}
+
+// ---- library tiles
+function thumbFor(f) {
+  if (f.kind === "img" && !/\.(heic)$/i.test(f.name)) return `<img src="/media/${enc(current.slug)}/${f.path.split("/").map(enc).join("/")}" alt="" loading="lazy">`;
+  if (f.kind === "raw") return `<img src="/poster/${enc(current.slug)}/${f.path.split("/").map(enc).join("/")}" alt="" loading="lazy" onerror="this.replaceWith(document.createRange().createContextualFragment(ICONS.raw))">`;
+  return ICONS[f.kind];
+}
+function renderFiles() {
+  const files = current ? current.files : [];
+  $("#files").innerHTML = files.map((f) => `
+    <li class="file done" data-path="${esc(f.path)}">
+      <div class="th">${thumbFor(f)}<span class="k">${KIND_LABEL[f.kind]}</span></div>
+      <div class="name"><div title="${esc(f.name)}">${esc(f.name)}</div><span>${size(f.size)}</span></div>
+      <button class="x" type="button" title="Remove" aria-label="Remove ${esc(f.name)}">×</button>
+    </li>`).join("");
+  queue.map((q) => q.row).forEach((r) => $("#files").appendChild(r));
+  $("#noFiles").hidden = files.length + queue.length > 0;
+  $("#fileCount").textContent = files.length;
+  $("#files").querySelectorAll(".file.done .x").forEach((b) => b.onclick = () => removeFile(b.closest(".file").dataset.path));
+  updateHandoff();
+}
+
+// ---- preview + versions + deliver list
+function versionLabel(v, i, n) { const m = /-v(\d+)-/i.exec(v.file); return "v" + (m ? m[1] : String(n - i)); }
+function srcFor(v) { return v.where === "renders" ? `/renders/${enc(current.slug)}/${enc(v.file)}` : `/media/${enc(current.slug)}/${enc(v.file)}`; }
+function dlFor(v) { return `/download/${enc(current.slug)}/${v.where}/${enc(v.file)}`; }
+function reveal(v) {
+  api(`/api/projects/${enc(current.slug)}/reveal`, { method: "POST", body: JSON.stringify({ where: v.where, file: v.file }) }).catch((e) => toast(e.message, true));
+}
+function renderRenders() {
+  const r = current ? current.renders : [];
+  $("#sDone").hidden = !r.length;
+  if (!r.find((v) => v.file === selected)) selected = r.length ? r[0].file : null;
+  // version tabs, oldest first, newest marked
+  $("#versions").innerHTML = `<span class="lbl">Versions</span>` + r.slice().reverse().map((v) => {
+    const i = r.indexOf(v);
+    return `<button class="vtab" type="button" role="tab" data-file="${esc(v.file)}" aria-selected="${v.file === selected}"><small>${versionLabel(v, i, r.length)}</small>${i === 0 ? "Latest" : when(v.mtime)}</button>`;
+  }).join("") + (r.length ? "" : `<span class="lbl" style="opacity:.6">none yet</span>`);
+  $("#versions").querySelectorAll(".vtab").forEach((b) => b.onclick = () => { selected = b.dataset.file; renderRenders(); });
+  const v = r.find((x) => x.file === selected), pv = $("#pv");
+  $("#pvEmpty").hidden = !!v; pv.hidden = !v; $("#pvMeta").hidden = !v;
+  if (v) {
+    const src = srcFor(v) + "?m=" + Math.round(v.mtime);
+    if (pv.getAttribute("src") !== src) pv.setAttribute("src", src);
+    $("#pvName").innerHTML = esc(v.file) + (r[0] === v ? '<span class="badge">Latest</span>' : "");
+    $("#pvInfo").textContent = size(v.size) + " · " + when(v.mtime);
+    $("#pvDl").setAttribute("href", dlFor(v)); $("#pvDl").setAttribute("download", v.file); $("#pvDl").innerHTML = ICON_DL + "Download";
+    $("#pvReveal").onclick = () => reveal(v);
+  } else { pv.removeAttribute("src"); }
+  $("#renders").innerHTML = r.map((v, i) => `
+    <div class="rrow"><div class="v">${versionLabel(v, i, r.length)}</div>
+      <div class="fn"><b>${esc(v.file)}${i === 0 ? '<span class="badge">Latest</span>' : ""}</b><span>${size(v.size)} · ${when(v.mtime)}</span></div>
+      <div class="acts"><button class="btn ghost play" type="button" data-file="${esc(v.file)}">Play</button>
+        <button class="btn ghost rev" type="button" data-file="${esc(v.file)}">Show in Finder</button>
+        <a class="btn white" href="${dlFor(v)}" download="${esc(v.file)}">${ICON_DL}Download</a></div></div>`).join("");
+  $("#renders").querySelectorAll(".play").forEach((b) => b.onclick = () => {
+    selected = b.dataset.file; renderRenders(); $("#workspace").scrollIntoView({ block: "start" }); setTimeout(() => $("#pv").play().catch(() => {}), 350);
+  });
+  $("#renders").querySelectorAll(".rev").forEach((b) => b.onclick = () => reveal(r.find((x) => x.file === b.dataset.file)));
+  renderTimeline();
+}
+
+// ---- timeline: only real data (Claude's plan, the voice, the music pick)
+function renderTimeline() {
+  if (!current) { $("#tl").innerHTML = ""; return; }
+  const rows = ((current.plan || {}).scenes || []).filter((r) => r.in != null && r.out != null);
+  const pvd = $("#pv").duration;
+  const D = current.duration || Math.max(0, ...rows.map((r) => +r.out)) || (isFinite(pvd) ? pvd : 0);
+  const order = Object.fromEntries(scenesState.map((s, i) => [s.id, i + 1]));
+  if (!D || (!rows.length && !(current.voice || []).length && !current.music)) {
+    $("#tlInfo").textContent = "";
+    $("#tl").innerHTML = `<div class="tl-empty">The timeline fills in once Claude has planned the video: scenes, voice and music on one line.</div>`;
+    return;
+  }
+  const pct = (t) => Math.max(0, Math.min(100, (t / D) * 100)) + "%";
+  const step = D <= 12 ? 1 : D <= 60 ? 5 : D <= 300 ? 30 : 60;
+  const ticks = []; for (let t = 0; t <= D + 0.001; t += step) ticks.push(t);
+  const m = current.music && current.music.chosen;
+  $("#tlInfo").textContent = tc(D) + " · " + rows.length + (rows.length === 1 ? " scene" : " scenes") + (m ? " · music" : "");
+  $("#tl").innerHTML = `<div class="tracks">
+      <span></span><div class="ruler">${ticks.map((t) => `<i style="left:${pct(t)}">${tc(t)}</i>`).join("")}</div>
+      <span class="tname">Scenes</span><div class="lane">${rows.map((r) =>
+        `<div class="blk ${esc(r.status)}" style="left:${pct(r.in)};width:calc(${pct(r.out - r.in)})" title="${esc(r.build || "")}">Scene ${order[r.note] || "?"}</div>`).join("")}</div>
+      <span class="tname">Voice</span><div class="lane">${(current.voice || []).map(([a, b]) =>
+        `<div class="blk voice" style="left:${pct(a)};width:calc(${pct(b - a)})"></div>`).join("")}</div>
+      <span class="tname">Music</span><div class="lane">${m ? `<div class="blk music" style="left:0;width:100%" title="${esc(m.why || "")}">♪ ${esc(m.title)} · ${esc(m.artist || "")}</div>` : ""}</div>
+      <div class="playhead" id="playhead" style="left:calc(64px)"></div>
+    </div>`;
+  movePlayhead();
+}
+function movePlayhead() {
+  const ph = $("#playhead"), pv = $("#pv"), lane = document.querySelector("#tl .lane");
+  if (!ph || !lane || pv.hidden || !isFinite(pv.duration) || !pv.duration) { if (ph) ph.style.display = "none"; return; }
+  const x = lane.offsetLeft + lane.offsetWidth * Math.min(1, pv.currentTime / pv.duration);
+  ph.style.display = "block"; ph.style.left = x + "px";
+}
+$("#pv").addEventListener("timeupdate", movePlayhead);
+$("#pv").addEventListener("loadedmetadata", () => { if (!current.duration) renderTimeline(); else movePlayhead(); });
+window.addEventListener("resize", movePlayhead);
+
+// ---- scenes
+const STATUS = { planned: "Planned", custom: "Custom build: Claude asks before building it", "needs-info": "Claude has a question", built: "In the video" };
+const inScene = () => !!(document.activeElement && document.activeElement.closest && document.activeElement.closest(".scene"));
+function scriptLines() {
+  return $("#script").value.split("\n").map((l) => l.trim())
+    .filter((l) => l && !l.startsWith("#") && !/^\[pause/i.test(l))
+    .map((l) => l.replace(/^[A-Z][A-Z0-9 _'-]{0,30}:\s+/, ""));
+}
+function planRow(id) { return current && current.plan ? (current.plan.scenes || []).find((r) => r.note === id) : null; }
+function nextSceneId() {
+  const ids = scenesState.map((s) => s.id).concat(((current.plan || {}).scenes || []).map((r) => r.note));
+  const nums = ids.map((x) => parseInt(String(x).slice(1), 10)).filter((n) => !isNaN(n));
+  return "s" + ((nums.length ? Math.max(...nums) : 0) + 1);
+}
+function renderScenes() {
+  if (!current) return;
+  const lines = scriptLines(), files = current.files;
+  $("#scenes").innerHTML = scenesState.map((s, i) => `
+    <div class="scene" data-id="${esc(s.id)}">
+      <div class="scene-head"><b>Scene ${i + 1}</b><span class="tag" hidden></span>
+        <button class="x" type="button" title="Remove scene" aria-label="Remove scene ${i + 1}">×</button></div>
+      <label class="fld"><span>When</span><input type="text" class="when" value="${esc(s.when)}" placeholder="When I say “pricing”" maxlength="500"></label>
+      <select class="pickline" ${lines.length ? "" : "hidden"} aria-label="Pick a line from your script">
+        <option value="">…or pick a line from your script</option>
+        ${lines.map((l, k) => `<option value="${k}">${esc(l.length > 90 ? l.slice(0, 88) + "…" : l)}</option>`).join("")}</select>
+      <label class="fld"><span>What to show</span><textarea class="what" placeholder="Our pricing page in a browser. Scroll to the Pro plan and circle it. Then a big “Save 40%” pops in." maxlength="2000">${esc(s.what)}</textarea></label>
+      <div class="attach" ${files.length ? "" : "hidden"}><span>Use a file</span>
+        ${files.map((f) => `<button type="button" class="fchip" data-path="${esc(f.path)}" aria-pressed="${(s.files || []).includes(f.path)}" title="${esc(f.name)}">${esc(f.name)}</button>`).join("")}</div>
+      <div class="plan" hidden></div>
+    </div>`).join("");
+  $("#noScenes").hidden = scenesState.length > 0;
+  $("#scenes").querySelectorAll(".scene").forEach((el) => {
+    const s = scenesState.find((x) => x.id === el.dataset.id);
+    el.querySelector(".when").oninput = (e) => { s.when = e.target.value; saveSoon(); };
+    el.querySelector(".what").oninput = (e) => { s.what = e.target.value; saveSoon(); };
+    el.querySelector(".pickline").onchange = (e) => {
+      if (e.target.value === "") return;
+      const line = scriptLines()[+e.target.value];
+      el.querySelector(".when").value = s.when = `When the voiceover says “${line}”`;
+      e.target.value = ""; saveSoon();
+    };
+    el.querySelectorAll(".fchip").forEach((c) => c.onclick = () => {
+      const on = c.getAttribute("aria-pressed") !== "true";
+      c.setAttribute("aria-pressed", on);
+      s.files = on ? [...(s.files || []), c.dataset.path] : (s.files || []).filter((f) => f !== c.dataset.path);
+      saveSoon();
+    });
+    el.querySelector(".scene-head .x").onclick = () => {
+      if ((s.when || s.what) && !confirm("Remove this scene?")) return;
+      scenesState = scenesState.filter((x) => x !== s); renderScenes(); saveSoon();
+    };
+  });
+  updateSceneMeta();
+}
+function updateSceneMeta() {
+  if (!current) return;
+  const plan = current.plan, pu = plan ? Date.parse(plan.updated || 0) : 0;
+  document.querySelectorAll("#scenes .scene").forEach((el) => {
+    const id = el.dataset.id, row = planRow(id), saved = (current.scenes || []).find((x) => x.id === id);
+    const tag = el.querySelector(".tag"), box = el.querySelector(".plan");
+    let t = "";
+    if (plan && !row) t = "Not in Claude's plan yet";
+    else if (row && saved && Date.parse(saved.edited || 0) > pu) t = "Changed after Claude's plan";
+    tag.textContent = t; tag.hidden = !t;
+    if (!row) { box.hidden = true; return; }
+    box.hidden = false; box.className = "plan st-" + row.status;
+    box.innerHTML = `<div class="plan-head"><span class="pst">${esc(STATUS[row.status] || row.status)}</span>
+        ${row.in != null && row.out != null ? `<span class="pmeta">${tc(row.in)}–${tc(row.out)}</span>` : ""}
+        ${row.format ? `<span class="pmeta">${esc(row.format)}</span>` : ""}</div>
+      ${row.build ? `<p><b>Claude's plan:</b> ${esc(row.build)}</p>` : ""}
+      ${row.question ? `<p class="pq"><b>Claude asks:</b> ${esc(row.question)}</p>` : ""}
+      ${row.conflict ? `<p class="pc"><b>Heads-up:</b> ${esc(row.conflict)}</p>` : ""}
+      ${(row.snaps || []).length ? `<div class="thumbs">${row.snaps.map((p) => `<img src="/media/${enc(current.slug)}/${p.split("/").map(enc).join("/")}?v=${pu}" alt="Still of this scene" loading="lazy">`).join("")}</div>` : ""}`;
+    box.querySelectorAll("img").forEach((img) => img.onclick = () => { $("#lightbox img").src = img.src; $("#lightbox").hidden = false; });
+  });
+  renderTimeline();
+  updateHandoff();
+}
+
+// ---- music
+function renderMusic() {
+  const m = current && current.music;
+  $("#musicEmpty").hidden = !!m; $("#musicBox").hidden = !m;
+  if (!m) { renderTimeline(); updateHandoff(); return; }
+  const req = m.requested && m.requested.id;
+  const mins = (ms) => { const t = Math.round(ms / 1000); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+  const tags = (t) => [t.bpm ? t.bpm + " BPM" : "", t.duration_ms ? mins(t.duration_ms) : "", ...(t.moods || []), ...(t.genres || [])]
+    .filter(Boolean).map((x) => `<i>${esc(x)}</i>`).join("");
+  const art = (t) => t.cover ? `<img class="cover" src="/cover?u=${enc(t.cover)}" alt="" loading="lazy">` : `<div class="cover"></div>`;
+  const c = m.chosen || {};
+  $("#musicBox").innerHTML = `
+    <div style="height:14px"></div>
+    <div class="track main">${art(c)}
+      <div class="tinfo"><b>${esc(c.title || "")}</b><span>${esc(c.artist || "")}</span><div class="tags">${tags(c)}</div>
+        ${c.why ? `<p class="why"><b>Why it fits:</b> ${esc(c.why)}</p>` : ""}
+        ${m.placement ? `<p class="why"><b>Where it plays:</b> ${esc(m.placement)}</p>` : ""}
+        ${c.preview ? `<audio controls preload="none" src="${esc(c.preview)}"></audio>` : ""}</div>
+      <span class="badge">${req ? "In the video now" : "Picked"}</span></div>
+    ${req ? `<div class="reqnote">You picked “${esc(m.requested.title)}” instead. Claude swaps it in on the next update.</div>` : ""}
+    ${(m.alternatives || []).length ? `<div class="label-row">Other good fits</div><div class="alts">${m.alternatives.map((t) => `
+      <div class="track alt">${art(t)}
+        <div class="tinfo"><b>${esc(t.title)}</b><span>${esc(t.artist || "")}</span><div class="tags">${tags(t)}</div>
+          ${t.why ? `<p class="why">${esc(t.why)}</p>` : ""}
+          ${t.preview ? `<audio controls preload="none" src="${esc(t.preview)}"></audio>` : ""}</div>
+        <button class="btn ghost use" type="button" data-id="${esc(t.id)}">${req === t.id ? "Picked ✓ (undo)" : "Use this instead"}</button></div>`).join("")}</div>` : ""}
+    ${m.searched ? `<p class="searched">Claude searched Epidemic Sound for: ${esc(m.searched)}</p>` : ""}`;
+  $("#musicBox").querySelectorAll(".use").forEach((b) => b.onclick = async () => {
+    const use = req === b.dataset.id ? null : b.dataset.id;
+    try { const p = await api(`/api/projects/${enc(current.slug)}/music`, { method: "PUT", body: JSON.stringify({ use }) }); current.music = p.music; renderMusic(); toast(use ? "Music swap noted." : "Back to Claude's pick."); }
+    catch (e) { toast(e.message, true); }
+  });
+  $("#musicBox").querySelectorAll("audio").forEach((a) => a.onplay = () => $("#musicBox").querySelectorAll("audio").forEach((o) => o !== a && o.pause()));
+  renderTimeline();
+  updateHandoff();
+}
+
+// ---- what to tell Claude
+function updateHandoff() {
+  if (!current) return;
+  const has = current.files.length || $("#script").value.trim() || scenesState.length;
+  $("#handoff").hidden = !has; $("#handoffEmpty").hidden = !!has;
+  const pending = [];
+  if (current.plan) {
+    const pu = Date.parse(current.plan.updated || 0);
+    const n = (current.scenes || []).filter((s) => !planRow(s.id) || Date.parse(s.edited || 0) > pu).length;
+    if (n) pending.push(n + (n === 1 ? " scene changed" : " scenes changed"));
+  }
+  if (current.music && current.music.requested) pending.push("a different music track");
+  const upd = pending.length > 0;
+  $("#sayText").textContent = (upd ? "Update my video " : "Edit my video ") + `"${current.slug}"`;
+  $("#handoffNote").textContent = upd ? "Since Claude's last pass: " + pending.join(" and ") + ". Tell Claude:" : "Open Claude Code in the Video maker folder and say:";
+}
+
+// ---- uploads
+function addFiles(list) {
+  if (!current) return toast("Pick or start a video first.", true);
+  for (const file of list) {
+    const row = document.createElement("li");
+    row.className = "file";
+    const kind = guessKind(file.name);
+    row.innerHTML = `<div class="th">${ICONS[kind]}<span class="k">${KIND_LABEL[kind]}</span></div>
+      <div class="name"><div>${esc(file.name)}</div><span>Waiting…</span></div><div class="bar" style="width:0"></div>`;
+    $("#files").appendChild(row);
+    queue.push({ file, row, slug: current.slug });
+  }
+  $("#noFiles").hidden = true;
+  pump();
+}
+function guessKind(name) {
+  const e = name.split(".").pop().toLowerCase();
+  if (["mp4","mov","m4v","mkv","webm","avi","mts","mxf","3gp"].includes(e)) return "raw";
+  if (["png","jpg","jpeg","gif","webp","svg","heic","avif"].includes(e)) return "img";
+  if (["mp3","wav","m4a","aac","aif","aiff","flac","ogg"].includes(e)) return "audio";
+  return "docs";
+}
+function pump() {
+  if (uploading || !queue.length) return;
+  const job = queue[0]; uploading = 1;
+  const label = job.row.querySelector(".name span"), bar = job.row.querySelector(".bar");
+  const xhr = new XMLHttpRequest();
+  xhr.open("PUT", `/api/projects/${enc(job.slug)}/upload?name=${enc(job.file.name)}`);
+  xhr.upload.onprogress = (e) => {
+    if (!e.lengthComputable) return;
+    const p = Math.round((e.loaded / e.total) * 100);
+    bar.style.width = p + "%"; label.textContent = `Uploading ${p}%`;
+  };
+  xhr.onload = async () => {
+    queue.shift(); uploading = 0;
+    if (xhr.status !== 200) toast(`Couldn't add ${job.file.name}.`, true);
+    if (current && current.slug === job.slug) { current = await api("/api/projects/" + enc(job.slug)); renderFiles(); loadProjects(); if (!inScene()) renderScenes(); }
+    if (!queue.length) toast("Files added.");
+    pump();
+  };
+  xhr.onerror = () => { queue.shift(); uploading = 0; toast(`Couldn't add ${job.file.name}.`, true); job.row.remove(); pump(); };
+  xhr.send(job.file);
+}
+async function removeFile(path) {
+  try { current = await api(`/api/projects/${enc(current.slug)}/files?path=${enc(path)}`, { method: "DELETE" }); }
+  catch (e) { return toast(e.message, true); }
+  renderFiles(); loadProjects(); toast("Removed. It's kept in the video's .trash folder.");
+}
+
+// ---- saving
+function setStatus(text, dirty) {
+  $("#statusText").textContent = text;
+  $("#status").classList.toggle("dirty", !!dirty);
+}
+function saveSoon() {
+  if (!current) return;
+  setStatus("Saving…", true);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 600);
+}
+async function save(explicit) {
+  clearTimeout(saveTimer);
+  const body = {
+    script: $("#script").value, notes: $("#notes").value,
+    style: $("#styles [aria-checked=true]")?.dataset.v || "ask",
+    purpose: $("#purpose [aria-checked=true]")?.dataset.v || "",
+    shape: $("#shapes [aria-checked=true]")?.dataset.v || "landscape",
+    explicit: explicit === true,
+    scenes: scenesState, music_notes: $("#musicNotes").value,
+  };
+  try {
+    const p = await api(`/api/projects/${enc(current.slug)}/brief`, { method: "PUT", body: JSON.stringify(body) });
+    const purposeChanged = current.brief.purpose !== p.brief.purpose;
+    current.brief = p.brief; current.script = p.script;
+    if (purposeChanged) { showPurpose(); loadProjects(); }
+    current.scenes = p.scenes; current.plan = p.plan; current.music = p.music;
+    updateSceneMeta();
+    setStatus("Saved " + when(Date.now()));
+    if (explicit === true) toast("Project saved.");
+    updateHandoff();
+  } catch (e) { setStatus("Not saved. Try again.", true); toast(e.message, true); }
+}
+
+// ---- wiring
+$("#newForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const title = $("#newName").value.trim();
+  if (!title) return $("#newName").focus();
+  const purpose = $("#newPurpose [aria-checked=true]")?.dataset.v;
+  if (!purpose) {
+    const seg = $("#newPurpose"); seg.classList.remove("nudge"); void seg.offsetWidth; seg.classList.add("nudge");
+    return toast("Is this for you or for the office? Pick Personal or Office.", true);
+  }
+  try { const p = await api("/api/projects", { method: "POST", body: JSON.stringify({ title, purpose }) }); $("#newName").value = ""; $("#newPurpose").querySelectorAll("button").forEach((b) => b.setAttribute("aria-checked", "false")); await openProject(p.slug); toast("Ready for your files."); $("#workspace").scrollIntoView({ block: "start" }); }
+  catch (err) { toast(err.message, true); }
+};
+const drop = $("#drop");
+["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => addFiles([...e.dataTransfer.files]));
+$("#picker").onchange = (e) => { addFiles([...e.target.files]); e.target.value = ""; };
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => e.preventDefault());
+["#script", "#notes", "#musicNotes"].forEach((s) => $(s).addEventListener("input", saveSoon));
+$("#script").addEventListener("input", () => { if (!inScene()) renderScenes(); });
+$("#addScene").onclick = () => {
+  scenesState.push({ id: nextSceneId(), when: "", what: "", files: [] });
+  renderScenes(); saveSoon();
+  const all = document.querySelectorAll("#scenes .when"); all[all.length - 1].focus();
+};
+$("#lightbox").onclick = () => ($("#lightbox").hidden = true);
+window.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#lightbox").hidden = true; });
+$("#newPurpose").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  $("#newPurpose").querySelectorAll("button").forEach((x) => x.setAttribute("aria-checked", x === b));
+  $("#newPurpose").classList.remove("nudge");
+});
+["#styles", "#shapes", "#purpose"].forEach((g) => $(g).addEventListener("click", (e) => {
+  const c = e.target.closest(".choice"); if (!c) return;
+  pick(g, c.dataset.v); saveSoon();
+}));
+$("#saveBtn").onclick = () => current && save(true);
+window.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") { e.preventDefault(); if (current) save(true); }
+});
+$("#copy").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#sayText").textContent); toast("Copied. Paste it into Claude Code."); }
+  catch { toast("Select the text and copy it.", true); }
+};
+window.addEventListener("beforeunload", (e) => { if (queue.length) { e.preventDefault(); e.returnValue = ""; } });
+// Claude writes the plan, the music pick and new renders while this tab sits open: pick them up when the tab comes back,
+// without touching anything being typed.
+async function refreshFromClaude() {
+  if (!current || document.hidden) return;
+  try {
+    const p = await api("/api/projects/" + enc(current.slug));
+    const sig = (x) => JSON.stringify([x.plan, x.music, x.renders.map((r) => r.file + r.mtime), x.duration, x.voice]);
+    if (sig(p) === sig(current)) return;
+    Object.assign(current, { plan: p.plan, music: p.music, renders: p.renders, scenes: p.scenes, duration: p.duration, voice: p.voice });
+    updateSceneMeta(); renderMusic(); renderRenders();
+    toast("Updated with Claude's latest plan.");
+  } catch {}
+}
+document.addEventListener("visibilitychange", refreshFromClaude);
+window.addEventListener("focus", refreshFromClaude);
+setInterval(refreshFromClaude, 20000);
+window.addEventListener("hashchange", () => {
+  const slug = decodeURIComponent(location.hash.slice(1));
+  if (knownSlugs.includes(slug) && (!current || current.slug !== slug)) openProject(slug);
+});
+// nav links scroll; they never touch the #video in the address
+document.querySelectorAll(".links a, .brand").forEach((a) => a.addEventListener("click", (e) => {
+  const t = document.querySelector(a.getAttribute("href")); if (!t) return;
+  e.preventDefault(); t.scrollIntoView({ block: "start" });
+}));
+
+(async () => {
+  const list = await loadProjects().catch(() => []);
+  let last = decodeURIComponent(location.hash.slice(1));
+  if (!last || !list.some((p) => p.slug === last)) { try { last = localStorage.getItem("vm-last") || ""; } catch {} }
+  if (last && list.some((p) => p.slug === last)) openProject(last);
+  else if (!list.length) $("#newName").focus();
+})();
+</script>
+</body>
+</html>

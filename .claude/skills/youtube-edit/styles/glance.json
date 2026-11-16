@@ -1,0 +1,42 @@
+{
+  "name": "Glance",
+  "ready": true,
+  "description": "Glance brand: Poppins, purple gradient #A049D0 to #5A34F5, navy #1A1A2E, secondaries #CCABFF / #FFB5A1 / #FF9B99 (glance/brand.json).",
+  "font": {
+    "family": "Poppins",
+    "files": {
+      "300": "glance/fonts/Poppins-300.woff2",
+      "400": "glance/fonts/Poppins-400.woff2",
+      "500": "glance/fonts/Poppins-500.woff2",
+      "700": "glance/fonts/Poppins-700.woff2"
+    }
+  },
+  "colors": {
+    "cyan": "#CCABFF",
+    "blue": "#5A34F5",
+    "magenta": "#A049D0",
+    "amber": "#FFB5A1",
+    "white": "#FFFFFF"
+  },
+  "extra_colors": {
+    "#04161A": "#1A1A2E",
+    "#1A1200": "#1A1A2E"
+  },
+  "roles": {
+    "cyan": "highlight: lavender #CCABFF (the brand's light secondary; reads on dark footage where #5A34F5 would not)",
+    "blue": "deep anchor: brand primary #5A34F5, the gradient end and the block behind white text",
+    "magenta": "punchline: gradient start #A049D0",
+    "amber": "money and stakes: peach #FFB5A1",
+    "white": "text"
+  },
+  "logo": {
+    "files": ["glance/logo-white.png", "glance/logo-gradient.png"],
+    "placeholder": true,
+    "note": "Raster crops from the brand book. No vector Glance logo exists on this Mac: ask for the real SVG before a logo card ships."
+  },
+  "rules": [
+    "No new colours outside this palette and #1A1A2E navy; no multiply effect; no colour mix that hurts legibility.",
+    "Keep about 6% of the frame as a safe margin, and the logo's clear-space zone free of graphics and text.",
+    "Headlines Poppins 700, subheads 500, body 300."
+  ]
+}
