@@ -60,7 +60,7 @@ class FastCut(unittest.TestCase):
         cut = os.path.join(self.d, "cut.json")
         json.dump({"size": [360, 640], "fps": 30, "bg": "#1A1A2E",
                    "segments": [{"color": "#1A1A2E", "dur": 1.5}, {"src": "rec.mp4", "from": 0, "to": 2, "box": [60, 120, 240, 420]}],
-                   "texts": [{"text": "Meet the new Glance", "from": 0.2, "to": 1.4, "y": 0.4, "size": 34}]}, open(cut, "w"))
+                   "texts": [{"text": "Meet the new app", "from": 0.2, "to": 1.4, "y": 0.4, "size": 34}]}, open(cut, "w"))
         out = os.path.join(self.d, "card.mp4")
         self.run_fc("render", "--cut", cut, "--out", out)
         self.assertAlmostEqual(dur(out), 3.5, delta=0.1)

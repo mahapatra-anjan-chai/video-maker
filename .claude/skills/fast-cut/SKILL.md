@@ -56,7 +56,7 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
 - `box` (optional): the footage sits in x, y, w, h (final pixels) on `bg`, leaving room for a headline above it;
   zooms push inside the box, so the headline and the margins stay still.
 - **Zooms and taps** with `src` use SOURCE time and `x`, `y` as shares of the recording's own frame, read straight off
-  a contact sheet; they land wherever the cut puts that moment. A tap is a ripple (Glance purple and lavender) at the
+  a contact sheet; they land wherever the cut puts that moment. A tap is a ripple (purple edge, lavender ring) at the
   spot; put it on the last frame before the screen reacts (the motion spike in the scan). A zoom is a push to `scale`
   on the focus point, easing over `ease` s: 1.2-1.5 on the thing being explained, and slow the segment under it so
   it holds at least ~1 s. `python3 "$FC/fast-cut.py" times --cut "$W/cut.json"` lists each tap's output time: add a
@@ -68,7 +68,7 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
   headline its line break (`\n`) so the big and resting layouts match.
 - `texts` and `images` use OUTPUT time (the timeline after cuts and speed changes).
 - Text is Poppins (`weight`: Regular, Medium, SemiBold, Bold), one or two short lines, `y` = top of the text block as a
-  share of the height, `box` = a rounded backing for legibility (Office videos: Glance navy `#1A1A2ECC`, white text).
+  share of the height, `box` = a rounded backing for legibility (work videos: the brand's dark colour at ~80%, white text).
 - `audio`: `keep` keeps the sound of 1x segments and makes sped-up parts silent; `mute` drops it.
 
 ## When not to use it

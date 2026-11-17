@@ -1,0 +1,26 @@
+{
+ "size": [1080, 1920], "fps": 30, "fit": "contain", "bg": "#0F172A", "audio": "mute",
+ "box": [80, 330, 920, 1520],
+ "segments": [
+  {"color": "#0F172A", "dur": 2.0},
+  {"src": "work/raw/shopwise.mp4", "from": 0, "to": 3.25, "speed": 1},
+  {"src": "work/raw/shopwise.mp4", "from": 3.25, "to": 7.2, "speed": 8, "note": "loading"},
+  {"src": "work/raw/shopwise.mp4", "from": 7.2, "to": 15.0, "speed": 1},
+  {"color": "#0F172A", "dur": 2.2}
+ ],
+ "zooms": [
+  {"src": "work/raw/shopwise.mp4", "from": 8.6, "to": 11.3, "scale": 1.45, "x": 0.323, "y": 0.693, "ease": 0.45}
+ ],
+ "taps": [
+  {"src": "work/raw/shopwise.mp4", "t": 2.95, "x": 0.264, "y": 0.463, "note": "opens the jacket"},
+  {"src": "work/raw/shopwise.mp4", "t": 11.9, "x": 0.5, "y": 0.934, "note": "Add to bag"}
+ ],
+ "texts": [
+  {"text": "Shopping that\nknows your size", "from": 0.25, "to": 1.85, "y": 0.40, "size": 96, "weight": "Bold", "width": 0.84},
+  {"text": "Find it in\na few taps", "from": 1.7, "to": 5.64, "y": 0.052, "size": 66, "weight": "Bold", "width": 0.88,
+   "intro": {"size": 108, "y": 0.42, "hold": 1.2, "move": 0.6, "scrim": "#0F172AE6"}},
+  {"text": "Know your size\nbefore you buy", "from": 5.44, "to": 13.44, "y": 0.052, "size": 66, "weight": "Bold", "width": 0.88,
+   "intro": {"size": 108, "y": 0.42, "hold": 1.2, "move": 0.6, "scrim": "#0F172AE6"}},
+  {"text": "Try Shopwise today", "from": 13.8, "to": 15.6, "y": 0.43, "size": 92, "weight": "Bold", "width": 0.84}
+ ]
+}

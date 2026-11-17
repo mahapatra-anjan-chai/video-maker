@@ -1,0 +1,41 @@
+{
+  "name": "Brand",
+  "ready": true,
+  "description": "Your company's look for work videos. Ships with an example palette (indigo, sky, rose, amber on slate) and Poppins: replace the colours, font and logo with your brand kit.",
+  "font": {
+    "family": "Poppins",
+    "files": {
+      "300": "brand/fonts/Poppins-300.woff2",
+      "400": "brand/fonts/Poppins-400.woff2",
+      "500": "brand/fonts/Poppins-500.woff2",
+      "700": "brand/fonts/Poppins-700.woff2"
+    }
+  },
+  "colors": {
+    "cyan": "#7DD3FC",
+    "blue": "#4F46E5",
+    "magenta": "#DB2777",
+    "amber": "#FBBF24",
+    "white": "#FFFFFF"
+  },
+  "extra_colors": {
+    "#04161A": "#0F172A",
+    "#1A1200": "#0F172A"
+  },
+  "roles": {
+    "cyan": "highlight: key words, ticks, bars (a light brand colour that reads on dark footage)",
+    "blue": "deep anchor: your primary colour, the gradient end and the block behind white text",
+    "magenta": "punchline: the payoff word, the last step of a diagram",
+    "amber": "money and stakes: prices, savings, warnings",
+    "white": "text"
+  },
+  "logo": {
+    "files": [],
+    "note": "Put your logo files (PNG or SVG) in styles/brand/ and list them here; never ship a placeholder logo."
+  },
+  "rules": [
+    "No colours outside this palette and its dark background.",
+    "Keep about 6% of the frame as a safe margin, and the logo's clear space free of graphics and text.",
+    "Headlines 700, subheads 500, body 300."
+  ]
+}

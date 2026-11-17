@@ -235,7 +235,7 @@ def intro_pngs(t, W, H, fps, folder, j, k):
 
 
 def ripple_pngs(d, n, folder):
-    """A tap: a dot pressed in, then a ring spreading out and fading. Glance purple edge (reads on white screens),
+    """A tap: a dot pressed in, then a ring spreading out and fading. Purple edge (reads on white screens),
     lavender ring (reads on dark ones). d = size in px, n = frames."""
     from PIL import Image, ImageDraw
     S = 4; D = d * S; c = D / 2.0

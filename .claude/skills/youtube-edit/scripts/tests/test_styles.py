@@ -1,4 +1,4 @@
-"""compose.py style presets: kit stays the kit, glance swaps palette and font everywhere, mine refuses until set up."""
+"""compose.py style presets: kit stays the kit, brand swaps palette and font everywhere, mine refuses until set up."""
 import os, re, unittest
 from .helpers import run, scratch, write, read
 
@@ -33,19 +33,19 @@ class Styles(unittest.TestCase):
         self.assertEqual(r1.returncode, 0, r1.stderr)
         self.assertEqual(plain, kit)
 
-    def test_glance_swaps_palette_and_font(self):
-        r, page, d = self.build(board(style="glance"))
+    def test_brand_swaps_palette_and_font(self):
+        r, page, d = self.build(board(style="brand"))
         self.assertEqual(r.returncode, 0, r.stderr)
         for old in KIT:
             self.assertNotIn(old.lower(), page.lower(), old)
-        self.assertIn("--cyan:#CCABFF", page)
-        self.assertIn("rgba(204,171,255,", page)
+        self.assertIn("--cyan:#7DD3FC", page)
+        self.assertIn("rgba(125,211,252,", page)
         self.assertNotIn("DM Sans", page)
         self.assertEqual(len(re.findall(r'@font-face \{ font-family: "Poppins"', page)), 4)
         for w in (300, 400, 500, 700):
             self.assertTrue(os.path.exists(os.path.join(d, "public", "fonts", "Poppins-%d.woff2" % w)))
 
-    def test_glance_covers_every_format(self):
+    def test_brand_covers_every_format(self):
         from .test_compose_drafts import WORLD, DOC
         beats = [WORLD, DOC] + BEATS[:2] + [
             {"type": "chat", "id": "cf", "frame": "float", "pos": "tr", "in": 12.2, "out": 14.0, "anchor": "-",
@@ -64,7 +64,7 @@ class Styles(unittest.TestCase):
             {"type": "equation", "id": "eq", "pos": "bottom", "in": 20.1, "out": 21.0, "anchor": "-",
              "terms": [["Skills", 20.2], ["+", 20.3], ["Workflows", 20.4], ["=", 20.5], ["40 hrs saved", 20.6, "em"]]},
             {"type": "popout", "id": "po", "title": "What you need", "items": [["A camera", 21.2]], "marker": "check", "in": 21.1, "out": 22.0, "anchor": "-"}]
-        r, page, _ = self.build({"id": "t", "duration": 24.0, "style": "glance", "beats": beats,
+        r, page, _ = self.build({"id": "t", "duration": 24.0, "style": "brand", "beats": beats,
                                  "tag": {"n": 1, "of": 5, "label": "Thumbnails", "in": 0.2, "out": 5.3, "pos": "tr"}})
         self.assertEqual(r.returncode, 0, r.stderr)
         flat = re.sub(r"\s+", "", page.lower())
@@ -81,7 +81,7 @@ class Styles(unittest.TestCase):
     def test_unknown_style_lists_presets(self):
         r, _, _ = self.build(board(style="nope"))
         self.assertNotEqual(r.returncode, 0)
-        self.assertIn("glance", r.stdout + r.stderr)
+        self.assertIn("brand", r.stdout + r.stderr)
 
 
 if __name__ == "__main__":

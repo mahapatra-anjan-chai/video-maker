@@ -18,7 +18,7 @@ Usage:
 
 storyboard.json:
 {
-  "id": "C0001", "duration": 38.0, "video": "input-video.mp4", "origin": "52% 0%", "style": "kit|glance|mine",
+  "id": "C0001", "duration": 38.0, "video": "input-video.mp4", "origin": "52% 0%", "style": "kit|brand|mine",
   "tag":   {"n": 1, "of": 5, "label": "Thumbnails", "in": 0.2, "out": 5.3, "pos": "tr"},
   "beats": [
     {"type": "line",    "id": "l1", "text": "You clicked on a thumbnail", "em": [4], "color": "cyan|amber", "in": 8.5, "out": 11.6, "anchor": "clicked on a thumbnail"},
@@ -129,7 +129,7 @@ if not fonts:
     print("WARN no .woff2 fonts in %s: the text falls back to the system sans" % os.path.abspath(FONTS))
 for f in fonts:
     stage(f, os.path.join(OUT, "fonts", os.path.basename(f)))
-# THE LOOK: the storyboard's "style" picks a preset in styles/ (kit | glance | mine, or a path to a .json). The page is
+# THE LOOK: the storyboard's "style" picks a preset in styles/ (kit | brand | mine, any other styles/<name>.json, or a path). The page is
 # written in the kit's palette and DM Sans; apply_style() maps those to the preset just before index.html is written,
 # so every format follows the preset without carrying its own colours. Ask the creator which look before composing.
 STYLES = os.path.join(SKILL, "styles")
@@ -144,7 +144,7 @@ if not STYLE.get("ready", True):
     raise SystemExit("style %r is not set up yet: ask the creator for the colours and font, fill in %s, set \"ready\": true"
                      % (style_name, style_path))
 if "style" not in S:
-    print("note: no \"style\" in the storyboard, using the kit look (ask the creator: kit, glance or mine)")
+    print("note: no \"style\" in the storyboard, using the kit look (ask the creator: kit, brand or mine)")
 STYLE_FONT = STYLE.get("font") or {}
 for w, src in STYLE_FONT.get("files", {}).items():
     p = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(style_path)), src))

@@ -15,9 +15,9 @@ something on screen makes a sound. Those are the defaults, written to you, the c
 project folder) sums up the look: colours, font, cards, motion, camera, sound and cuts. For the look, the style guide wins.
 
 **Three looks, picked per video.** The palette and font come from a preset in `styles/`, chosen by the storyboard's
-`"style"` key: `kit` (the house style above), `glance` (Poppins; lavender #CCABFF key words, brand purple #5A34F5 and
-#A049D0, peach #FFB5A1 for money; Glance's brand rules in `styles/glance.json`) or `mine` (the creator's own; refuses to
-compose until it is filled in). `compose.py` writes the page in the kit palette and maps it to the preset at the end, so
+`"style"` key: `kit` (the house style above), `brand` (the company's look for work videos: its palette, font, logo and
+brand rules in `styles/brand.json`; ships with an example palette to replace) or `mine` (the creator's own; refuses to
+compose until it is filled in). Any other `styles/<name>.json` works too, e.g. a company kit kept only on this machine. `compose.py` writes the page in the kit palette and maps it to the preset at the end, so
 every format follows the preset. Changing a look = editing its `styles/*.json` (and `kit/STYLE-GUIDE.md` for the rules),
 never hard-coding colours into a format.
 
@@ -32,8 +32,8 @@ Commands run from your project folder with `SK=".claude/skills/youtube-edit"` (w
 
 The creator's standing rules for this system. They come before any cut, storyboard or generation.
 
-1. **Read what was uploaded.** The upload page (`npm run ui`, http://localhost:4500) puts each video in
-   `videos/<project>/`: clips and screen recordings in `raw/`, images in `img/`, audio (their own voice, music) in
+1. **Read what was uploaded.** Each video lives in `videos/<project>/` (the creator drops files there, or the optional
+   local upload page does): clips and screen recordings in `raw/`, images in `img/`, audio (their own voice, music) in
    `audio/`, documents in `docs/`, a pasted voiceover script in `script.txt`, and `brief.json` (`purpose`
    `personal|office`, `style`, `shape`
    `landscape|vertical`, `notes`, `music_notes`), `scenes.json` (scene cards, see "Scene cards"), and after a pass
@@ -41,25 +41,24 @@ The creator's standing rules for this system. They come before any cut, storyboa
    anything runs.
    `compose.py` builds 16:9 only: `"shape": "vertical"` means the "Shorts" section (a hand-built 1080x1920 composition;
    for a narrated short, `narration-video.py --size 1080x1920`). Say so up front, since it takes longer.
-2. **Check who it is for, every video: personal or office.** The page asks when a video is started (`brief.json`
-   `purpose`); confirm it in your first message anyway ("This is an office video for Glance, right?"), and when it is
-   empty (videos started before the check existed) ask before anything runs and write the answer into `brief.json`.
-   It changes the defaults that follow:
-   - **Office (for Glance):** offer the Glance look first; Glance's brand rules in `styles/glance.json` apply (palette,
-     safe margins, logo clear space, the real logo file, never the raster placeholder in a delivery). Before music or
-     voice, confirm with the creator that the Epidemic Sound and ElevenLabs accounts in use are cleared for company use
-     (this ElevenLabs key cannot report its plan; neither can the connector): ask once per video, never assume. Name the
-     delivery `<project>-v<N>-4k.mp4` as usual and add "Office video for Glance" to `STORYBOARD.md`.
-   - **Personal:** offer Kit or Mine first; no Glance logo, palette or brand wording unless the creator asks for it.
-   The Glance-inspiration rule (4) applies to both.
-3. **Ask which look, every video:** Kit, Glance or Mine, even when `brief.json` already names one (then offer it as
-   the default) and even when the last video used one. Write the answer into the storyboard's `"style"`. When the answer
-   is Mine and `styles/mine.json` still says `"ready": false`, ask for the colours and the font, fill it in, and update
-   `kit/STYLE-GUIDE.md`.
-4. **Ask before taking inspiration from any Glance video.** Glance brand videos, past Glance explainers (the
-   explainer-forge projects), Glance's channels and social posts: name the ones you would use and wait for a yes before
-   opening, measuring (`teardown.py`) or copying anything from them. Without a yes, use only the uploaded files and this
-   skill.
+2. **Check who it is for, every video: personal or work.** `brief.json` `purpose` (`personal` | `office`, where
+   `office` means work); confirm it in your first message anyway ("This is a work video for <company>, right?"), and
+   when it is empty ask before anything runs and write the answer into `brief.json`. The company, its brand kit and its
+   own rules are named in `CLAUDE.local.md` when the creator has one. It changes the defaults that follow:
+   - **Work:** offer the company's look first (`brand`, or the local kit `CLAUDE.local.md` names); its brand rules
+     apply (palette, safe margins, logo clear space, the real logo file, never a placeholder in a delivery). Before
+     music or voice, confirm with the creator that the Epidemic Sound and ElevenLabs accounts in use are cleared for
+     company use (neither the key nor the connector can report the plan): ask once per video, never assume. Add "Work
+     video for <company>" to `STORYBOARD.md`. Unreleased product footage stays on this machine.
+   - **Personal:** offer Kit or Mine first; no company logo, palette or brand wording unless the creator asks for it.
+   The inspiration rule (4) applies to both.
+3. **Ask which look, every video:** Kit, Brand (or the local company kit) or Mine, even when `brief.json` already names
+   one (then offer it as the default) and even when the last video used one. Write the answer into the storyboard's
+   `"style"`. When the answer is Mine and `styles/mine.json` still says `"ready": false`, ask for the colours and the
+   font, fill it in, and update `kit/STYLE-GUIDE.md`.
+4. **Ask before taking inspiration from the company's own videos.** Its brand videos, past explainers, channels and
+   social posts: name the ones you would use and wait for a yes before opening, measuring (`teardown.py`) or copying
+   anything from them. Without a yes, use only the uploaded files and this skill.
 5. **Ask before spending credits.** ElevenLabs commands print their plan and cost and generate nothing without `--yes`:
    show the plan, wait for a yes, then rerun with `--yes`. AI B-roll is the same (see "AI B-roll route"). Renders are
    free but long: say how long before starting one over 2 minutes.
@@ -125,7 +124,7 @@ runs the tests. Check again after updating HyperFrames or moving the skill.
 | GSAP | compose.py prints a note when it falls back to the CDN (the first render then needs internet) | optional local copy: `mkdir -p "$SK/assets/vendor" && curl -sL https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js -o "$SK/assets/vendor/gsap.min.js"` |
 | yt-dlp (optional) | `yt-dlp --version` | `brew install yt-dlp` or `pip install yt-dlp` |
 | ElevenLabs key (voiceover, sound effects) | `python3 "$SK/scripts/elevenlabs.py" voices` runs; the key is `ELEVENLABS_API_KEY` in the project's `.env` | elevenlabs.io > API keys. The current key can do text to speech, dialogue and sound effects, but lacks `voices_read`, `models_read` and `user_read` (no voice list, no balance): the built-in voice list covers it |
-| Style presets | `styles/kit.json`, `styles/glance.json` (+ `styles/glance/fonts/Poppins-*.woff2`), `styles/mine.json` | Poppins is from Google Fonts (SIL OFL, `styles/glance/fonts/OFL.txt`) |
+| Style presets | `styles/kit.json`, `styles/brand.json` (+ `styles/brand/fonts/Poppins-*.woff2`), `styles/mine.json` | Poppins is from Google Fonts (SIL OFL, `styles/brand/fonts/OFL.txt`) |
 | Upload page | `npm run ui` in the project folder, then http://localhost:4500 | `ui/server.mjs` (Node, no packages) |
 
 Then, from the scripts folder (not from inside `tests/`): `cd "$SK/scripts" && python3 -m unittest tests`. The tests use
@@ -1028,7 +1027,7 @@ cp "$W/voiceover/transcript.json" "$W/transcript.json"      # word times straigh
   distinct voices, named in the plan.
 - **Retakes are cheap:** every line is cached by voice, model, speed and text in `videos/_shared/.voice-cache/`, so
   editing one line re-voices only that line. A line that reads wrong: change its words or punctuation, not the speed.
-- **Picture:** `--bg` takes the style's dark colour (Glance navy `#1A1A2E`), a still, or a screen recording or B-roll
+- **Picture:** `--bg` takes the style's dark colour (the Brand look's slate `#0F172A`), a still, or a screen recording or B-roll
   clip (looped, muted). Cards, cutaways and `clip` beats then carry the visuals; the camera ops still work on the plate.
 - **Level:** ElevenLabs narration lands around -17 to -18 LUFS. Always finish with a one-segment `assemble.py` to -14
   (the smoke test went -17.6 → -14.0, true peak -1.5).

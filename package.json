@@ -2,9 +2,8 @@
   "name": "video-maker",
   "version": "1.0.0",
   "private": true,
-  "description": "My video editing system: HyperFrames + FFmpeg + Epidemic Sound + ElevenLabs, driven by the youtube-edit skill in Claude Code.",
+  "description": "A video maker for product marketing: drop in a screen recording, Claude Code cuts it, adds taps, zooms, headlines, voiceover and music, and renders on your Mac.",
   "scripts": {
-    "ui": "node ui/server.mjs",
     "test": "cd .claude/skills/youtube-edit/scripts && python3 -m unittest tests && cd ../../fast-cut/scripts && python3 -m unittest tests",
     "doctor": "hyperframes doctor"
   },

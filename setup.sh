@@ -12,6 +12,7 @@ echo "Checking tools"
 node -e 'process.exit(+process.versions.node.split(".")[0] >= 22 ? 0 : 1)' 2>/dev/null && ok "Node $(node -v)" || no "Node.js 22 or newer" "brew install node"
 command -v ffmpeg >/dev/null && ok "FFmpeg" || no "FFmpeg" "brew install ffmpeg"
 python3 -c "import numpy" 2>/dev/null && ok "Python 3 with numpy" || no "Python 3 with numpy" "python3 -m pip install numpy"
+python3 -c "import PIL" 2>/dev/null && ok "Python 3 with Pillow" || no "Python 3 with Pillow" "python3 -m pip install pillow"
 command -v auto-editor >/dev/null && ok "auto-editor" || no "auto-editor" "brew install auto-editor"
 [ -d "/Applications/Google Chrome.app" ] && ok "Google Chrome" || no "Google Chrome" "https://www.google.com/chrome/"
 
@@ -38,10 +39,11 @@ echo "Keys"
 [ -f .env ] || cp .env.example .env
 grep -qE '^ELEVENLABS_API_KEY=.+' .env && ok ".env has an ElevenLabs key" || no "ElevenLabs key" "put ELEVENLABS_API_KEY=... in .env (voiceover and sound effects need it)"
 
-echo "Running the skill's tests"
+echo "Running the skills' tests"
 ( cd "$SK/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
+( cd ".claude/skills/fast-cut/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
 
 echo
-[ "$MISSING" = 0 ] && echo "All set. Start the page with: npm run ui   (then open http://localhost:4500)" \
+[ "$MISSING" = 0 ] && echo "All set. Put your recording in videos/<name>/raw/ and tell Claude Code: Edit my video \"<name>\"" \
                    || echo "Install the items marked ✗, then run ./setup.sh again."
 echo "In Claude, connect the Epidemic Sound connector for music (optional), and open Claude Code in this folder."

@@ -1,9 +1,80 @@
-# Video maker
+# Video maker for PMMs
 
-Drop in your footage, Claude does the edit. Runs on this Mac: HyperFrames renders, FFmpeg cuts, Epidemic Sound for
-music, ElevenLabs for voiceovers and sound effects.
+Turn a screen recording into a product video without opening an editor. Drop the recording in a folder, tell Claude
+Code what the feature is for, and get back a cut with headlines, taps, zooms, a voiceover and licensed music, rendered
+on your own Mac. Notes go in plain words ("at 0:17 make the glide slower") and each round is a new version.
 
-## Set up (after cloning)
+<p align="center"><img src="docs/images/demo.gif" width="270" alt="A 15-second demo: a headline opens full screen and glides to the top, a tap ripple lands on a product, the view zooms in on the size badge, and a second tap adds it to the bag."></p>
+<p align="center"><sub>Made by this repo from a 15-second recording of a made-up app (<code>docs/demo/make-demo.py</code>).</sub></p>
+
+## The workflow
+
+![How Video maker works: you bring recordings and a brief, Claude plans and asks three things, Claude builds the cut, effects and sound, you review in the chat, and you ship a versioned MP4. Notes loop back to the build.](docs/images/workflow.png)
+
+## Step by step for PMMs
+
+![Eight steps: pick one feature and one message, record the flow, make the video's folder, write the brief, say Edit my video, Claude drafts, review in the chat and give notes, ship it.](docs/images/pmm-steps.png)
+
+## What you get back
+
+Every render comes with review sheets, so you can check the cut in the chat without scrubbing through a timeline.
+
+**Headlines that open big, then make room for the product.** Each section starts with its one-line value full screen,
+then the headline shrinks to the top while the recording plays.
+
+![Each headline frame by frame: rising in, holding big, gliding to the top, resting above the recording.](docs/images/demo-headlines.jpg)
+
+**Taps where the user taps.** A ripple on the button just before the screen reacts, with a soft click in the mix.
+
+![Each tap: the frame before, the ripple on the button, the screen after.](docs/images/demo-taps.jpg)
+
+**Zooms on the thing you are explaining.** The push happens inside the phone frame, so the headline stays still.
+
+![A zoom: before, pushing in, full, easing out.](docs/images/demo-zooms.jpg)
+
+Also on every video:
+- **Waits removed.** A motion scan finds loading spinners, AI "thinking" and pauses, and speeds them up 6 to 10x.
+- **Voiceover** from your script in any ElevenLabs voice, one voice per speaker, timed to the sections.
+- **Music** picked from Epidemic Sound for the video's length and pace, ducked under the voice, mixed to -14 LUFS.
+- **Any shape.** 9:16 for Reels and Shorts, 16:9 for the site and YouTube, from the same recordings.
+- **Your look.** Kit (glass cards, cyan), Brand (your company's palette, font and logo) or Mine.
+- **Versions.** v1, v2, ... are never overwritten, and each version's cut list is kept, so any note can be undone.
+
+For videos where the screens themselves must change (new copy inside the app, removed elements, animated diagrams
+and scenes), the `youtube-edit` skill rebuilds them with HyperFrames.
+
+## APIs and services
+
+| Service | What it does here | How it connects | You need |
+|---|---|---|---|
+| **Claude Code** | Plans the edit, writes the cut list, runs every tool, sends you the review sheets | Runs in this folder; the skills live in `.claude/skills/` | A Claude plan with Claude Code |
+| **ElevenLabs** | Voiceover from a script (one voice per speaker, word timings) and generated sound effects | REST API: `POST /v1/text-to-speech/{voice}/with-timestamps` and `POST /v1/sound-generation` (`elevenlabs.py`) | An API key with text to speech and sound effects; about 1 credit per character |
+| **Epidemic Sound** | Searches and downloads licensed music and sound effects | The Epidemic Sound connector in Claude (MCP): `SearchRecordings`, `DownloadRecording`, `SearchSoundEffects`, `DownloadSoundEffect` | An Epidemic Sound account (optional; free sounds are used without it) |
+| **HyperFrames** | Renders animated scenes and full rebuilds as HTML, frame by frame | Local CLI, `npx hyperframes` (the paid cloud render is never used) | Node 22+ and Chrome (installed by `setup.sh`) |
+| **FFmpeg** | Cuts, speed changes, zooms, overlays, the sound mix and the final encode | Local CLI | `brew install ffmpeg` |
+| **Parakeet** | Transcribes speech for cuts and captions, on your Mac | `npx hyperframes transcribe --engine parakeet` | Installed by `setup.sh` |
+
+Nothing is spent without a yes: every ElevenLabs command prints its plan and estimated credits first and generates
+nothing until you approve it.
+
+### The commands Claude runs
+
+| Command | Does |
+|---|---|
+| `fast-cut.py scan --video raw/rec.mov --out cut.json` | Finds the still stretches and writes a starter cut list |
+| `fast-cut.py render --cut cut.json --out v1.mp4 [--draft]` | Renders the cut in one FFmpeg pass: segments, speed, box, zooms, taps, headline intros, texts |
+| `fast-cut.py times --cut cut.json` | When each tap, zoom and headline lands in the output (used for the click sounds) |
+| `review.py --cut cut.json --video v1.mp4 --out review/v1` | The review sheets and a clip of just the moments, for the chat |
+| `contact-sheet.py --video raw/rec.mov --out sheet.png` | A labelled grid of frames to plan the cut from |
+| `elevenlabs.py voiceover --script script.txt --out voiceover [--yes]` | Voiceover with word timings (plan and cost first) |
+| `elevenlabs.py sfx --prompt "soft UI click" --out click.mp3 [--yes]` | A sound effect |
+| `compose.py --spec storyboard.json --out public` | Builds a HyperFrames composition in the chosen look |
+| `scenes.py anchor` / `scenes.py snap` | Places the moments you asked to animate and takes stills of the plan |
+
+`fast-cut.py`, `review.py` and `contact-sheet.py` are in `.claude/skills/fast-cut/scripts/`; the rest are in
+`.claude/skills/youtube-edit/scripts/`.
+
+## Set up
 
 You need a Mac with Homebrew, Google Chrome and Claude Code.
 
@@ -15,58 +86,50 @@ git clone https://github.com/mahapatra-anjan-chai/video-maker.git
 cd video-maker && ./setup.sh
 ```
 
-`setup.sh` checks Node 22+, FFmpeg, Python with numpy and auto-editor (it prints the `brew` command for anything
-missing), installs HyperFrames and its Parakeet transcriber, fetches the free sound effects and GSAP, creates `.env`
-from `.env.example`, and runs the tests. Put your ElevenLabs key in `.env`. For music, connect the Epidemic Sound
-connector in Claude (optional; without it Claude uses the free sound library).
+`setup.sh` checks Node 22+, FFmpeg, Python with numpy and Pillow, and auto-editor (it prints the `brew` command for
+anything missing), installs HyperFrames and its Parakeet transcriber, fetches the free sound effects and GSAP, creates
+`.env` from `.env.example`, and runs the tests. Put your ElevenLabs key in `.env`. For music, connect the Epidemic Sound
+connector in Claude (optional).
 
-## Make a video
+**Make it yours:** fill in `.claude/skills/youtube-edit/styles/brand.json` with your company's colours, font and logo
+(it ships with an example palette). Optionally add a `CLAUDE.local.md` (never committed) that names your company, its
+brand rules, and any videos Claude must ask about before using as a reference.
 
-1. Open the upload page:
+## Make your first video
 
-   ```bash
-   npm run ui
-   ```
+1. Make a folder and put your recordings in it: `videos/feature-launch/raw/`.
+2. Optional: `videos/feature-launch/script.txt` for a voiceover, and a few lines of brief (audience, length, 9:16 or
+   16:9, intro and end-card copy) in the chat or in `brief.json`.
+3. Open Claude Code in this folder and say: `Edit my video "feature-launch"`.
+4. Answer three questions (personal or work, which look, OK to spend on voice and music), review the draft in the
+   chat, and give notes by timestamp.
+5. The finished files are in `~/Movies/YouTube Renders/feature-launch/`, one per version.
 
-   then go to http://localhost:4500 (dark workspace in Glance colours; the earlier light page is at http://localhost:4500/light).
-2. Name the video, drop in your files (clips, screen recordings, images, music, documents), paste a voiceover script if
-   you want one, pick a look and a shape, add notes, and add a scene card for each animation you want ("when I say
-   pricing" → "show our pricing page in a browser"). Click **Save project** (or ⌘S); it also saves as you type.
-3. Open Claude Code in this folder and say what the page tells you, for example: `Edit my video "glance-launch"`.
-4. Claude asks which look to use, then puts its plan back on the page: under each scene card what it will build, with
-   stills, and in Background music the Epidemic Sound track it picked, why it fits, a preview and two alternatives.
-   Change a card or pick another track, and the page tells you to say `Update my video "…"`.
-5. After you approve, Claude renders. Every version appears on the page with a **Download** button (newest marked
-   Latest) and in `~/Movies/YouTube Renders/`.
-6. Give notes in plain words ("at 0:22 the text is too small"). Say **"save this to the skill"** to make a note stick.
+## Keys and security
 
-## Fast cuts
+- **No keys are in this repo.** The ElevenLabs key lives only in `.env`, which is in `.gitignore`; `.env.example` is
+  blank. The history has been scanned with gitleaks and is clean.
+- Voice IDs in `elevenlabs.py` are public ElevenLabs library IDs, not secrets.
+- Your footage, voiceovers, licensed music and renders stay in `videos/` and `~/Movies`, which are never committed.
+  Keep unreleased product recordings out of anything you publish.
+- If you fork this, turn on GitHub secret scanning and push protection, and never paste a key into a chat or a file
+  outside `.env`.
 
-When a recording only needs cutting (trim, speed up the loading, reframe to 9:16, add a line of text), Claude uses the
-`fast-cut` skill: one contact sheet, an automatic scan that speeds up the still stretches, a cut list, and a draft in
-seconds. Say "fast cut this" with the file. It can also put a tap ripple (and a click in the mix) on the buttons being
-pressed, push in on the feature being explained, and open each section with its headline full screen before it glides
-to the top.
-
-To check a cut without opening anything, Claude sends review sheets into the chat (`fast-cut/scripts/review.py`): every
-headline transition frame by frame, every tap and zoom, the whole cut every 2.5 s, and a short clip of just those moments.
-
-## The parts
+## What's in the repo
 
 | Folder | What it is |
 |---|---|
-| `.claude/skills/youtube-edit/` | The editing skill (from the WeAreNoCode kit), plus style presets, ElevenLabs and narration scripts |
-| `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass FFmpeg render |
-| `ui/` | The upload page (Node, no packages) |
-| `videos/` | One folder per video; `_shared/sfx` holds reusable sounds (your videos are never committed) |
+| `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass render, taps, zooms, headline intros, review sheets |
+| `.claude/skills/youtube-edit/` | The full editing skill (from the WeAreNoCode kit): looks, HyperFrames compositions, ElevenLabs voiceover and sound effects |
+| `docs/` | This README's images, and the scripts that make them (`make-visuals.py`, `demo/make-demo.py`) |
 | `kit/` | The kit's style guide, prompts and licences |
+| `videos/` | One folder per video (never committed); `_shared/sfx` holds reusable sounds |
 | `setup.sh` | One-time setup after cloning |
 
-Every video starts with one check: **Personal or Office**. Office videos are made for Glance, so the Glance look and
-brand rules apply and Claude confirms the music and voice accounts are cleared for company use.
+`npm test` runs both skills' tests.
 
 ## Credits
 
 The editing skill comes from the WeAreNoCode YouTube Editor kit (`kit/README.md`); parts of its scripts are under the
-MIT licence in `kit/LICENSES/`. Fonts: DM Sans and Poppins (SIL Open Font License). The Glance colours, rules and logo
-images in `.claude/skills/youtube-edit/styles/glance/` belong to Glance.
+MIT licence in `kit/LICENSES/`. Fonts: DM Sans and Poppins (SIL Open Font License). Sound effects fetched by
+`setup.sh` are from Pixabay (Pixabay Content License). Shopwise, the app in the demo, does not exist.
