@@ -39,14 +39,15 @@ snapdir = os.path.join(P, "snaps"); os.makedirs(snapdir, exist_ok=True)
 pub = os.path.join(P, "public")
 env = dict(os.environ, PRODUCER_BROWSER_GPU_MODE="hardware")
 outs = []
-for t in moments:
-    subprocess.run(["npx", "hyperframes", "snapshot", pub, "--at", str(t)], env=env, capture_output=True)
-    cands = sorted(glob.glob(os.path.join(pub, "snapshots", "frame-00-at-*.png")))
-    if not cands:
-        print("no snapshot at", t); continue
+# ONE snapshot run for every moment (one Chrome, one load): seconds, not a Chrome start per moment
+subprocess.run(["npx", "hyperframes", "snapshot", pub, "--no-end", "--at", ",".join("%.2f" % t for t in moments)], env=env, capture_output=True)
+cands = sorted(glob.glob(os.path.join(pub, "snapshots", "frame-*-at-*.png")), key=lambda f: int(os.path.basename(f).split("-")[1]))
+for t, src in zip(moments, cands):
     dst = os.path.join(snapdir, "at-%05.2f.png" % t)
-    shutil.copy(cands[0], dst); outs.append(dst)
+    shutil.copy(src, dst); outs.append(dst)
     print("snap", t)
+if len(cands) < len(moments):
+    print("only %d of %d snapshots came back" % (len(cands), len(moments)))
 if outs:
     cols = 3; rows = math.ceil(len(outs) / cols)
     cmd = ["ffmpeg", "-y", "-v", "error"]

@@ -40,11 +40,18 @@ connector in Claude (optional; without it Claude uses the free sound library).
    Latest) and in `~/Movies/YouTube Renders/`.
 6. Give notes in plain words ("at 0:22 the text is too small"). Say **"save this to the skill"** to make a note stick.
 
+## Fast cuts
+
+When a recording only needs cutting (trim, speed up the loading, reframe to 9:16, add a line of text), Claude uses the
+`fast-cut` skill: one contact sheet, an automatic scan that speeds up the still stretches, a cut list, and a draft in
+seconds. Say "fast cut this" with the file.
+
 ## The parts
 
 | Folder | What it is |
 |---|---|
 | `.claude/skills/youtube-edit/` | The editing skill (from the WeAreNoCode kit), plus style presets, ElevenLabs and narration scripts |
+| `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass FFmpeg render |
 | `ui/` | The upload page (Node, no packages) |
 | `videos/` | One folder per video; `_shared/sfx` holds reusable sounds (your videos are never committed) |
 | `kit/` | The kit's style guide, prompts and licences |

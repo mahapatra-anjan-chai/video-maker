@@ -130,15 +130,18 @@ def cmd_anchor(a):
             print("    \"%s\" NOT FOUND in the transcript: ask, or place it by meaning" % r["phrase"])
 
 
-def snapshot(project, t, dst):
+def snapshots(project, jobs):
+    """jobs: [(t, dst)]. ONE snapshot run for all of them (one Chrome); returns the dsts written."""
+    if not jobs:
+        return set()
     pub = os.path.join(project, "public")
     env = dict(os.environ, PRODUCER_BROWSER_GPU_MODE="hardware")
-    subprocess.run(["npx", "hyperframes", "snapshot", pub, "--at", "%.2f" % t], env=env, capture_output=True)
-    c = sorted(glob.glob(os.path.join(pub, "snapshots", "frame-00-at-*.png")))
-    if not c:
-        return False
-    shutil.copy(c[0], dst)
-    return True
+    subprocess.run(["npx", "hyperframes", "snapshot", pub, "--no-end", "--at", ",".join("%.2f" % t for t, _ in jobs)], env=env, capture_output=True)
+    c = sorted(glob.glob(os.path.join(pub, "snapshots", "frame-*-at-*.png")), key=lambda f: int(os.path.basename(f).split("-")[1]))
+    done = set()
+    for (t, dst), src in zip(jobs, c):
+        shutil.copy(src, dst); done.add(dst)
+    return done
 
 
 def cmd_snap(a):
@@ -188,20 +191,23 @@ def cmd_snap(a):
     os.makedirs(snapdir, exist_ok=True)
     for old in glob.glob(os.path.join(snapdir, "scene-*.png")):
         os.remove(old)
+    jobs, wanted = [], {}
     for nid, r in rows.items():
         r.pop("snaps", None)
         if r.get("status") == "needs-info" or a.no_snap:
             continue
         ats = r.get("snap_at") or [min(r["in"] + 1.0, (r["in"] + r["out"]) / 2.0)]
         ats = [ats] if isinstance(ats, (int, float)) else ats
-        got = []
         for k, t in enumerate(ats, 1):
             t = max(0.0, min(float(t), (dur or float(t) + 1) - 0.05))
-            name = "scene-%s-%d.png" % (nid, k)
-            if snapshot(P, t, os.path.join(snapdir, name)):
-                got.append("snaps/" + name)
-        r["snaps"] = got
-        print("%s  %-10s %s  %s" % (nid, r["status"], ", ".join(got) or "(no still)", r.get("build", "")[:60]))
+            dst = os.path.join(snapdir, "scene-%s-%d.png" % (nid, k))
+            jobs.append((t, dst)); wanted.setdefault(nid, []).append(dst)
+    done = snapshots(P, jobs)
+    for nid, r in rows.items():
+        got = ["snaps/" + os.path.basename(d) for d in wanted.get(nid, []) if d in done]
+        if wanted.get(nid):
+            r["snaps"] = got
+        print("%s  %-10s %s  %s" % (nid, r.get("status"), ", ".join(got) or "(no still)", r.get("build", "")[:60]))
     plan["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     json.dump(plan, open(os.path.join(P, "scene-plan.json"), "w"), indent=2)
     print("plan checked: %d scenes, %d tagged beats; the upload page shows it under each card" % (len(rows), sum(map(len, tagged.values()))))

@@ -309,7 +309,8 @@ mkdir -p "$HOME/Movies/YouTube Renders/<project>" && cp "$W/output-4k.mp4" "$HOM
 ```
 
 **Snapshot every card moment before rendering** (a snapshot is seconds, a render is minutes) and read the PNGs; never
-assume. What the composer does not build goes into `raw_html` / `raw_js`, or a hand-built page on the skeleton below
+assume. Take them in ONE run: `npx hyperframes snapshot "$W/public" --no-end --at 1.2,3.4,5.6` (one Chrome start;
+a run per moment costs ~30 s each). For a recording that only needs cutting, use the fast-cut skill instead. What the composer does not build goes into `raw_html` / `raw_js`, or a hand-built page on the skeleton below
 (copy `$SK/assets/fonts/*.woff2` into `public/fonts/` for a hand build).
 
 ## Composition skeleton

@@ -10,6 +10,15 @@ My video editing system: HyperFrames (local renders) + FFmpeg + Epidemic Sound (
 - **Epidemic Sound connector** is the first stop for music and sound effects; the free HyperFrames sounds are in
   `videos/_shared/sfx/`; `elevenlabs.py sfx` generates anything missing (after a yes on the cost).
 
+## Fast first
+- **Footage that already shows the right thing** (a screen recording to cut, speed up, reframe or caption): the
+  `fast-cut` skill. One labelled contact sheet, an automatic scan, one cut table, a draft in seconds.
+- **Screens that must change** (new copy inside the UI, removed elements): the youtube-edit skill and HyperFrames.
+- **Quick mode for short ads:** no separate question round when the brief has the copy and assets; state defaults
+  instead of asking, and put the Personal/Office confirmation in the same message as the plan. First draft within
+  ~15 minutes, then iterate on notes. Take every still in ONE `hyperframes snapshot --at a,b,c --no-end` run, never one
+  run per moment. Verify only the final.
+
 ## Ask first, every video
 1. Personal or office (`brief.json` `purpose`, set on the page). Office = for Glance: Glance look offered first, brand
    rules apply, and confirm the music and voice accounts are cleared for company use. Personal = no Glance branding.
