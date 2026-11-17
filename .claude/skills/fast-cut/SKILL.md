@@ -25,28 +25,48 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
    seconds). Send it with SendUserFile.
 6. **Notes change numbers in `cut.json`**, then another draft. Never re-derive anything.
 7. **Final:** the same command without `--draft`, written straight to
-   `~/Movies/YouTube Renders/<project>/<project>-v<N>-<W>x<H>.mp4` (the upload page lists it with Download). Copy
-   `cut.json` to `$W/versions/v<N>/`. The tool prints size and duration; that is the check. No other verification pass.
+   `~/Movies/YouTube Renders/<project>/<project>-v<N>-<W>x<H>.mp4`. Copy `cut.json` to `$W/versions/v<N>/`. The tool
+   prints size and duration; that is the check. No other verification pass.
+8. **Review in the chat:** `python3 "$FC/review.py" --cut "$W/cut.json" --video <the delivered mp4> --out "$W/review/v<N>"`
+   (~5 s) writes `headlines.png` (each headline intro frame by frame), `taps.png` (before / tap / after), `zooms.png`,
+   `overview.png` (a frame every 2.5 s) and `moments.mp4` (just those moments, with sound). Send all five with
+   SendUserFile next to the video; the creator gives notes by the times under the frames.
 
 ## cut.json
 
 ```json
 {
-  "size": [1080, 1920], "fps": 30, "fit": "cover", "bg": "#000000", "audio": "mute",
-  "segments": [ {"src": "raw/rec.mov", "from": 0, "to": 12.4, "speed": 1},
+  "size": [1080, 1920], "fps": 30, "fit": "contain", "bg": "#1A1A2E", "audio": "mute",
+  "box": [80, 330, 920, 1520],
+  "segments": [ {"color": "#1A1A2E", "dur": 2.6},
+                {"src": "raw/rec.mov", "from": 0, "to": 12.4, "speed": 1},
                 {"src": "raw/rec.mov", "from": 25.0, "to": 32.0, "speed": 6} ],
-  "zooms":  [ {"from": 3.0, "to": 5.0, "scale": 1.3, "x": 0.5, "y": 0.42, "ease": 0.3} ],
-  "texts":  [ {"text": "See it on you", "from": 1.0, "to": 4.0, "y": 0.12, "size": 76, "color": "#FFFFFF",
-               "box": "#1A1A2ECC", "weight": "SemiBold", "width": 0.86} ],
+  "zooms":  [ {"src": "raw/rec.mov", "from": 8.0, "to": 11.0, "scale": 1.3, "x": 0.5, "y": 0.6, "ease": 0.45} ],
+  "taps":   [ {"src": "raw/rec.mov", "t": 4.2, "x": 0.25, "y": 0.68, "note": "opens the product"} ],
+  "texts":  [ {"text": "See it on you,\nbefore you buy", "from": 2.3, "to": 16.3, "y": 0.052, "size": 66,
+               "weight": "Bold", "width": 0.88, "intro": {"size": 108, "y": 0.42, "hold": 1.45, "move": 0.65}} ],
   "images": [ {"file": "img/logo.png", "from": 0, "to": 3, "x": 0.5, "y": 0.9, "w": 0.3} ]
 }
 ```
 
 - `segments` play in order; `src` paths are relative to `cut.json`. `speed` bakes the speed change in (6-8x for AI
-  waits and loading; keep taps, reveals and results at 1x so cause and effect read).
+  waits and loading; keep taps, reveals and results at 1x so cause and effect read). A `{"color", "dur"}` segment is a
+  plain card for a title.
 - `fit`: `cover` fills the frame and crops (a phone recording into 9:16), `contain` fits inside with `bg` bars.
-- `zooms`, `texts`, `images` use OUTPUT time (the timeline after cuts and speed changes). A zoom is a push to `scale`
-  on the focus point `x`, `y` (0-1), easing in and out over `ease` s. Zoom 1.2-1.4 on the thing being explained.
+- `box` (optional): the footage sits in x, y, w, h (final pixels) on `bg`, leaving room for a headline above it;
+  zooms push inside the box, so the headline and the margins stay still.
+- **Zooms and taps** with `src` use SOURCE time and `x`, `y` as shares of the recording's own frame, read straight off
+  a contact sheet; they land wherever the cut puts that moment. A tap is a ripple (Glance purple and lavender) at the
+  spot; put it on the last frame before the screen reacts (the motion spike in the scan). A zoom is a push to `scale`
+  on the focus point, easing over `ease` s: 1.2-1.5 on the thing being explained, and slow the segment under it so
+  it holds at least ~1 s. `python3 "$FC/fast-cut.py" times --cut "$W/cut.json"` lists each tap's output time: add a
+  soft click there in the mix (`videos/_shared/sfx/click-soft.mp3` at about -8 dB).
+- Without `src`, zooms and taps use OUTPUT time and shares of the box (or the frame).
+- **A text with `intro`** opens big (`size`, centred at `y`) over a navy scrim at `from`, lines rising in, holds `hold` s,
+  then shrinks and glides to its own `y` / `size` while the scrim lifts and the footage shows through: the section
+  headline that tells viewers a new feature starts. Start it ~0.3 s before the section's first frame and give each
+  headline its line break (`\n`) so the big and resting layouts match.
+- `texts` and `images` use OUTPUT time (the timeline after cuts and speed changes).
 - Text is Poppins (`weight`: Regular, Medium, SemiBold, Bold), one or two short lines, `y` = top of the text block as a
   share of the height, `box` = a rounded backing for legibility (Office videos: Glance navy `#1A1A2ECC`, white text).
 - `audio`: `keep` keeps the sound of 1x segments and makes sped-up parts silent; `mute` drops it.

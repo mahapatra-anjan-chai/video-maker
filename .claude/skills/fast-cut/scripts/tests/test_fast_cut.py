@@ -56,6 +56,34 @@ class FastCut(unittest.TestCase):
                             capture_output=True, text=True).stdout.strip()
         self.assertEqual(wh, "180,320")
 
+    def test_card_and_box(self):
+        cut = os.path.join(self.d, "cut.json")
+        json.dump({"size": [360, 640], "fps": 30, "bg": "#1A1A2E",
+                   "segments": [{"color": "#1A1A2E", "dur": 1.5}, {"src": "rec.mp4", "from": 0, "to": 2, "box": [60, 120, 240, 420]}],
+                   "texts": [{"text": "Meet the new Glance", "from": 0.2, "to": 1.4, "y": 0.4, "size": 34}]}, open(cut, "w"))
+        out = os.path.join(self.d, "card.mp4")
+        self.run_fc("render", "--cut", cut, "--out", out)
+        self.assertAlmostEqual(dur(out), 3.5, delta=0.1)
+
+    def test_box_zoom_taps_intro(self):
+        cut = os.path.join(self.d, "cut.json")
+        json.dump({"size": [360, 640], "fps": 30, "fit": "contain", "bg": "#1A1A2E", "box": [20, 110, 320, 500],
+                   "segments": [{"color": "#1A1A2E", "dur": 1.0}, {"src": "rec.mp4", "from": 0, "to": 2},
+                                {"src": "rec.mp4", "from": 2, "to": 6, "speed": 4}],
+                   "zooms": [{"src": "rec.mp4", "from": 0.5, "to": 1.6, "scale": 1.4, "x": 0.5, "y": 0.3}],
+                   "taps": [{"src": "rec.mp4", "t": 0.4, "x": 0.5, "y": 0.5}, {"src": "rec.mp4", "t": 5.0, "x": 0.2, "y": 0.8}],
+                   "texts": [{"text": "See it on you", "from": 0.8, "to": 3.9, "y": 0.05, "size": 24, "weight": "Bold",
+                              "intro": {"size": 40, "hold": 0.8, "move": 0.4}}]}, open(cut, "w"))
+        times = json.loads(self.run_fc("times", "--cut", cut))
+        self.assertEqual([t["t"] for t in times["taps"]], [1.4, 3.75])         # card 1 s, then 1x; 5.0 s is 3 s into the 4x part
+        self.assertEqual(times["zooms"], [[1.5, 2.6]])
+        out = os.path.join(self.d, "fx.mp4")
+        self.run_fc("render", "--cut", cut, "--out", out)
+        self.assertAlmostEqual(dur(out), 4.0, delta=0.1)
+        draft = os.path.join(self.d, "fx-draft.mp4")
+        self.run_fc("render", "--cut", cut, "--out", draft, "--draft")
+        self.assertAlmostEqual(dur(draft), 4.0, delta=0.1)
+
 
 if __name__ == "__main__":
     unittest.main()

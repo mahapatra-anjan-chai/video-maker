@@ -44,7 +44,12 @@ connector in Claude (optional; without it Claude uses the free sound library).
 
 When a recording only needs cutting (trim, speed up the loading, reframe to 9:16, add a line of text), Claude uses the
 `fast-cut` skill: one contact sheet, an automatic scan that speeds up the still stretches, a cut list, and a draft in
-seconds. Say "fast cut this" with the file.
+seconds. Say "fast cut this" with the file. It can also put a tap ripple (and a click in the mix) on the buttons being
+pressed, push in on the feature being explained, and open each section with its headline full screen before it glides
+to the top.
+
+To check a cut without opening anything, Claude sends review sheets into the chat (`fast-cut/scripts/review.py`): every
+headline transition frame by frame, every tap and zoom, the whole cut every 2.5 s, and a short clip of just those moments.
 
 ## The parts
 
