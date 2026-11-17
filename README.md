@@ -1,11 +1,40 @@
 # Video maker for PMMs
 
+[![MIT licence](https://img.shields.io/badge/licence-MIT-4F46E5)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/mahapatra-anjan-chai/video-maker?style=flat&color=FBBF24)](https://github.com/mahapatra-anjan-chai/video-maker/stargazers)
+![Runs on macOS](https://img.shields.io/badge/runs%20on-macOS-0F172A)
+![Built with Claude Code](https://img.shields.io/badge/built%20with-Claude%20Code-DB2777)
+
 Turn a screen recording into a product video without opening an editor. Drop the recording in a folder, tell Claude
 Code what the feature is for, and get back a cut with headlines, taps, zooms, a voiceover and licensed music, rendered
 on your own Mac. Notes go in plain words ("at 0:17 make the glide slower") and each round is a new version.
 
 <p align="center"><img src="docs/images/demo.gif" width="270" alt="A 15-second demo: a headline opens full screen and glides to the top, a tap ripple lands on a product, the view zooms in on the size badge, and a second tap adds it to the bag."></p>
 <p align="center"><sub>Made by this repo from a 15-second recording of a made-up app (<code>docs/demo/make-demo.py</code>).</sub></p>
+
+**If this saves you an afternoon, please ⭐ star the repo.** It helps other marketers find it.
+
+## Try it first (2 minutes, no API keys)
+
+Make the demo above yourself. You only need a Mac with Homebrew, FFmpeg and Pillow:
+
+```bash
+git clone https://github.com/mahapatra-anjan-chai/video-maker.git && cd video-maker
+```
+
+```bash
+brew install ffmpeg pillow
+```
+
+```bash
+python3 docs/demo/make-demo.py
+```
+
+It draws a 15-second recording of a made-up app, then cuts it the way it would cut yours: speeds up the loading
+screen, adds the headline intros, the taps and the zoom, and renders a 1080x1920 MP4 to
+`docs/demo/work/render/shopwise-demo.mp4`, with the review sheets in `docs/demo/work/review/`. The cut it follows is
+[`docs/demo/cut.json`](docs/demo/cut.json): change a time or a headline and run it again. When you want it on your own
+recordings, do the full [set up](#set-up).
 
 ## The workflow
 
@@ -128,8 +157,14 @@ brand rules, and any videos Claude must ask about before using as a reference.
 
 `npm test` runs both skills' tests.
 
-## Credits
+## Contributing
 
-The editing skill comes from the WeAreNoCode YouTube Editor kit (`kit/README.md`); parts of its scripts are under the
-MIT licence in `kit/LICENSES/`. Fonts: DM Sans and Poppins (SIL Open Font License). Sound effects fetched by
+Ideas, bugs and new effects are welcome: open an issue with what you were making and what got in the way, or a pull
+request with a test (`npm test` must end `OK`). Never attach footage you can't share publicly.
+
+## Licence and credits
+
+Video maker's own code and docs are under the [MIT licence](LICENSE). The full editing skill builds on the WeAreNoCode
+YouTube Editor kit (`kit/README.md`), which keeps its own terms; [`NOTICE.md`](NOTICE.md) lists exactly what the
+licence covers and what it doesn't. Fonts: DM Sans and Poppins (SIL Open Font License). Sound effects fetched by
 `setup.sh` are from Pixabay (Pixabay Content License). Shopwise, the app in the demo, does not exist.

@@ -2,9 +2,10 @@
 """make-demo.py: the README's screenshots, made from a made-up app so nothing real is shown.
 
 Draws a 15 s screen recording of "Shopwise" (a shopping app that does not exist), cuts it with fast-cut (taps, a zoom,
-two headline intros, title and end cards), then writes the review sheets and a GIF into docs/images/.
+two headline intros, title and end cards), then writes the review sheets (and, with --docs, the README images).
 
-  python3 docs/demo/make-demo.py          (from the project folder; ~30 s)
+  python3 docs/demo/make-demo.py          a demo video and review sheets in docs/demo/work/ (~15 s, no API keys)
+  python3 docs/demo/make-demo.py --docs   the same, and refresh the README images in docs/images/
 """
 import math, os, shutil, subprocess, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -199,13 +200,18 @@ def record(path):
 
 def main():
     rec = os.path.join(WORK, "raw", "shopwise.mp4")
+    print("Recording the made-up app ...")
     record(rec)
     cut = os.path.join(HERE, "cut.json")
     out = os.path.join(WORK, "render", "shopwise-demo.mp4")
     run = lambda *a: subprocess.run([sys.executable] + list(a), check=True)
+    print("Cutting it with fast-cut (taps, a zoom, headline intros) ...")
     run(os.path.join(FC, "fast-cut.py"), "render", "--cut", cut, "--out", out)
     review = os.path.join(WORK, "review")
     run(os.path.join(FC, "review.py"), "--cut", cut, "--video", out, "--out", review)
+    if "--docs" not in sys.argv:                 # the README's images change only when asked
+        print("\nYour demo video: %s\nReview sheets: %s" % (os.path.relpath(out), os.path.relpath(review)))
+        return
     os.makedirs(IMAGES, exist_ok=True)
     for name in ("headlines", "taps", "zooms"):
         im = Image.open(os.path.join(review, name + ".png")).convert("RGB")

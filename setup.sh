@@ -11,8 +11,8 @@ MISSING=0
 echo "Checking tools"
 node -e 'process.exit(+process.versions.node.split(".")[0] >= 22 ? 0 : 1)' 2>/dev/null && ok "Node $(node -v)" || no "Node.js 22 or newer" "brew install node"
 command -v ffmpeg >/dev/null && ok "FFmpeg" || no "FFmpeg" "brew install ffmpeg"
-python3 -c "import numpy" 2>/dev/null && ok "Python 3 with numpy" || no "Python 3 with numpy" "python3 -m pip install numpy"
-python3 -c "import PIL" 2>/dev/null && ok "Python 3 with Pillow" || no "Python 3 with Pillow" "python3 -m pip install pillow"
+python3 -c "import numpy" 2>/dev/null && ok "Python 3 with numpy" || no "Python 3 with numpy" "brew install numpy"
+python3 -c "import PIL" 2>/dev/null && ok "Python 3 with Pillow" || no "Python 3 with Pillow" "brew install pillow"
 command -v auto-editor >/dev/null && ok "auto-editor" || no "auto-editor" "brew install auto-editor"
 [ -d "/Applications/Google Chrome.app" ] && ok "Google Chrome" || no "Google Chrome" "https://www.google.com/chrome/"
 
