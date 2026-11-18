@@ -41,7 +41,7 @@ carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 
 | 01 | `fade-up` | Fade up | Entrances | Calm opener for a headline or a value line | one line |
 | 02 | `typewriter` | Typewriter | Entrances | Prompts, search, anything typed | one line |
 | 03 | `pop-in` | Pop in | Entrances | Short punchy words, feature names | one line |
-| 04 | `mask-reveal` | Mask reveal | Entrances | Premium headline reveal, section titles | one line |
+| 04 | `mask-reveal` | Mask reveal | Entrances | Premium headline reveal, section titles | `line|line` (up to 4 words stay on one line) |
 | 05 | `blur-in` | Blur in | Entrances | Soft, elegant openers; AI and clarity themes | one line |
 | 06 | `scramble` | Text scramble | Entrances | Tech and AI features, data, codes | one line |
 | 07 | `write-on` | Write on | Entrances | Sign-off, handwritten notes, a personal touch | one line |
@@ -99,6 +99,20 @@ Give a text an `"anim"` with an id; fast-cut renders it once through HyperFrames
 - `color` is the ink (white over dark footage), `accent` the key colour, `accent2` the second (highlight bars,
   panels). Work videos: the brand look's colours.
 - Each new animation costs one HyperFrames render (about 10 to 20 s); the cache makes re-renders free.
+- **Text mask (40) with footage:** add `"fill"` and the letters become windows onto the recordings (rendered in FFmpeg, no
+  HyperFrames). The word settles in, plays the fill clips in order, then flies through one letter until the footage fills
+  the frame: a strong opener that introduces a product with its own screens.
+
+  ```json
+  {"text": "Shopwise", "anim": "text-mask", "from": 0.45, "to": 2.6, "y": 0.52, "size": 260, "weight": "Bold",
+   "through": "i", "grow": {"at": 1.35, "scale": 60, "ease": 1.5},
+   "fill": [{"src": "raw/a.mov", "from": 55.2, "to": 55.75, "focus": [0.42, 0.55], "zoom": 1.25},
+            {"src": "raw/b.mov", "from": 7.0, "to": 7.9, "focus": [0.5, 0.45]}]}
+  ```
+  `y` is the word's centre. `focus` is the point of the recording (shares of its frame) that sits behind the letters:
+  aim it at bright photos, never dark UI, or the word sinks into a dark background. `grow.at` is seconds after `from`;
+  `through` is the letter to fly into (a thick stem such as l, I or H fills the frame fastest). End on the footage the
+  next section opens with, and start the next headline as the fly-through fills the frame.
 
 ## In a HyperFrames composition
 

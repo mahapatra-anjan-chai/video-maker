@@ -14,7 +14,7 @@
     ["fade-up", "Fade up", "Entrances", "Launch day, sorted", "Calm opener for a headline or a value line"],
     ["typewriter", "Typewriter", "Entrances", "Type what you need", "Prompts, search, anything typed"],
     ["pop-in", "Pop in", "Entrances", "New. Fast. Yours.", "Short punchy words, feature names"],
-    ["mask-reveal", "Mask reveal", "Entrances", "Meet the new app", "Premium headline reveal, section titles"],
+    ["mask-reveal", "Mask reveal", "Entrances", "Meet the|new app", "Premium headline reveal, section titles"],
     ["blur-in", "Blur in", "Entrances", "Clearer every day", "Soft, elegant openers; AI and clarity themes"],
     ["scramble", "Text scramble", "Entrances", "AI-powered search", "Tech and AI features, data, codes"],
     ["write-on", "Write on", "Entrances", "Approved", "Sign-off, handwritten notes, a personal touch"],
@@ -110,8 +110,9 @@
     tl.from(w, { scale: 0, opacity: 0, duration: 0.55, ease: "back.out(2.6)", stagger: 0.16 });
   };
   B["mask-reveal"] = function (b, o, tl) {
-    var parts = o.text.split(" "), mid = Math.ceil(parts.length / 2), inner = [];
-    [parts.slice(0, mid).join(" "), parts.slice(mid).join(" ")].forEach(function (t) {
+    var parts = o.text.split(" "), mid = Math.ceil(parts.length / 2), inner = [];   // "a|b" sets the lines; short copy stays on one
+    var lines = o.text.indexOf("|") >= 0 ? o.text.split("|").filter(Boolean) : parts.length <= 4 ? [o.text] : [parts.slice(0, mid).join(" "), parts.slice(mid).join(" ")];
+    lines.forEach(function (t) {
       var l = E("span", "", null, "tfx-line"), i = E("span", "", t, "tfx-i"); l.appendChild(i); b.appendChild(l); inner.push(i);
     });
     tl.from(inner, { yPercent: 115, duration: 0.8, ease: "power4.out", stagger: 0.14 });

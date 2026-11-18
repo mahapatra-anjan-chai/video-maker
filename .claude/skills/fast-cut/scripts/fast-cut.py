@@ -202,7 +202,33 @@ def intro_pngs(t, W, H, fps, folder, j, k):
     scrim = hex_rgba(it.get("scrim", "#1A1A2EE6"))
     s_in, rise_at = float(it.get("scrim_in", 0.3)), float(it.get("rise_at", 0.15))
     hold, move = float(it.get("hold", 1.45)), float(it.get("move", 0.65))
-    n = int(round((hold + move) * fps))
+    mask = it.get("entrance") == "mask"                          # lines slide up out of a mask instead of fading up
+    bar = None
+    if t.get("mark"):                                            # after it lands, a bar marks the value phrase
+        for i, l in enumerate(lines):
+            at = l.find(t["mark"])
+            if at >= 0:
+                x0 = (bw - f.getlength(l)) / 2 + f.getlength(l[:at]); x1 = x0 + f.getlength(t["mark"])
+                top_, bottom_ = f.getbbox("Hgy")[1], f.getbbox("Hgy")[3]
+                pad = big * 0.12
+                bar = (x0 - pad, i * lh + top_ - big * 0.08, x1 + pad, i * lh + bottom_ + big * 0.04)
+                break
+        if bar is None:
+            sys.exit("mark %r is not in the headline %r" % (t["mark"], t["text"]))
+    mark_col = hex_rgba(t.get("mark_color", "#5A34F5"))
+    mark_at, mark_len = hold + move + 0.12, 0.45
+    n = int(round((hold + move + (mark_at - hold - move + mark_len if bar else 0)) * fps))
+    marked = {}
+
+    def block_at(pm):                                            # the block with the bar grown to pm (0-1) behind the text
+        if bar is None or pm <= 0:
+            return block
+        key = round(pm, 3)
+        if key not in marked:
+            im = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+            ImageDraw.Draw(im).rounded_rectangle([bar[0], bar[1], bar[0] + (bar[2] - bar[0]) * pm, bar[3]], radius=big * 0.12, fill=mark_col)
+            im.alpha_composite(block); marked[key] = im
+        return marked[key]
 
     def frame(tau):
         img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -210,18 +236,23 @@ def intro_pngs(t, W, H, fps, folder, j, k):
         a = scrim[3] * min(1.0, tau / s_in if s_in else 1.0) * (1 - u)
         if a > 0:
             img.paste(Image.new("RGBA", (W, H), scrim[:3] + (int(a),)), (0, 0))
-        if tau <= hold:                                          # lines rise in one after another
+        if tau <= hold:                                          # lines come in one after another
             top = yc_big - bh / 2
             for i, im in enumerate(line_imgs):
-                e = ease_out((tau - rise_at - 0.1 * i) / 0.45)
+                e = ease_out((tau - rise_at - (0.12 if mask else 0.1) * i) / (0.6 if mask else 0.45))
                 if e <= 0:
+                    continue
+                if mask:                                         # slide up inside the line's own box
+                    lh_i = im.height; cut = Image.new("RGBA", im.size, (0, 0, 0, 0))
+                    cut.alpha_composite(im, (0, int(lh_i * 1.05 * (1 - e)))) if e < 1 else cut.alpha_composite(im)
+                    img.alpha_composite(cut, (int(cx - bw / 2), int(top + i * lh)))
                     continue
                 if e < 1:
                     im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * e)))
                 img.alpha_composite(im, (int(cx - bw / 2), int(top + i * lh + 0.025 * H * (1 - e))))
-        else:                                                    # shrink and glide to the resting place
+        else:                                                    # shrink and glide to the resting place, then mark
             s = 1 + (r - 1) * u
-            im = block.resize((max(1, int(round(bw * s))), max(1, int(round(bh * s)))), Image.LANCZOS)
+            im = block_at(ease_in_out((tau - mark_at) / mark_len)).resize((max(1, int(round(bw * s))), max(1, int(round(bh * s)))), Image.LANCZOS)
             yc = yc_big + (yc_small - yc_big) * u
             img.alpha_composite(im, (int(round(cx - im.width / 2)), int(round(yc - im.height / 2))))
         return img
@@ -230,8 +261,55 @@ def intro_pngs(t, W, H, fps, folder, j, k):
     for i in range(n):
         frame(i / float(fps)).save(pattern % i, compress_level=1)
     rest = os.path.join(folder, "rest%d.png" % j)
-    frame(hold + move + 1).save(rest, compress_level=1)
+    frame(n / float(fps) + 1).save(rest, compress_level=1)
     return pattern, n, rest, n / float(fps)
+
+
+def mask_frames(t, W, H, fps, dur, folder, j, k):
+    """Text mask (no. 40) with footage: the word as a grey matte, one PNG per frame. The letters settle in over 0.5 s,
+    hold, then from grow.at (s after "from") the camera flies through the letter "through" until it fills the frame.
+    With "pull" it runs the other way: the frame starts filled from inside that letter and pulls back onto the word."""
+    from PIL import Image, ImageDraw
+    import math
+    text = str(t["text"]); S = 4                                 # drawn at 4x so the fly-through stays sharp
+    tt = dict(t, weight=t.get("weight", "Bold"))
+    size = float(t.get("size", 300)) * k
+    f = font_of(tt, size)
+    maxw = W * float(t.get("width", 0.92))
+    if f.getlength(text) > maxw:
+        size *= maxw / f.getlength(text); f = font_of(tt, size)
+    fh = font_of(tt, size * S)
+    l, tp, r, b = fh.getbbox(text)
+    word = Image.new("L", (r - l + 8 * S, b - tp + 8 * S), 0)
+    ImageDraw.Draw(word).text((4 * S - l, 4 * S - tp), text, font=fh, fill=255)
+    ww, wh = word.size[0] / S, word.size[1] / S                  # the word's box at 1x
+    rx, ry = W * float(t.get("x", 0.5)) - ww / 2, H * float(t.get("y", 0.5)) - wh / 2      # y = the word's centre
+    ch = t.get("through", text[len(text) // 2])
+    i = text.find(ch) if ch in text else len(text) // 2
+    ox = rx + 4 + (f.getlength(text[:i]) + f.getlength(text[i]) / 2) - (l / S)
+    oy = ry + wh * 0.55
+    g, pl = t.get("grow"), t.get("pull")                        # fly in at the end, or start inside and pull back out
+    n = int(round(dur * fps))
+    pattern = os.path.join(folder, "mask%d_%%04d.png" % j)
+    for fi in range(n):
+        tau = fi / float(fps)
+        if pl:                                                   # the frame starts filled, the word forms around it
+            e = 1.0
+            sc_ = math.exp(math.log(float(pl.get("scale", 60))) * (1 - ease_out(tau / float(pl.get("dur", 0.85)))) ** float(pl.get("ease", 1.0)))
+        else:
+            e = ease_out(tau / 0.5); sc_ = 0.9 + 0.1 * e
+        if g:
+            g_at = float(g.get("at", dur - 0.6))
+            u = min(1.0, max(0.0, (tau - g_at) / max(0.01, dur - g_at)))
+            sc_ *= math.exp(math.log(float(g.get("scale", 40))) * u ** float(g.get("ease", 1.5)))
+        qx0, qy0 = ox - ox / sc_, oy - oy / sc_                  # what of the 1x frame is in view at this scale
+        qx1, qy1 = ox + (W - ox) / sc_, oy + (H - oy) / sc_
+        crop = word.crop((int((qx0 - rx) * S), int((qy0 - ry) * S), int((qx1 - rx) * S), int((qy1 - ry) * S)))
+        fr = crop.resize((W, H), Image.BILINEAR)
+        if e < 1:
+            fr = fr.point(lambda v: int(v * e))
+        fr.save(pattern % fi, compress_level=1)
+    return pattern
 
 
 TFX = os.path.join(HERE, "..", "..", "text-animations", "scripts", "tfx.py")
@@ -365,7 +443,8 @@ def setup(a):
         W, H = (W // 4) * 2, (H // 4) * 2
     sc = lambda v: int(round(v * W / c["size"][0] / 2)) * 2      # box coordinates are in final-size pixels
     srcs = []
-    for s in c["segments"]:
+    fills = [f for t in c.get("texts", []) for f in t.get("fill", [])]     # footage inside letters (text-mask)
+    for s in c["segments"] + fills:
         if "src" in s:
             p = os.path.normpath(os.path.join(base, s["src"]))
             if p not in srcs:
@@ -469,6 +548,27 @@ def cmd_render(a):
             fg.append("[%s][in%d]overlay=0:0:eof_action=pass[io%d]" % (last, j, j))
             last = "io%d" % j; n_in += 1
             start += length; fade_in = False
+        elif kind == "t" and L.get("anim") == "text-mask" and L.get("fill"):   # footage inside the letters
+            dur = float(L["to"]) - start
+            pattern = mask_frames(L, W, H, fps, dur, tmp, j, k_out)
+            args += ["-framerate", str(fps), "-i", pattern]
+            parts = []
+            for q, f in enumerate(L["fill"]):
+                kk = srcs.index(os.path.normpath(os.path.join(base, f["src"])))
+                z = float(f.get("zoom", 1.3)); fx, fy = f.get("focus", [0.5, 0.5])      # which part of the recording shows through
+                cy = H * float(L.get("y", 0.5))
+                fg.append("[%d:v]trim=start=%.3f:end=%.3f,setpts=(PTS-STARTPTS)/%.4f,fps=%d,scale=%d:%d:force_original_aspect_ratio=increase,"
+                          "crop=%d:%d:'min(max(0,%.4f*iw-%d),iw-ow)':'min(max(0,%.4f*ih-%d),ih-oh)',eq=saturation=%.2f,setsar=1,format=yuv420p[mf%d_%d]"
+                          % (kk, f["from"], f["to"], float(f.get("speed", 1)), fps, int(W * z) // 2 * 2, int(H * z) // 2 * 2, W, H,
+                             float(fx), W // 2, float(fy), int(cy), float(L.get("saturation", 1.15)), j, q))
+                parts.append("[mf%d_%d]" % (j, q))
+            fg.append("%sconcat=n=%d:v=1,tpad=stop_mode=clone:stop_duration=%.3f,trim=0:%.3f,setpts=PTS-STARTPTS,format=rgba[mfill%d]"
+                      % ("".join(parts), len(parts), dur, dur, j))
+            fg.append("[%d:v]format=gray,setpts=PTS-STARTPTS[mm%d]" % (n_in, j))
+            fg.append("[mfill%d][mm%d]alphamerge,setpts=PTS-STARTPTS+%.3f/TB[l%d]" % (j, j, start, j))
+            fg.append("[%s][l%d]overlay=0:0:eof_action=pass[o%d]" % (last, j, j))
+            last = "o%d" % j; n_in += 1
+            continue
         elif kind == "t" and L.get("anim"):      # one of the text-animations skill's 42, rendered with an alpha channel
             dur = float(L["to"]) - start; fade = min(0.2, dur / 3)
             args += ["-i", anim_clip(L, W, H, fps, base, sc, k_out, dur)]

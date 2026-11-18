@@ -69,6 +69,8 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
 - `texts` and `images` use OUTPUT time (the timeline after cuts and speed changes).
 - **A text with `anim`** uses one of the `text-animations` skill's 42 (`"anim": "highlight"`, plus `color`, `accent`,
   `accent2`, optional `anim_box`); it renders once through HyperFrames with transparency and is cached in `.tfx-cache/`.
+  `"anim": "text-mask"` with `"fill"` clips puts footage inside the letters and flies through one of them (see the
+  text-animations skill).
 - Text is Poppins (`weight`: Regular, Medium, SemiBold, Bold), one or two short lines, `y` = top of the text block as a
   share of the height, `box` = a rounded backing for legibility (work videos: the brand's dark colour at ~80%, white text).
 - `audio`: `keep` keeps the sound of 1x segments and makes sped-up parts silent; `mute` drops it.
