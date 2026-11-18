@@ -38,11 +38,11 @@ recordings, do the full [set up](#set-up).
 
 ## The workflow
 
-![How Video maker works: you bring recordings and a brief, Claude plans and asks three things, Claude builds the cut, effects and sound, you review in the chat, and you ship a versioned MP4. Notes loop back to the build.](docs/images/workflow.png)
+![How Video maker works: you bring recordings, a brief and optionally reference videos whose style you like; Claude plans, asks first and turns any reference into a style card; Claude builds the cut, effects and sound; you review in the chat; and you ship a versioned MP4, with the reference's style saved as a skill. Notes loop back to the build.](docs/images/workflow.png)
 
 ## Step by step for PMMs
 
-![Eight steps: pick one feature and one message, record the flow, make the video's folder, write the brief, say Edit my video, Claude drafts, review in the chat and give notes, ship it.](docs/images/pmm-steps.png)
+![Nine steps: pick one feature and one message, record the flow, make the video's folder, write the brief, add reference videos whose style you like (optional), say Edit my video, Claude drafts, review in the chat and give notes, ship it.](docs/images/pmm-steps.png)
 
 ## What you get back
 

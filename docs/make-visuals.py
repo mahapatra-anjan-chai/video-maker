@@ -76,23 +76,26 @@ class Canvas:
 
 
 def workflow():
-    c = Canvas(1200, 640)
+    c = Canvas(1200, 680)
     c.text(48, 44, "How Video maker works", F("Bold", 30), INK)
     c.text(48, 88, "You bring a screen recording and a brief. Claude Code plans, cuts, voices, scores and renders it on your Mac.",
            F("Regular", 16), MUTED)
     stages = [
         (INDIGO, "1  YOU BRING", "Recordings + brief",
-         ["Screen recordings of the feature", "Brief: audience, length, 9:16 or 16:9, intro and end copy", "Optional: script, logo, music notes"]),
-        (SKY, "2  CLAUDE PLANS", "Reads it, asks 3 things",
-         ["Personal or work, which look, OK to spend on voice and music", "Contact sheet + motion scan of each recording", "A cut table you can change"]),
+         ["Screen recordings of the feature", "Brief: audience, length, 9:16 or 16:9, intro and end copy",
+          "Optional: reference videos whose style you like", "Optional: script, logo, music notes"]),
+        (SKY, "2  CLAUDE PLANS", "Reads it, asks first",
+         ["Personal or work, which look, any references, OK to spend on voice and music",
+          "Scans each recording, and each reference for its style", "A style card and a cut table you can change"]),
         (ROSE, "3  CLAUDE BUILDS", "Cut, effects, sound",
          ["Trims, speeds up loading and AI waits", "Taps with clicks, zooms, headlines that open big", "Voiceover, licensed music ducked under it"]),
         (AMBER, "4  YOU REVIEW", "In the chat",
          ["Headline, tap and zoom sheets with timestamps", "A short clip of just those moments", "Notes by time: \"0:17 slower glide\""]),
         (GREEN, "5  YOU SHIP", "Versioned MP4",
-         ["v1, v2, ... never overwritten", "Each version's cut list kept", "Ask for cut-downs: 15 s, 16:9"]),
+         ["v1, v2, ... never overwritten", "Each version's cut list kept", "A reference's style is saved as a skill for next time",
+          "Ask for cut-downs: 15 s, 16:9"]),
     ]
-    x, y, w, h, gap = 48, 140, 204, 330, 22
+    x, y, w, h, gap = 48, 140, 204, 370, 22
     for i, (col, tag, title, items) in enumerate(stages):
         x0 = x + i * (w + gap)
         c.box(x0, y, x0 + w, y + h, 18, fill=CARD, outline=LINE)
@@ -111,7 +114,7 @@ def workflow():
     c.arrow(lx0, ly, lx0, y + h + 4, AMBER, 3)
     c.text((lx0 + lx1) / 2, ly + 16, "notes become a new version in minutes", F("Medium", 13), AMBER, "mm")
     # where things run
-    yb = 548
+    yb = 588
     c.box(48, yb, 1152, yb + 56, 14, fill=CARD, outline=LINE)
     c.text(68, yb + 28, "On your Mac", F("SemiBold", 13), INK, "lm")
     xx = 170
@@ -134,14 +137,19 @@ def steps():
          "videos/<name>/raw/ for the recordings. Add script.txt for a voiceover, img/ for a logo, docs/ for anything else."),
         ("You", INDIGO, "5 min", "Write the brief",
          "Audience, length (e.g. 60 to 90 s), shape (9:16 or 16:9), intro and end-card copy, moments that must stay."),
+        ("You", INDIGO, "2 min", "Add reference videos (optional)",
+         "Videos whose style you like go in videos/<name>/refs/. Claude turns them into a style card you confirm: the style "
+         "only, never their footage, logos or music."),
         ("You + Claude", ROSE, "1 min", "Say: Edit my video \"<name>\"",
-         "Answer three checks: personal or work, which look, and a yes on the voice and music cost (shown before anything is spent)."),
+         "Answer the checks: personal or work, which look, any reference videos, and a yes on the voice and music cost (shown "
+         "before anything is spent)."),
         ("Claude", SKY, "~10 min", "Draft",
          "Cut table, sped-up waits, taps, zooms and headlines. A half-size draft renders in seconds."),
         ("You + Claude", ROSE, "5 min per round", "Review in the chat, give notes",
          "Sheets of every headline, tap and zoom, plus a short clip of those moments. Notes by timestamp; each round is a new version."),
         ("You", GREEN, "1 min", "Ship it",
-         "The MP4 is in Movies > YouTube Renders, one file per version. Ask for cut-downs: a 15 s teaser, a 16:9 for the site."),
+         "The MP4 is in Movies > YouTube Renders, one file per version. A reference's style is saved as a skill: next time say "
+         "\"in the <name> style\". Ask for cut-downs: a 15 s teaser, a 16:9 for the site."),
     ]
     W, top, rh = 1200, 140, 118
     c = Canvas(W, top + len(rows) * rh + 70)
