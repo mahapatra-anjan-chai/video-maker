@@ -31,6 +31,10 @@ ui/
 # demo build scratch (docs/demo/make-demo.py regenerates it)
 docs/demo/work/
 
+# styles learned from reference videos: someone else's grammar, kept on this Mac unless published on purpose
+.claude/skills/style-*/
+.claude/skills/youtube-edit/styles/ref-*.json
+
 # text animation renders
 .tfx-cache/
 .claude/skills/text-animations/preview/text-animations.mp4

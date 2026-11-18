@@ -106,6 +106,7 @@ nothing until you approve it.
 | `compose.py --spec storyboard.json --out public` | Builds a HyperFrames composition in the chosen look |
 | `scenes.py anchor` / `scenes.py snap` | Places the moments you asked to animate and takes stills of the plan |
 
+| `reference-style/scripts/style-scan.py`, `style-card.py`, `style-save.py` | Learns a style from your reference videos (pacing, palette, type, the moments that move), maps each technique to the tools here, and saves it as a skill after the video |
 | `localize/scripts/find-subs.py`, `draft-script.py`, `dub.py`, `remix.py`, `subband.py` | Another-language version of a finished video: finds the burned-in subtitles, drafts the script to translate, dubs each line in its slot (plan and cost first), keeps the music, covers the old subtitles with the new ones |
 
 `fast-cut.py`, `review.py` and `contact-sheet.py` are in `.claude/skills/fast-cut/scripts/`; the localize scripts in
@@ -158,6 +159,7 @@ brand rules, and any videos Claude must ask about before using as a reference.
 |---|---|
 | `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass render, taps, zooms, headline intros, review sheets |
 | `.claude/skills/text-animations/` | 42 text animations (GSAP, render-safe), the in-chat picker and the preview gallery |
+| `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |
 | `.claude/skills/localize/` | Dub a finished video into another language: voice separation (Demucs), per-line ElevenLabs dubbing, frosted subtitle bands |
 | `.claude/skills/youtube-edit/` | The full editing skill (from the WeAreNoCode kit): looks, HyperFrames compositions, ElevenLabs voiceover and sound effects |
 | `docs/` | This README's images, and the scripts that make them (`make-visuals.py`, `demo/make-demo.py`) |

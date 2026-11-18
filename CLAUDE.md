@@ -35,14 +35,20 @@ It is never committed.
 1. Personal or work (`brief.json` `purpose`: `personal` | `office`). Work = for the company: its look offered first,
    brand rules apply, confirm the music and voice accounts are cleared for company use, and unreleased product footage
    never leaves this machine. Personal = no company branding.
-2. Which look: Kit, Brand (or the company kit named in `CLAUDE.local.md`) or Mine (the storyboard's `"style"`).
+2. Any reference videos whose style they want? (Ask in the same first message; skip it for localisations.) They drop
+   them in `videos/<project>/refs/`, and the `reference-style` skill turns them into a style card and a look
+   (`ref-<slug>`) before the plan. Saved styles (`.claude/skills/style-*/`) are offered as looks.
+   Which look: Kit, Brand (or the company kit named in `CLAUDE.local.md`), Mine, or a saved `ref-<slug>` style (the
+   storyboard's `"style"`). After delivering a video made from a reference, save its style as a skill
+   (`reference-style`, step 7).
 3. Before using any of the company's own videos as inspiration or reference: name it and wait for a yes.
 4. Before any ElevenLabs generation or AI B-roll: show the plan and cost, wait for a yes.
 5. Which text animations: show the `text-animations` picker (live previews of all 42, a dropdown by group) and save
    the pick in `brief.json` `text_animations`.
 
 ## Where things are
-- One folder per video: `videos/<project>/` with `raw/` (clips, screen recordings), `img/`, `audio/`, `docs/`,
+- One folder per video: `videos/<project>/` with `raw/` (clips, screen recordings), `refs/` (reference videos for the
+  style), `img/`, `audio/`, `docs/`,
   `script.txt` (voiceover), `brief.json` (purpose, look, shape, notes) and `scenes.json` (moments to animate).
   Claude writes `cut.json` / `storyboard.json`, `scene-plan.json` and `music.json` there.
 - Finished videos: `~/Movies/YouTube Renders/<project>/<project>-v<N>-<size>.mp4`, one file per version, never

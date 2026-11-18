@@ -49,6 +49,7 @@ echo "Running the skills' tests"
 ( cd "$SK/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
 ( cd ".claude/skills/fast-cut/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
 ( cd ".claude/skills/localize/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
+( cd ".claude/skills/reference-style/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
 
 echo
 [ "$MISSING" = 0 ] && echo "All set. Put your recording in videos/<name>/raw/ and tell Claude Code: Edit my video \"<name>\"" \

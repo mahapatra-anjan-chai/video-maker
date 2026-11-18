@@ -12,7 +12,9 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
 
 1. **Read the brief once.** The upload page's `brief.json` (purpose, shape, notes) and the files in `$W/raw/`. The
    project's standing check still applies: confirm Personal or Office in the same message as the cut list, never as a
-   separate round. Ask only what blocks the edit; state every default instead of asking about it.
+   separate round. Ask only what blocks the edit; state every default instead of asking about it. In the same message,
+   ask for reference videos (`$W/refs/`); if there are any, run the `reference-style` scan first and cut to its style
+   card (pacing, text animations, zoom feel, palette).
 2. **Look once:** `python3 "$FC/contact-sheet.py" --video "$W/raw/<file>" --out "$W/analysis/sheet.png"`
    (about 24 frames, the time under each, ~1 s). At most ONE detail sheet of the moments that decide the cut
    (`--from A --to B --every 0.25`). No other frame grabs, zoom crops or strips.

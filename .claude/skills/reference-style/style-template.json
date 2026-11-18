@@ -1,0 +1,46 @@
+{
+  "name": "Collage explainer",
+  "slug": "collage-explainer",
+  "made_from": ["videos/<project>/refs/<reference>.mp4"],
+  "liked": "What the creator said they liked about the reference, in their words.",
+  "summary": "One paragraph: the feel, in plain words (dense paper-collage explainer: cut-out photos on textured paper, highlighter swipes on key words, slow push-ins, a new element about every second).",
+  "pacing": {
+    "median_shot_s": 2.2,
+    "cuts_per_min": 23,
+    "rhythm": "How busy each shot is: e.g. one new element about every second inside a shot; holds of 3-4 s on a finished card."
+  },
+  "look": {
+    "name": "Collage explainer",
+    "ready": true,
+    "description": "Written for the compose.py look question.",
+    "font": {"family": "Poppins", "files": {"400": "brand/fonts/Poppins-400.woff2", "700": "brand/fonts/Poppins-700.woff2"}, "_note": "woff2 files, relative to youtube-edit/styles/ (compose.py serves them as woff2)"},
+    "colors": {"paper": "#F2EDE4", "ink": "#1A1A1A", "highlight": "#FFD43B", "accent": "#E8473C", "white": "#FFFFFF"},
+    "roles": {"paper": "background", "ink": "text and outlines", "highlight": "the swipe behind the key word", "accent": "arrows, circles, the payoff", "white": "text on photos"},
+    "rules": ["Only the open-licence fonts named here; the reference's own typeface is not ours to use."]
+  },
+  "type": {
+    "headline": {"font_file": "fast-cut/assets/fonts/Poppins-Bold.ttf", "weight": 700, "case": "sentence", "size_share": 0.06, "position": "left third, middle"},
+    "label": {"font_file": "fast-cut/assets/fonts/Poppins-Medium.ttf", "weight": 500, "case": "upper", "size_share": 0.025, "position": "next to what it names"}
+  },
+  "techniques": [
+    {"name": "Key word gets a highlighter swipe", "seen": "0:04.2, 0:31.0",
+     "maps_to": {"kind": "text-animation", "id": "highlight"}},
+    {"name": "Headline opens big, then settles at the top", "seen": "0:00.3",
+     "maps_to": {"kind": "fast-cut", "feature": "texts[].intro", "params": {"entrance": "mask", "hold": 1.2, "move": 0.6}}},
+    {"name": "Slow push-in on the detail being explained", "seen": "0:12.0",
+     "maps_to": {"kind": "fast-cut", "feature": "zooms", "params": {"scale": 1.25, "ease": 0.45}}},
+    {"name": "Film grain over everything", "seen": "throughout",
+     "maps_to": {"kind": "registry", "item": "grain-overlay"}},
+    {"name": "Photo cut-outs slide in on paper with a drop shadow", "seen": "0:20.5",
+     "maps_to": {"kind": "custom", "plan": "HyperFrames component: PNG cut-out (remove-background), 6 px offset shadow, slides 40 px with a 0.35 s back.out ease; build it during the first video in this style."}}
+  ],
+  "transitions": [
+    {"name": "Hard cuts on the beat, a paper-tear wipe between sections", "maps_to": {"kind": "custom", "plan": "..."}}
+  ],
+  "texture": "Paper grain, slight vignette, no gradients.",
+  "sound": {"music": "Plucky, mid-tempo, ducks under the voice.", "voice": "Fast, conversational, one narrator.", "sfx": "Paper rustle on each cut-out; a pop on the highlight."},
+  "text_animations": ["highlight", "mask-reveal"],
+  "do": ["One idea per shot; label everything that matters."],
+  "dont_copy": ["Their logo, mascots, illustrations, footage, music and sound logo", "Their exact layouts frame for frame", "Their typeface (use the open-licence match above)"],
+  "custom_files": []
+}

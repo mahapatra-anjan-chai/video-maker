@@ -52,7 +52,11 @@ The creator's standing rules for this system. They come before any cut, storyboa
      video for <company>" to `STORYBOARD.md`. Unreleased product footage stays on this machine.
    - **Personal:** offer Kit or Mine first; no company logo, palette or brand wording unless the creator asks for it.
    The inspiration rule (4) applies to both.
-3. **Ask which look, every video:** Kit, Brand (or the local company kit) or Mine, even when `brief.json` already names
+3. **Ask for reference videos, then which look, every video.** In the same first message: "Any reference videos
+   whose style you want? Drop them in `videos/<project>/refs/`." If there are any, the `reference-style` skill scans
+   them and writes the style card and a `ref-<slug>` look before the plan; saved styles (`.claude/skills/style-*/`)
+   are offered as looks too. After the delivery, save the style as a skill (`reference-style`, step 7). The look:
+   Kit, Brand (or the local company kit), Mine or a `ref-<slug>` style, even when `brief.json` already names
    one (then offer it as the default) and even when the last video used one. Write the answer into the storyboard's
    `"style"`. When the answer is Mine and `styles/mine.json` still says `"ready": false`, ask for the colours and the
    font, fill it in, and update `kit/STYLE-GUIDE.md`.
