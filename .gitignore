@@ -29,3 +29,7 @@ ui/
 
 # demo build scratch (docs/demo/make-demo.py regenerates it)
 docs/demo/work/
+
+# text animation renders
+.tfx-cache/
+.claude/skills/text-animations/preview/text-animations.mp4

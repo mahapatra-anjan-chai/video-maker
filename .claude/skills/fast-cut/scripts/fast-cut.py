@@ -30,7 +30,7 @@ A tap is a ripple at the spot; `times` lists when each lands. A text with "intro
 holds, then shrinks and glides to its own "y" / "size" while the scrim lifts and the footage shows through.
 Paths in cut.json are relative to the cut.json file. A segment may still carry its own "box" when there is no top-level one.
 """
-import argparse, json, os, re, shutil, subprocess, sys, tempfile
+import argparse, hashlib, json, os, re, shutil, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(HERE, "..", "assets", "fonts")
@@ -232,6 +232,32 @@ def intro_pngs(t, W, H, fps, folder, j, k):
     rest = os.path.join(folder, "rest%d.png" % j)
     frame(hold + move + 1).save(rest, compress_level=1)
     return pattern, n, rest, n / float(fps)
+
+
+TFX = os.path.join(HERE, "..", "..", "text-animations", "scripts", "tfx.py")
+
+
+def anim_clip(t, W, H, fps, base, sc, k, dur):
+    """A text with "anim": render it once through the text-animations skill as a transparent MOV (cached by content).
+    It sits in "anim_box" [x, y, w, h] (final pixels) or, by default, a band at the text's own "y" and "width"."""
+    size = float(t.get("size", 72)) * k
+    if t.get("anim_box"):
+        bx, by, bw, bh = (sc(v) for v in t["anim_box"])
+    else:
+        lines = str(t["text"]).count("\n") + 1
+        bw = int(W * float(t.get("width", 0.86))); bh = int(size * (1.3 * lines + 1.4))
+        bx = int(W * float(t.get("x", 0.5)) - bw / 2); by = max(0, int(H * float(t.get("y", 0.12)) - size * 0.45))
+    spec = [t["anim"], t["text"], W, H, bx, by, bw, bh, size, dur, fps, t.get("color"), t.get("accent"), t.get("accent2")]
+    out = os.path.join(base, ".tfx-cache", hashlib.sha1(json.dumps(spec).encode()).hexdigest()[:12] + ".mov")
+    args = [sys.executable, TFX, "clip", "--id", t["anim"], "--text", str(t["text"]).replace("\n", " "), "--size", "%dx%d" % (W, H),
+            "--box", "%d,%d,%d,%d" % (bx, by, bw, bh), "--font-size", "%.1f" % size, "--dur", "%.3f" % dur, "--fps", str(fps), "--out", out]
+    for key, flag in (("color", "--ink"), ("accent", "--accent"), ("accent2", "--accent2")):
+        if t.get(key):
+            args += [flag, t[key]]
+    r = subprocess.run(args, capture_output=True, text=True)
+    if r.returncode:
+        sys.exit("text animation %r failed:\n%s" % (t["anim"], (r.stdout + r.stderr)[-1500:]))
+    return out
 
 
 def ripple_pngs(d, n, folder):
@@ -443,6 +469,13 @@ def cmd_render(a):
             fg.append("[%s][in%d]overlay=0:0:eof_action=pass[io%d]" % (last, j, j))
             last = "io%d" % j; n_in += 1
             start += length; fade_in = False
+        elif kind == "t" and L.get("anim"):      # one of the text-animations skill's 42, rendered with an alpha channel
+            dur = float(L["to"]) - start; fade = min(0.2, dur / 3)
+            args += ["-i", anim_clip(L, W, H, fps, base, sc, k_out, dur)]
+            fg.append("[%d:v]format=rgba,fade=t=out:st=%.3f:d=%.3f:alpha=1,setpts=PTS-STARTPTS+%.3f/TB[l%d]" % (n_in, dur - fade, fade, start, j))
+            fg.append("[%s][l%d]overlay=0:0:eof_action=pass[o%d]" % (last, j, j))
+            last = "o%d" % j; n_in += 1
+            continue
         elif kind == "t":
             scaled = dict(L)
             scaled["size"] = float(L.get("size", 72)) * k_out

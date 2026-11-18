@@ -65,6 +65,10 @@ The creator's standing rules for this system. They come before any cut, storyboa
 6. **Show the plan on the page, then render.** Scene cards and the music pick are planned into `scene-plan.json` and
    `music.json` (below); the upload page shows both with stills and previews. Render after the creator says yes.
 
+7. **Show the text-animation picker, every video,** right after the look: the `text-animations` skill's live
+   picker (a dropdown of the five groups over looping previews of all 42) in the chat, or its preview gallery and a
+   style question in the terminal. Save the pick as `brief.json` `text_animations` and animate the copy only with those.
+
 ## Scene cards (the creator's own animations)
 
 The page's step 06 writes `$W/scenes.json`: one card per moment the creator wants animated, in their words: `when`

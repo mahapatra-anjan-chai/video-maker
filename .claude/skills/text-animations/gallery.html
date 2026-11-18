@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Text animations</title>
+<style>
+@font-face{font-family:"Poppins";src:url("../youtube-edit/styles/brand/fonts/Poppins-300.woff2") format("woff2");font-weight:300;font-display:block}
+@font-face{font-family:"Poppins";src:url("../youtube-edit/styles/brand/fonts/Poppins-400.woff2") format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"Poppins";src:url("../youtube-edit/styles/brand/fonts/Poppins-500.woff2") format("woff2");font-weight:500;font-display:block}
+@font-face{font-family:"Poppins";src:url("../youtube-edit/styles/brand/fonts/Poppins-700.woff2") format("woff2");font-weight:700;font-display:block}
+
+:root{--text-primary:#0F172A;--text-secondary:#475569;--text-muted:#94A3B8;--text-danger:#B91C1C;--text-accent:#3730A3;--bg-accent:#E0E7FF;
+--border:#E2E8F0;--border-accent:#4F46E5;--surface-2:#FFFFFF;--radius:8px}
+@media (prefers-color-scheme:dark){:root{--text-primary:#F1F5F9;--text-secondary:#CBD5E1;--text-muted:#64748B;--border:#334155;--surface-2:#1E293B;
+--bg-accent:#312E81;--text-accent:#E0E7FF}body{background:#0F172A}}
+body{margin:0;padding:24px 16px;font-family:system-ui,sans-serif;background:#F8FAFC;color:var(--text-primary)}
+main{max-width:1180px;margin:0 auto}
+h1{font:600 22px/1.3 system-ui,sans-serif;margin:0 0 4px}p.lead{margin:0 0 20px;color:var(--text-secondary)}
+select,button{font:inherit;font-size:14px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-primary)}
+button{cursor:pointer}
+</style></head>
+<body><main>
+<h1>Text animations</h1>
+<p class="lead">42 text animations for product videos. Pick the ones you want, then press the button and paste the line into Claude Code.</p>
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Text animation picker: 42 live previews in five groups; pick the ones for this video.</h2>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 1rem">
+  <label for="tfx-cat" style="font-size:14px;color:var(--text-secondary)">Which kind of text animation?</label>
+  <select id="tfx-cat" style="min-width:220px"><option value="">All 42 animations</option></select>
+  <span id="tfx-count" style="font-size:13px;color:var(--text-secondary)">Tap a preview to pick it</span>
+</div>
+<div id="tfx-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:1rem">
+  <button id="tfx-use" type="button">Use the picked animations &#8599;</button>
+  <span id="tfx-msg" style="font-size:13px;color:var(--text-secondary)"></span>
+</div>
+<script src="../youtube-edit/assets/vendor/gsap.min.js"></script>
+<script>window.gsap||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"><\/script>')</script>
+<script src="text-fx.js"></script>
+<script>
+(function () {
+  var grid = document.getElementById("tfx-grid"), sel = document.getElementById("tfx-cat"), msg = document.getElementById("tfx-msg");
+  var count = document.getElementById("tfx-count"), picked = [], items = [];
+  TextFX.categories.forEach(function (c) {
+    var n = TextFX.list.filter(function (a) { return a.category === c; }).length;
+    var op = document.createElement("option"); op.value = c; op.textContent = c + " (" + n + ")"; sel.appendChild(op);
+  });
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  TextFX.list.forEach(function (a) {
+    var card = document.createElement("div");
+    card.setAttribute("role", "button"); card.tabIndex = 0;
+    card.style.cssText = "cursor:pointer;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-2)";
+    card.innerHTML = '<div class="tfx-st" style="height:124px;background:#fff"></div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px 2px;font-size:13px;color:var(--text-primary)">' +
+      '<span><span style="color:var(--text-muted)">' + pad(a.n) + '</span> ' + a.name + '</span>' +
+      '<span class="tfx-tag" style="visibility:hidden;font-size:11px;padding:2px 8px;border-radius:var(--radius);background:var(--bg-accent);color:var(--text-accent)">Picked</span></div>' +
+      '<div style="padding:0 10px 10px;font-size:12px;line-height:1.4;color:var(--text-secondary)">' + a.use + '</div>';
+    grid.appendChild(card);
+    var it = { a: a, card: card, tl: null };
+    items.push(it);
+    function toggle() {
+      var i = picked.indexOf(a);
+      if (i < 0) picked.push(a); else picked.splice(i, 1);
+      var on = picked.indexOf(a) >= 0;
+      card.style.outline = on ? "2px solid var(--border-accent)" : "none";
+      card.querySelector(".tfx-tag").style.visibility = on ? "visible" : "hidden";
+      count.textContent = picked.length ? picked.length + " picked" : "Tap a preview to pick it";
+      msg.textContent = "";
+    }
+    card.addEventListener("click", toggle);
+    card.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+  });
+  function start() {
+    items.forEach(function (it) {
+      var r = TextFX.build(it.card.querySelector(".tfx-st"), it.a.id, { font: "Poppins, system-ui, sans-serif" });
+      it.tl = r.tl.repeat(-1).repeatDelay(0.7).play();
+    });
+  }
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () { requestAnimationFrame(start); });
+  sel.addEventListener("change", function () {
+    items.forEach(function (it) {
+      var show = !sel.value || it.a.category === sel.value;
+      it.card.style.display = show ? "" : "none";
+      if (it.tl) { if (show) it.tl.play(); else it.tl.pause(); }
+    });
+  });
+  document.getElementById("tfx-use").addEventListener("click", function () {
+    if (!picked.length) { msg.style.color = "var(--text-danger)"; msg.textContent = "Pick at least one animation first"; return; }
+    var text = "Text animations for this video: " + picked.map(function (a) { return pad(a.n) + " " + a.name + " (" + a.id + ")"; }).join(", ");
+    msg.style.color = "var(--text-secondary)";
+    if (typeof sendPrompt === "function") { sendPrompt(text); msg.textContent = "Sent"; }
+    else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function () { msg.textContent = "Copied: paste it to Claude"; }); }
+    else { msg.textContent = text; }
+  });
+})();
+</script>
+</main></body></html>

@@ -3,6 +3,8 @@
 The MIT licence in `LICENSE` covers Video maker's own work:
 
 - `.claude/skills/fast-cut/` (scripts, tests, skill)
+- `.claude/skills/text-animations/` (the animations, picker, gallery and scripts; the list of effects follows the
+  "Claude + Figma Motion: Text Animations" board curated by Shlomo Genchin, Unbore.com)
 - `docs/` (the visuals, the demo and the scripts that make them)
 - `setup.sh`, `README.md`, `CLAUDE.md`, `package.json`
 - In `.claude/skills/youtube-edit/`: `scripts/elevenlabs.py`, `scripts/narration-video.py`, `scripts/scenes.py`,

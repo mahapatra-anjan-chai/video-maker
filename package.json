@@ -4,7 +4,7 @@
   "private": true,
   "description": "A video maker for product marketing: drop in a screen recording, Claude Code cuts it, adds taps, zooms, headlines, voiceover and music, and renders on your Mac.",
   "scripts": {
-    "test": "cd .claude/skills/youtube-edit/scripts && python3 -m unittest tests && cd ../../fast-cut/scripts && python3 -m unittest tests",
+    "test": "cd .claude/skills/youtube-edit/scripts && python3 -m unittest tests && cd ../../fast-cut/scripts && python3 -m unittest tests && cd ../../text-animations/scripts && python3 -m unittest tests",
     "doctor": "hyperframes doctor"
   },
   "devDependencies": {

@@ -67,6 +67,8 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
   headline that tells viewers a new feature starts. Start it ~0.3 s before the section's first frame and give each
   headline its line break (`\n`) so the big and resting layouts match.
 - `texts` and `images` use OUTPUT time (the timeline after cuts and speed changes).
+- **A text with `anim`** uses one of the `text-animations` skill's 42 (`"anim": "highlight"`, plus `color`, `accent`,
+  `accent2`, optional `anim_box`); it renders once through HyperFrames with transparency and is cached in `.tfx-cache/`.
 - Text is Poppins (`weight`: Regular, Medium, SemiBold, Bold), one or two short lines, `y` = top of the text block as a
   share of the height, `box` = a rounded backing for legibility (work videos: the brand's dark colour at ~80%, white text).
 - `audio`: `keep` keeps the sound of 1x segments and makes sped-up parts silent; `mute` drops it.

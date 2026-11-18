@@ -34,6 +34,8 @@ It is never committed.
 2. Which look: Kit, Brand (or the company kit named in `CLAUDE.local.md`) or Mine (the storyboard's `"style"`).
 3. Before using any of the company's own videos as inspiration or reference: name it and wait for a yes.
 4. Before any ElevenLabs generation or AI B-roll: show the plan and cost, wait for a yes.
+5. Which text animations: show the `text-animations` picker (live previews of all 42, a dropdown by group) and save
+   the pick in `brief.json` `text_animations`.
 
 ## Where things are
 - One folder per video: `videos/<project>/` with `raw/` (clips, screen recordings), `img/`, `audio/`, `docs/`,
