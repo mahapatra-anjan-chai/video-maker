@@ -20,6 +20,10 @@ It is never committed.
   ripples (with a click in the mix), zooms on the feature being explained, and section headlines that open full screen
   and glide to the top.
 - **Screens that must change** (new copy inside the UI, removed elements): the youtube-edit skill and HyperFrames.
+- **A finished video in another language** (new voiceover and subtitles, same picture): the `localize` skill.
+  The voice is separated out of the mix so the music stays, every line is dubbed into its original slot with a voice
+  per character, and a frosted band covers the burned-in subtitles with the translated ones. Ask yes on the
+  ElevenLabs cost; on-screen copy stays as is.
 - **Quick mode for short ads:** no separate question round when the brief has the copy and assets; state defaults
   instead of asking, and put the Personal/Work confirmation in the same message as the plan. First draft within
   ~15 minutes, then iterate on notes. Take every still in ONE `hyperframes snapshot --at a,b,c --no-end` run, never one

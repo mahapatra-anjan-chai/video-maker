@@ -35,6 +35,12 @@ echo "GSAP (animation library the composer uses; renders work offline with a loc
 mkdir -p "$SK/assets/vendor"
 curl -sfL https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js -o "$SK/assets/vendor/gsap.min.js" && ok "GSAP 3.14.2" || no "GSAP" "the page falls back to the CDN"
 
+echo "Noto Sans JP (subtitles for Japanese versions, SIL Open Font License)"
+JP=".claude/skills/localize/fonts/NotoSansJP.ttf"
+[ -f "$JP" ] || curl -sfL "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf" -o "$JP"
+[ -f "$JP" ] && ok "Noto Sans JP" || no "Noto Sans JP" "download NotoSansJP[wght].ttf from Google Fonts into $JP"
+echo "  (the localize skill makes its Demucs voice separator venv on first use, ~1 GB)"
+
 echo "Keys"
 [ -f .env ] || cp .env.example .env
 grep -qE '^ELEVENLABS_API_KEY=.+' .env && ok ".env has an ElevenLabs key" || no "ElevenLabs key" "put ELEVENLABS_API_KEY=... in .env (voiceover and sound effects need it)"
@@ -42,6 +48,7 @@ grep -qE '^ELEVENLABS_API_KEY=.+' .env && ok ".env has an ElevenLabs key" || no 
 echo "Running the skills' tests"
 ( cd "$SK/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
 ( cd ".claude/skills/fast-cut/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
+( cd ".claude/skills/localize/scripts" && python3 -m unittest tests 2>&1 | tail -1 )
 
 echo
 [ "$MISSING" = 0 ] && echo "All set. Put your recording in videos/<name>/raw/ and tell Claude Code: Edit my video \"<name>\"" \

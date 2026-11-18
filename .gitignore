@@ -19,6 +19,7 @@ videos/_shared/sfx/*
 
 # downloaded by setup.sh, not ours to redistribute
 .claude/skills/youtube-edit/assets/vendor/
+.claude/skills/localize/fonts/*.ttf
 
 # local only: my company's brand kit and notes, and the old upload page
 CLAUDE.local.md

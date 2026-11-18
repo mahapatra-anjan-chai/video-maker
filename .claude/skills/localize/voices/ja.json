@@ -1,0 +1,31 @@
+{
+  "_note": "Native Japanese voices from the ElevenLabs library, usable by id with eleven_multilingual_v2. This API key cannot list or search voices (no voices_read), so this list stands in for the library. Ids marked tested voiced a delivered video; the rest come from a public listing (json2video.com) and fail loudly, at no cost, if gone. Pace: these voices read slowly; dub.py caps their pauses at 0.18 s and speeds up at most 1.25x.",
+  "female": [
+    {"id": "DIcmWR2oXfmLIlrj43rH", "name": "Rin", "age": "young", "style": "calm, approachable narrator, not too bright", "tested": true, "role": "narrator"},
+    {"id": "ngvNHfiCrXLPAHcTrZK1", "name": "Aki", "age": "young", "style": "friendly, clear, natural", "tested": true},
+    {"id": "WQz3clzUdMqvBf0jswZQ", "name": "Shizuka", "age": "young", "style": "natural, soft (slow: give her room)", "tested": true},
+    {"id": "EkK6wL8GaH8IgBZTTDGJ", "name": "Akari", "age": "young", "style": "bright, natural", "tested": true},
+    {"id": "4lOQ7A2l7HPuG7UIHiKA", "name": "Kyoko", "age": "young", "style": "warm, clear, natural", "tested": true},
+    {"id": "T7yYq3WpB94yAuOXraRi", "name": "Konoha", "age": "middle aged", "style": "professional explainer, Kanto"},
+    {"id": "c2XJrw7TvNGtOc6r0ijG", "name": "Harune", "age": "young", "style": "professional narration"},
+    {"id": "EGPLqH9Wz2tNLu58EJVR", "name": "Sakura", "age": "young", "style": "narration"},
+    {"id": "fUjY9K2nAIwlALOwSiwc", "name": "Yui", "age": "young", "style": "warm, clear, natural"},
+    {"id": "80H5qqdq3bIO8OjFE6ue", "name": "Yukari", "age": "middle aged", "style": "standard-Japanese narration"},
+    {"id": "nMLAJvHm96aMWubKsf0q", "name": "Hijiri", "age": "middle aged", "style": "calm, deep narration"},
+    {"id": "G3EZ8O36A0x9lmeOtr0f", "name": "Kaori", "age": "middle aged", "style": "relatable, friendly"},
+    {"id": "Z5Rahxh8jMhJKEgBfCSS", "name": "Yukiko", "age": "young", "style": "calm, native, Kanto"}
+  ],
+  "male": [
+    {"id": "j210dv0vWm7fCknyQpbA", "name": "Hinata", "age": "young", "style": "inviting, smooth, measured", "tested": true},
+    {"id": "Mv8AjrYZCBkdsmDHNwcB", "name": "Ishibashi", "age": "young", "style": "inviting, natural, smoky, Kanto", "tested": true},
+    {"id": "pfzojrOPPpo9eObivQXJ", "name": "Kosuke", "age": "young", "style": "deep, clear, Kanto", "tested": true},
+    {"id": "3JDquces8E8bkmvbh6Bc", "name": "Otani", "age": "middle aged", "style": "narration, storytelling"},
+    {"id": "hBWDuZMNs32sP5dKzMuc", "name": "Ken", "age": "middle aged", "style": "narration, storytelling"},
+    {"id": "NuhW57w81uacPyz9OIsB", "name": "Kaoru", "age": "middle aged", "style": "news and storytelling, Kanto"},
+    {"id": "94gBdmmazJ025HbvF78b", "name": "Yusuke", "age": "middle aged", "style": "calm business narration"},
+    {"id": "b34JylakFZPlGS0BnwyY", "name": "Kenzo", "age": "young", "style": "calm, soft, measured"},
+    {"id": "GKDaBI8TKSBJVhsCLD6n", "name": "Asahi", "age": "young", "style": "calm, natural"},
+    {"id": "6wdSVG3CMjPfAthsnMv9", "name": "Makoto", "age": "young", "style": "general Japanese male, Kanto"},
+    {"id": "DOL4zlUH4vnnX1hByxsw", "name": "Akira", "age": "young", "style": "charismatic, Kanto"}
+  ]
+}
