@@ -1,0 +1,250 @@
+{
+ "duration": 43,
+ "palette": {
+  "bg": "#0F172A",
+  "panel": "#1E293B",
+  "line": "#334155",
+  "a1": "#4F46E5",
+  "a2": "#7DD3FC",
+  "a3": "#DB2777",
+  "a4": "#FBBF24"
+ },
+ "tags": [
+  [
+   17.6,
+   "1",
+   "See it work",
+   26.3
+  ]
+ ],
+ "opening": {
+  "to": 10.4,
+  "counter": "Requests",
+  "clips": [
+   {
+    "src": "img/broll-1.mp4",
+    "start": 0,
+    "dur": 6.0,
+    "media": 6.0,
+    "pos": "12% 50%"
+   },
+   {
+    "src": "img/broll-2.mp4",
+    "start": 5.9,
+    "dur": 4.75,
+    "media": 2.0,
+    "pos": "50% 32%"
+   }
+  ],
+  "requests": [
+   {
+    "t": 2.0,
+    "who": "Head of Product",
+    "init": "HP",
+    "color": "#4F46E5",
+    "text": "Can we get a product explainer for the launch?"
+   },
+   {
+    "t": 2.75,
+    "who": "CMO",
+    "init": "CM",
+    "color": "#DB2777",
+    "text": "Needs to look production-grade ✨"
+   },
+   {
+    "t": 4.5,
+    "who": "Sales",
+    "init": "SL",
+    "color": "#0EA5E9",
+    "text": "By Friday? 🙏"
+   },
+   {
+    "t": 9.3,
+    "who": "CMO",
+    "init": "CM",
+    "color": "#DB2777",
+    "text": "One more revision 🙏",
+    "file": "explainer_v7_FINAL_final.mp4"
+   }
+  ]
+ },
+ "hook": {
+  "src": "img/hook.mp4",
+  "start": 10.4,
+  "dur": 7.05
+ },
+ "feature": {
+  "from": 17.45,
+  "to": 26.4,
+  "phoneIn": 17.6,
+  "poster": "img/phone-first.jpg",
+  "clips": [
+   {
+    "src": "img/phone-screen.mp4",
+    "start": 17.6,
+    "dur": 1.95,
+    "media": 1.85
+   },
+   {
+    "src": "img/phone-screen.mp4",
+    "start": 19.55,
+    "dur": 6.9,
+    "media": 4.95
+   }
+  ],
+  "callouts": [
+   {
+    "t": 18.6,
+    "label": "● Taps",
+    "color": "#FBBF24",
+    "y": 560
+   },
+   {
+    "t": 19.7,
+    "label": "⤢ Zooms",
+    "color": "#7DD3FC",
+    "y": 400
+   },
+   {
+    "t": 23.0,
+    "label": "Aa Headlines",
+    "color": "#F472B6",
+    "y": 118
+   }
+  ],
+  "headline": {
+   "t": 21.2,
+   "lines": [
+    "Know your size",
+    "before you buy"
+   ],
+   "glide": 22.5
+  }
+ },
+ "montage": {
+  "t0": 26.75,
+  "bpm": 114,
+  "beats": 2,
+  "cards": [
+   {
+    "fx": "mask-reveal",
+    "text": "Meet your|new editor",
+    "bg": "#4F46E5",
+    "ink": "#FFFFFF",
+    "accent": "#FBBF24",
+    "tr": "wipe",
+    "label": "Mask reveal"
+   },
+   {
+    "fx": "stamp",
+    "text": "SHIPPED",
+    "bg": "#FBBF24",
+    "ink": "#0F172A",
+    "accent": "#DB2777",
+    "tr": "iris",
+    "label": "Stamp"
+   },
+   {
+    "fx": "scramble",
+    "text": "AI-powered edits",
+    "bg": "#0F172A",
+    "ink": "#7DD3FC",
+    "accent": "#7DD3FC",
+    "tr": "glitch",
+    "label": "Scramble"
+   },
+   {
+    "fx": "whip-in",
+    "text": "Faster",
+    "bg": "#DB2777",
+    "ink": "#FFFFFF",
+    "accent": "#FBBF24",
+    "tr": "whip",
+    "label": "Whip in"
+   },
+   {
+    "fx": "highlight",
+    "text": "Built for busy PMMs",
+    "bg": "#F8FAFC",
+    "ink": "#0F172A",
+    "accent": "#FBBF24",
+    "tr": "push",
+    "label": "Highlight"
+   },
+   {
+    "fx": "word-carousel",
+    "text": "Better|hooks|demos|launches",
+    "bg": "#7DD3FC",
+    "ink": "#0F172A",
+    "accent": "#4F46E5",
+    "tr": "zoom",
+    "label": "Word carousel",
+    "size": 92
+   }
+  ]
+ },
+ "outro": {
+  "from": 33.1,
+  "card": {
+   "t": 33.1,
+   "out": 34.3,
+   "icon": "bolt",
+   "big": "Live today",
+   "sub": "On iOS and Android",
+   "url": "yourproduct.com"
+  },
+  "title": {
+   "t": 34.45,
+   "html": "Everything <span>your team</span> needs"
+  },
+  "tiles": [
+   {
+    "t": 34.98,
+    "label": "Smart cuts",
+    "icon": "scissors",
+    "color": "#7DD3FC"
+   },
+   {
+    "t": 35.5,
+    "label": "Taps &amp; zooms",
+    "icon": "zoom",
+    "color": "#FBBF24"
+   },
+   {
+    "t": 36.03,
+    "label": "Headlines that open big",
+    "icon": "type",
+    "color": "#F472B6"
+   },
+   {
+    "t": 36.56,
+    "label": "42 text animations",
+    "icon": "sparkle",
+    "color": "#818CF8"
+   },
+   {
+    "t": 37.08,
+    "label": "Styles from references",
+    "icon": "palette",
+    "color": "#4ADE80"
+   },
+   {
+    "t": 37.61,
+    "label": "Voice &amp; music",
+    "icon": "music",
+    "color": "#F59E0B"
+   }
+  ],
+  "converge": 38.66,
+  "hit": 40.2,
+  "lockup": {
+   "name": "YOUR<br>PRODUCT",
+   "tagline": "One line on what it does for them.",
+   "cta": "Try it free",
+   "url": "yourproduct.com",
+   "credits": "Voice · ElevenLabs &nbsp;·&nbsp; Music · Epidemic Sound"
+  },
+  "fade": 42.4
+ },
+ "_note": "Example: the structure of the Video maker launch demo (opening, hook, feature, montage, outro) with made-up copy. Media paths are relative to public/: put your clips in public/img/. Times are video seconds; put section starts on beats from beats.py."
+}

@@ -1,0 +1,326 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Launch demo</title>
+<link rel="stylesheet" href="vendor/devices.css"><!-- iPhone 14 Pro frame: devices.css 0.2.0, MIT (vendor/devices-LICENSE.txt) -->
+<style>
+  @font-face { font-family: "Poppins"; src: url("fonts/Poppins-400.woff2") format("woff2"); font-weight: 400; font-display: block; }
+  @font-face { font-family: "Poppins"; src: url("fonts/Poppins-500.woff2") format("woff2"); font-weight: 500; font-display: block; }
+  @font-face { font-family: "Poppins"; src: url("fonts/Poppins-700.woff2") format("woff2"); font-weight: 700; font-display: block; }
+  :root { --bg: #0F172A; --panel: #1E293B; --line: #334155; --ink: #F8FAFC; --muted: #94A3B8; --a1: #4F46E5; --a2: #7DD3FC; --a3: #DB2777; --a4: #FBBF24; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1080px; overflow: hidden; background: var(--bg); }
+  #stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: var(--bg); font-family: "Poppins", sans-serif; color: var(--ink); }
+  .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; overflow: hidden; opacity: 0; }
+  .abs { position: absolute; }
+  .mono { font-family: "SF Mono", Menlo, monospace; }
+  #glow { position: absolute; inset: 0; background: radial-gradient(600px 420px at 12% 0%, color-mix(in srgb, var(--a1) 30%, transparent), transparent 70%),
+          radial-gradient(520px 420px at 100% 100%, color-mix(in srgb, var(--a3) 20%, transparent), transparent 70%); }
+  .chip { display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px; border-radius: 26px; font-weight: 600; font-size: 22px; white-space: nowrap; }
+
+  /* section tag and captions */
+  #tag { left: 48px; top: 38px; height: 46px; display: flex; align-items: center; gap: 14px; opacity: 0; z-index: 30; }
+  #tag .n { width: 46px; height: 46px; border-radius: 14px; background: var(--a1); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; }
+  #tag .t { font-weight: 600; font-size: 24px; } #tag .mask { overflow: hidden; height: 46px; display: flex; align-items: center; }
+  #caps { left: 0; top: 944px; width: 1080px; height: 96px; z-index: 40; }
+  .cap { position: absolute; left: 50%; top: 0; transform: translateX(-50%); white-space: nowrap; padding: 14px 30px; border-radius: 22px;
+         background: rgba(15,23,42,.78); font-weight: 500; font-size: 36px; line-height: 1.25; opacity: 0; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .cap span { color: rgba(248,250,252,.62); }
+
+  /* 1. opening: real people buried in requests */
+  #open { z-index: 20; background: #000; }
+  #open video { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; object-fit: cover; filter: saturate(.8) contrast(1.06) brightness(.8); }
+  #open .vig { position: absolute; inset: 0; background: radial-gradient(130% 100% at 30% 40%, transparent 45%, rgba(2,6,23,.75) 100%),
+               linear-gradient(180deg, rgba(2,6,23,.35), transparent 30%, transparent 62%, rgba(2,6,23,.6)); }
+  .rq { position: absolute; right: 44px; bottom: 170px; width: 470px; padding: 16px 20px 16px 76px; border-radius: 22px; background: rgba(255,255,255,.96);
+        color: #0F172A; box-shadow: 0 18px 40px rgba(0,0,0,.35); opacity: 0; transform-origin: 100% 100%; }
+  .rq .av { position: absolute; left: 18px; top: 16px; width: 44px; height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 17px; font-style: normal; }
+  .rq .nm { font-size: 17px; font-weight: 700; } .rq .nm i { font-style: normal; font-weight: 500; color: #64748B; margin-left: 8px; font-size: 15px; }
+  .rq .tx { font-size: 23px; font-weight: 500; line-height: 1.3; margin-top: 2px; }
+  .rq .fl { margin-top: 10px; display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; background: #F1F5F9; font-size: 17px; }
+  .rq .fl b { width: 22px; height: 26px; border-radius: 4px; background: var(--a3); display: inline-block; }
+  #bell { left: 44px; top: 38px; height: 54px; padding: 0 20px 0 16px; border-radius: 27px; background: rgba(15,23,42,.82); display: flex; align-items: center; gap: 12px;
+          font-weight: 600; font-size: 21px; opacity: 0; z-index: 21; }
+  #bell .cnt { min-width: 34px; height: 34px; padding: 0 9px; border-radius: 17px; background: #EF4444; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 19px; }
+  #wipe0 { left: -1200px; top: 0; width: 1200px; height: 1080px; background: linear-gradient(90deg, var(--a1), var(--a2)); z-index: 36; }
+
+  /* 3. the feature on an iPhone */
+  #phone { left: 369px; top: 205px; width: 428px; height: 868px; opacity: 0; filter: drop-shadow(0 40px 60px rgba(0,0,0,.55)); }
+  #screen { overflow: hidden; background: #F6F5F2; }
+  #screen img, #screen video { position: absolute; left: 0; top: 0; width: 390px; height: 830px; object-fit: cover; }
+  #fdim { left: 0; top: 0; width: 1080px; height: 1080px; background: rgba(15,23,42,.8); opacity: 0; z-index: 5; }
+  #headBig { left: 0; top: 0; width: 1080px; height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+             font-weight: 700; font-size: 92px; line-height: 1.08; text-align: center; letter-spacing: -1px; opacity: 0; z-index: 6; }
+  #headBig .ln { overflow: hidden; padding: 0 10px; } #headBig .ln span { display: inline-block; }
+  .call { opacity: 0; } .call .ln { position: absolute; height: 3px; transform-origin: 0 50%; }
+
+  /* 4. montage on the music's drop */
+  #mont { opacity: 1; visibility: hidden; z-index: 15; }
+  .mc { position: absolute; left: 0; top: 0; width: 1080px; height: 1080px; overflow: hidden; visibility: hidden; }
+  .mc .st { position: absolute; left: 40px; top: 240px; width: 1000px; height: 600px; }
+  .mc .a { position: absolute; left: 48px; top: 44px; } .mc .tr { position: absolute; left: 48px; bottom: 54px; }
+  .mc .k { font-size: 17px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 600; opacity: .7; }
+  .mc .v { font-size: 34px; font-weight: 700; margin-top: 4px; }
+  #mflash { background: #fff; opacity: 0; z-index: 25; }
+  #wipe2 { left: -1200px; top: 0; width: 1200px; height: 1080px; background: var(--a1); z-index: 34; }
+
+  /* 5. outro */
+  .ofull { left: 0; top: 0; width: 1080px; height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+  #ocard .big { font-weight: 700; font-size: 112px; line-height: 1; letter-spacing: -3px; margin-top: 22px; }
+  #ocard .sub { margin-top: 22px; font-size: 32px; color: #CBD5E1; font-weight: 500; } #ocard .url { margin-top: 16px; font-size: 28px; color: var(--a2); }
+  #rtitle { left: 0; top: 200px; width: 1080px; text-align: center; font-weight: 700; font-size: 46px; opacity: 0; } #rtitle span { color: var(--a4); }
+  #tiles { left: 66px; top: 300px; width: 948px; height: 400px; }
+  .tile { position: absolute; width: 300px; height: 180px; border-radius: 26px; background: var(--panel); border: 2px solid var(--line); padding: 26px 26px 0;
+          opacity: 0; box-shadow: 0 24px 50px rgba(0,0,0,.35); }
+  .tile svg { width: 54px; height: 54px; } .tile b { display: block; margin-top: 16px; font-size: 27px; font-weight: 600; line-height: 1.15; }
+  #oglow { left: 290px; top: 290px; width: 500px; height: 500px; border-radius: 50%; opacity: 0;
+           background: radial-gradient(circle, color-mix(in srgb, var(--a2) 85%, transparent) 0%, color-mix(in srgb, var(--a1) 55%, transparent) 40%, transparent 70%); }
+  #lock .wm { font-weight: 700; font-size: 150px; line-height: .95; letter-spacing: -4px; text-align: center;
+              background: linear-gradient(100deg, var(--a2) 0%, var(--a1) 45%, var(--a3) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #lock .tg { margin-top: 30px; font-size: 34px; font-weight: 500; color: #E2E8F0; }
+  #lock .gh { margin-top: 34px; display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 600; }
+  #lock .url { margin-top: 12px; font-size: 26px; color: var(--a2); } #lock .crl { margin-top: 40px; font-size: 19px; color: var(--muted); }
+  #oflash { left: 0; top: 0; width: 1080px; height: 1080px; background: #fff; opacity: 0; z-index: 45; }
+  #oblack { left: 0; top: 0; width: 1080px; height: 1080px; background: #000; opacity: 0; z-index: 46; }
+
+  /* CUSTOM CSS: build.py inserts custom.css here */
+/*CUSTOM-CSS*/
+</style>
+</head>
+<body>
+<div id="stage" data-composition-id="launch-demo" data-start="0" data-duration="/*DURATION*/" data-fps="30" data-width="1080" data-height="1080">
+  <div id="glow"></div>
+  <div class="layer" id="hook"><!--HOOK-VIDEO--></div>
+  <div class="layer" id="feature">
+    <div class="abs" id="phone"><div class="device device-iphone-14-pro">
+      <div class="device-frame"><div class="device-screen" id="screen"><!--FEATURE-MEDIA--></div></div>
+      <div class="device-stripe"></div><div class="device-header"></div><div class="device-sensors"></div><div class="device-btns"></div><div class="device-power"></div>
+    </div></div>
+    <div class="abs" id="fdim"></div>
+    <div class="abs" id="headBig"></div>
+  </div>
+  <!-- CUSTOM SCENES: the product's own scenes (each a .layer with an id); build.py inserts custom.html here -->
+<!--CUSTOM-HTML-->
+  <div class="layer" id="mont"><div class="layer" id="mflash"></div></div>
+  <div class="layer" id="outro">
+    <div class="abs ofull" id="ocard"></div>
+    <div class="abs" id="rtitle"></div>
+    <div class="abs" id="tiles"></div>
+    <div class="abs" id="oglow"></div>
+    <div class="abs ofull" id="lock"></div>
+  </div>
+  <div class="layer" id="open"><!--OPEN-VIDEOS--><div class="vig"></div></div>
+  <div class="abs" id="bell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F8FAFC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span id="bellT"></span><span class="cnt" id="bellN">0</span></div>
+  <div class="abs" id="tag"><div class="n" id="tagN"></div><div class="mask"><div class="t" id="tagT"></div></div></div>
+  <div class="abs" id="caps"></div>
+  <div class="abs" id="wipe2"></div>
+  <div class="abs" id="wipe0"></div>
+  <div class="abs" id="oflash"></div>
+  <div class="abs" id="oblack"></div>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/text-fx.js"></script>
+  <script>
+  (function () {
+    const C = /*CONFIG*/{}/*END*/;
+    const WORDS = /*WORDS*/[]/*END*/;
+    const $ = (s) => document.querySelector(s);
+    const el = (tag, cls, html, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; if (parent) parent.appendChild(e); return e; };
+    const root = gsap.timeline({ paused: true });
+    const stage = $("#stage");
+    Object.entries(C.palette || {}).forEach(([k, v]) => stage.style.setProperty("--" + k, v));
+    // every <video> is written into the page by build.py with its own data-start (HyperFrames reads media before scripts
+    // run, and never inside a timed wrapper); the layers are untimed and only faded here
+    const ICONS = {
+      scissors: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/>',
+      zoom: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/>',
+      type: '<path d="M4 7V4h16v3M9 20h6M12 4v16"/>',
+      sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+      palette: '<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3 0 5.5-2.5 5.5-5.5C22 6 17.5 2 12 2z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/>',
+      music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+      bolt: '<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>', chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+      chart: '<path d="M3 3v18h18M7 15l4-4 3 3 5-6"/>', shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+      globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/>', check: '<path d="M20 6L9 17l-5-5"/>',
+      clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', phone: '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/>',
+    };
+    const icon = (name, col, size) => '<svg viewBox="0 0 24 24" width="' + (size || 54) + '" height="' + (size || 54) + '" fill="none" stroke="' + col +
+      '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || ICONS.check) + "</svg>";
+    const STAR = (s) => '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="#FBBF24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
+
+    // ---------------- captions: whole sentences, at most 6 words a chunk, the spoken word lit ----------------
+    const chunks = []; let sent = [];
+    WORDS.forEach((w, i) => {
+      sent.push(w); const nxt = WORDS[i + 1];
+      if (!nxt || /[.?!]$/.test(w.w) || nxt.line !== w.line) {
+        const n = Math.ceil(sent.length / 6), size = Math.ceil(sent.length / n);
+        for (let k = 0; k < sent.length;) {
+          let e = Math.min(sent.length, k + size);
+          for (let j = e - 1; j > k + 2 && j >= e - 2; j--) if (/,$/.test(sent[j].w)) { e = j + 1; break; }
+          chunks.push(sent.slice(k, e)); k = e;
+        }
+        sent = [];
+      }
+    });
+    chunks.forEach((c, ci) => {
+      const d = el("div", "cap", c.map((w) => "<span>" + w.w + "</span>").join(" "), $("#caps"));
+      const next = chunks[ci + 1];
+      const end = next && next[0].line === c[0].line ? next[0].t - 0.08 : c[c.length - 1].e + 0.35;
+      root.set(d, { opacity: 1 }, c[0].t - 0.07); root.set(d, { opacity: 0 }, end);
+      const sp = d.querySelectorAll("span");
+      c.forEach((w, k) => { root.set(sp[k], { color: "#FBBF24" }, w.t); root.set(sp[k], { color: "#F8FAFC" }, w.e + 0.05); });
+    });
+
+    // ---------------- section tags ----------------
+    (C.tags || []).forEach(([t, n, txt, hideAt], i) => {
+      root.set("#tagN", { textContent: n }, t); root.set("#tagT", { textContent: txt }, t);
+      root.fromTo("#tag", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out", immediateRender: false }, t);
+      if (hideAt) root.to("#tag", { opacity: 0, duration: 0.3 }, hideAt);
+    });
+
+    // ---------------- 1. opening ----------------
+    const O = C.opening;
+    if (O) {
+      root.set("#open", { opacity: 1 }, 0);
+      $("#bellT").textContent = O.counter || "Requests";
+      const rqs = (O.requests || []).map((r, i) => el("div", "rq",
+        '<i class="av" style="background:' + (r.color || "#4F46E5") + '">' + (r.init || "") + '</i><div class="nm">' + r.who + "<i>now</i></div>" +
+        '<div class="tx">' + r.text + "</div>" + (r.file ? '<div class="fl"><b></b><span class="mono">' + r.file + "</span></div>" : ""), $("#open")));
+      const hts = rqs.map((e) => e.offsetHeight + 14);
+      if (rqs.length) root.fromTo("#bell", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, O.requests[0].t - 0.15);
+      O.requests.forEach((r, i) => {
+        root.fromTo(rqs[i], { opacity: 0, scale: 0.6, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.38, ease: "back.out(1.9)" }, r.t);
+        root.set("#bellN", { textContent: String(i + 1) }, r.t);
+        root.fromTo("#bellN", { scale: 1.6 }, { scale: 1, duration: 0.3, ease: "back.out(3)" }, r.t);
+        for (let j = 0; j < i; j++) {
+          let up = 0; for (let k = j + 1; k <= i; k++) up += hts[k];
+          root.to(rqs[j], { y: -up, opacity: up > 560 ? 0 : 1, duration: 0.3, ease: "power2.out" }, r.t);
+        }
+      });
+      root.to("#open video", { scale: 1.06, duration: O.to, ease: "none" }, 0);
+      root.to("#wipe0", { x: 1200, duration: 0.28, ease: "power3.in" }, O.to - 0.3);
+      root.set(["#open", "#bell"], { opacity: 0 }, O.to);
+      root.to("#wipe0", { x: 2400, duration: 0.3, ease: "power3.out" }, O.to);
+    }
+
+    // ---------------- 2. hook: the product's name, footage inside the letters (fast-cut text-mask) ----------------
+    const H = C.hook;
+    if (H) {
+      root.set("#hook", { opacity: 1 }, H.start); root.set("#hook", { opacity: 0 }, H.start + H.dur);
+    }
+
+    // ---------------- 3. the feature on an iPhone, with callouts and a headline that opens big ----------------
+    const F = C.feature;
+    if (F) {
+      root.set("#feature", { opacity: 1 }, F.from);
+      root.set("#phone", { scale: 0.8, transformOrigin: "0 0" }, 0);
+      root.fromTo("#phone", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, F.phoneIn || F.from + 0.1);
+      (F.callouts || []).forEach((c, i) => {
+        const d = el("div", "abs call", '<div class="ln" style="left:-70px;top:25px;width:66px;background:' + c.color + '"></div><div class="chip" style="background:' +
+          c.color + ';color:#0F172A">' + c.label + "</div>", $("#feature"));
+        d.style.left = (c.x || 760) + "px"; d.style.top = c.y + "px";
+        root.fromTo(d, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.35, ease: "back.out(2)" }, c.t);
+        root.fromTo(d.querySelector(".ln"), { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, c.t + 0.05);
+      });
+      const HL = F.headline;
+      if (HL) {
+        $("#headBig").innerHTML = HL.lines.map((l) => '<div class="ln"><span>' + l + "</span></div>").join("");
+        root.set("#headBig", { opacity: 1 }, HL.t - 0.05);
+        root.to("#fdim", { opacity: 1, duration: 0.25 }, HL.t - 0.05);
+        root.fromTo("#headBig .ln span", { yPercent: 110 }, { yPercent: 0, duration: 0.45, ease: "power3.out", stagger: 0.1 }, HL.t);
+        root.to("#headBig", { y: -398, scale: 0.44, duration: 0.65, ease: "power3.inOut" }, HL.glide);
+        root.to("#fdim", { opacity: 0, duration: 0.5 }, HL.glide + 0.05);
+      }
+      // out: a whip pan
+      root.to("#feature", { x: -1080, filter: "blur(18px)", duration: 0.3, ease: "power3.in" }, F.to - 0.15);
+      root.set("#feature", { opacity: 0 }, F.to + 0.15);
+    }
+
+    // CUSTOM TIMELINE: build.py inserts custom.js here; it animates the product's own scenes on `root`, in video time
+/*CUSTOM-JS*/
+
+    // ---------------- 4. montage: one card every N beats from the music's drop ----------------
+    const M = C.montage;
+    if (M) {
+      const B = (M.beats || 2) * 60 / M.bpm;
+      const TR = { wipe: "Wipe", iris: "Iris", glitch: "Glitch", whip: "Whip pan", push: "Push", zoom: "Zoom-through" };
+      root.set("#mont", { visibility: "visible" }, M.t0 - 0.01);
+      M.cards.forEach((c, i) => {
+        const card = el("div", "mc", '<div class="st"></div><div class="a"><div class="k">' + (c.kind || "Text animation") + '</div><div class="v">' + (c.label || c.fx) +
+          '</div></div><div class="tr"><div class="k">Transition</div><div class="v">' + (c.trLabel || TR[c.tr] || c.tr) + "</div></div>", $("#mont"));
+        card.id = "mc" + i; card.style.background = c.bg; card.style.color = c.ink;
+        const t = M.t0 + i * B, prev = i ? $("#mc" + (i - 1)) : null;
+        const fx = TextFX.build(card.querySelector(".st"), c.fx, { text: c.text, ink: c.ink, accent: c.accent, paper: c.bg, size: c.size || 110 });
+        root.add(fx.tl.play(), t + 0.12);
+        root.set(card, { visibility: "visible", zIndex: 10 + i }, t);
+        if (c.tr === "wipe") root.fromTo(card, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "power3.inOut" }, t);
+        if (c.tr === "iris") root.fromTo(card, { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(75% at 50% 50%)", duration: 0.36, ease: "power2.in" }, t);
+        if (c.tr === "glitch") {
+          root.fromTo(card, { x: -40, filter: "hue-rotate(90deg) saturate(3)" }, { x: 0, filter: "hue-rotate(0deg) saturate(1)", duration: 0.24, ease: "steps(6)" }, t);
+          root.set("#mflash", { opacity: 0.55 }, t); root.to("#mflash", { opacity: 0, duration: 0.18, ease: "steps(3)" }, t + 0.01);
+          root.fromTo(card, { skewX: 14 }, { skewX: 0, duration: 0.2, ease: "steps(4)" }, t);
+        }
+        if (c.tr === "whip") {
+          if (prev) root.to(prev, { x: -1080, filter: "blur(16px)", duration: 0.28, ease: "power3.in" }, t - 0.12);
+          root.fromTo(card, { x: 1080, filter: "blur(16px)" }, { x: 0, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, t);
+        }
+        if (c.tr === "push") {
+          if (prev) root.to(prev, { y: -1080, duration: 0.35, ease: "power3.inOut" }, t);
+          root.fromTo(card, { y: 1080 }, { y: 0, duration: 0.35, ease: "power3.inOut" }, t);
+        }
+        if (c.tr === "zoom") {
+          if (prev) root.to(prev, { scale: 5, opacity: 0, duration: 0.32, ease: "power2.in" }, t - 0.04);
+          root.fromTo(card, { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "power3.out" }, t + 0.06);
+        }
+        if (prev) root.set(prev, { visibility: "hidden" }, t + 0.4);
+      });
+      const T5 = M.t0 + M.cards.length * B;              // out: an iris on the accent colour
+      root.fromTo("#wipe2", { x: 1200, clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(75% at 50% 50%)", duration: 0.3, ease: "power2.in" }, T5 - 0.3);
+      root.set(["#mont", ".mc"], { visibility: "hidden" }, T5);
+      root.to("#wipe2", { clipPath: "circle(0% at 50% 50%)", duration: 0.35, ease: "power2.out" }, T5);
+      root.set("#wipe2", { x: 0 }, T5 + 0.36);
+    }
+
+    // ---------------- 5. outro: a card, the recap tiles on the beat, the lockup on the music's final hit ----------------
+    const U = C.outro;
+    if (U) {
+      root.set("#outro", { opacity: 1 }, U.from);
+      if (U.card) {
+        $("#ocard").innerHTML = (U.card.icon === "star" ? STAR(110) : icon(U.card.icon || "check", "#FBBF24", 110)) + '<div class="big">' + U.card.big + "</div>" +
+          (U.card.sub ? '<div class="sub">' + U.card.sub + "</div>" : "") + (U.card.url ? '<div class="url mono">' + U.card.url + "</div>" : "");
+        root.set("#ocard", { opacity: 1 }, U.card.t);
+        root.fromTo("#ocard svg", { scale: 0, rotation: -120 }, { scale: 1, rotation: 0, duration: 0.55, ease: "back.out(2.2)" }, U.card.t);
+        root.fromTo("#ocard > div", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.14, ease: "power3.out" }, U.card.t + 0.15);
+        root.to("#ocard", { opacity: 0, scale: 0.9, duration: 0.3, ease: "power2.in" }, U.card.out);
+      }
+      if (U.title) { $("#rtitle").innerHTML = U.title.html; root.fromTo("#rtitle", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, U.title.t); }
+      (U.tiles || []).forEach((tl, i) => {
+        const d = el("div", "tile", icon(tl.icon, tl.color) + "<b>" + tl.label + "</b>", $("#tiles"));
+        d.style.left = (i % 3) * 324 + "px"; d.style.top = Math.floor(i / 3) * 204 + "px";
+        root.fromTo(d, { opacity: 0, scale: 0.6, y: 40 }, { opacity: 1, scale: 1, y: 0, duration: 0.38, ease: "back.out(2)" }, tl.t);
+        const cx = 66 + (i % 3) * 324 + 150, cy = 300 + Math.floor(i / 3) * 204 + 90;
+        root.to(d, { x: 540 - cx, y: 540 - cy, scale: 0.15, rotation: i % 2 ? 25 : -25, opacity: 0, duration: 0.85, ease: "power3.in" }, U.converge + i * 0.04);
+      });
+      if (U.title) root.to("#rtitle", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, U.converge - 0.1);
+      root.fromTo("#oglow", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1.5, duration: U.hit - U.converge - 0.2, ease: "power2.in" }, U.converge + 0.2);
+      root.to("#oglow", { opacity: 0, duration: 0.4 }, U.hit);
+      root.set("#oflash", { opacity: 0.9 }, U.hit); root.to("#oflash", { opacity: 0, duration: 0.35, ease: "power2.out" }, U.hit + 0.02);
+      const L = U.lockup;
+      $("#lock").innerHTML = '<div class="wm">' + L.name + "</div>" + (L.tagline ? '<div class="tg">' + L.tagline + "</div>" : "") +
+        (L.cta ? '<div class="gh">' + STAR(34) + L.cta + "</div>" : "") + (L.url ? '<div class="url mono">' + L.url + "</div>" : "") +
+        (L.credits ? '<div class="crl">' + L.credits + "</div>" : "");
+      root.set("#lock", { opacity: 1 }, U.hit);
+      root.fromTo("#lock .wm", { scale: 1.5, filter: "blur(16px)", opacity: 0 }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.5, ease: "power4.out" }, U.hit);
+      root.fromTo("#lock > div:not(.wm)", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.42, stagger: 0.2, ease: "power3.out" }, U.hit + 0.43);
+      root.to("#lock .wm", { scale: 1.035, duration: 2.6, ease: "none" }, U.hit + 0.53);
+      root.to("#oblack", { opacity: 1, duration: 0.6, ease: "power1.in" }, U.fade);
+    }
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines["launch-demo"] = root;
+  })();
+  </script>
+</div>
+</body>
+</html>
