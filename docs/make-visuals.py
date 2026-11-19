@@ -76,7 +76,7 @@ class Canvas:
 
 
 def workflow():
-    c = Canvas(1200, 680)
+    c = Canvas(1200, 710)
     c.text(48, 44, "How Video maker works", F("Bold", 30), INK)
     c.text(48, 88, "You bring a screen recording and a brief. Claude Code plans, cuts, voices, scores and renders it on your Mac.",
            F("Regular", 16), MUTED)
@@ -92,10 +92,10 @@ def workflow():
         (AMBER, "4  YOU REVIEW", "In the chat",
          ["Headline, tap and zoom sheets with timestamps", "A short clip of just those moments", "Notes by time: \"0:17 slower glide\""]),
         (GREEN, "5  YOU SHIP", "Versioned MP4",
-         ["v1, v2, ... never overwritten", "Each version's cut list kept", "A reference's style is saved as a skill for next time",
-          "Ask for cut-downs: 15 s, 16:9"]),
+         ["v1, v2, ... never overwritten; each cut list kept", "A reference's style is saved as a skill for next time",
+          "Ask for cut-downs: 15 s, 16:9", "Made a skill? \"Share my skill\" sends it to the repo for everyone"]),
     ]
-    x, y, w, h, gap = 48, 140, 204, 370, 22
+    x, y, w, h, gap = 48, 140, 204, 400, 22
     for i, (col, tag, title, items) in enumerate(stages):
         x0 = x + i * (w + gap)
         c.box(x0, y, x0 + w, y + h, 18, fill=CARD, outline=LINE)
@@ -114,7 +114,7 @@ def workflow():
     c.arrow(lx0, ly, lx0, y + h + 4, AMBER, 3)
     c.text((lx0 + lx1) / 2, ly + 16, "notes become a new version in minutes", F("Medium", 13), AMBER, "mm")
     # where things run
-    yb = 588
+    yb = 618
     c.box(48, yb, 1152, yb + 56, 14, fill=CARD, outline=LINE)
     c.text(68, yb + 28, "On your Mac", F("SemiBold", 13), INK, "lm")
     xx = 170
@@ -150,6 +150,9 @@ def steps():
         ("You", GREEN, "1 min", "Ship it",
          "The MP4 is in Movies > YouTube Renders, one file per version. A reference's style is saved as a skill: next time say "
          "\"in the <name> style\". Ask for cut-downs: a 15 s teaser, a 16:9 for the site."),
+        ("You + Claude", ROSE, "5 min", "Share a skill you made (optional)",
+         "Say \"share my skill\". Claude checks it (no footage, keys or company names), shows what would go public, and "
+         "opens a pull request after your yes. Needs a free GitHub account."),
     ]
     W, top, rh = 1200, 140, 118
     c = Canvas(W, top + len(rows) * rh + 70)
