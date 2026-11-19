@@ -74,7 +74,9 @@ ask them to type a command.
 - Finished videos: `~/Movies/YouTube Renders/<project>/<project>-v<N>-<size>.mp4`, one file per version, never
   overwritten; each version's cut or storyboard is kept in `videos/<project>/versions/v<N>/`.
 - Looks: `.claude/skills/youtube-edit/styles/{kit,brand,mine}.json`; rules in `kit/STYLE-GUIDE.md`.
-- Secrets: `.env` (`ELEVENLABS_API_KEY`). Never print it or commit it.
+- Secrets: `.env` (`ELEVENLABS_API_KEY`). Never print it or commit it. Reading it is blocked in `.claude/settings.json`
+  (so Edit can't open it either); change a line (like `ELEVENLABS_MODEL=`) with a one-line Python write through Bash that
+  never prints the file.
 - `npm test` runs every skill's tests (`tests.sh` finds them; must end `OK`); `npm run doctor` checks HyperFrames.
   New skills follow `CONTRIBUTING.md` (SKILL.md front matter, `scripts/tests/`, credits, nothing private).
 
