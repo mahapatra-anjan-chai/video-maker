@@ -20,7 +20,7 @@ Right after the Personal / Work and look questions, before any cut list or story
    creator taps the ones they want and presses "Use the picked animations", which sends you a line like
    `Text animations for this video: 01 Fade up (fade-up), 13 Highlight (highlight)`. Regenerate the file with
    `python3 $TA/scripts/tfx.py picker` whenever `text-fx.js` changed.
-2. **Otherwise** (terminal): send `$TA/preview/preview.png` and `$TA/preview/text-animations.mp4` with SendUserFile
+2. **Otherwise** (no in-chat widget): send `$TA/preview/preview.png` and `$TA/preview/text-animations.mp4` with SendUserFile
    (the numbered gallery; refresh it with `python3 $TA/scripts/tfx.py gallery --out $TA/preview`), then ask with
    AskUserQuestion, multi-select, "Which text animation style for this video?":
    - **Clean** (fade up, mask reveal, highlight, word carousel): launches, B2B, most product explainers
@@ -139,7 +139,7 @@ Options: `text`, `size` (px; default fits the box), `ink`, `accent`, `accent2`, 
 | `text-fx.js` | The 42 animations |
 | `scripts/tfx.py` | `picker` (writes the picker files), `gallery` (renders the preview), `clip` (one transparent MOV) |
 | `picker.widget.html` | The in-chat picker (generated) |
-| `gallery.html` | The same picker as a page: open it in a browser, pick, copy the line into Claude Code |
+| `gallery.html` | The page `tfx.py gallery` renders the preview video from (never shown to the creator) |
 | `preview/` | `preview.png` and `text-animations.mp4`: all 42, numbered, in motion |
 
 The catalogue follows the "Claude + Figma Motion: Text Animations" board curated by Shlomo Genchin (Unbore.com); the

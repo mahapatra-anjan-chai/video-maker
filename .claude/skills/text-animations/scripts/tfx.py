@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """tfx.py: the text-animation picker, the preview gallery, and single animated texts for a video.
 
-  python3 tfx.py picker                      write gallery.html (open in a browser) and picker.widget.html (the in-chat picker)
+  python3 tfx.py picker                      write picker.widget.html (the in-chat picker) and gallery.html (the render page)
   python3 tfx.py gallery --out DIR           render all 42 as a looping preview: DIR/text-animations.mp4 and DIR/preview.png
   python3 tfx.py clip --id fade-up --text "Launch day, sorted" --size 1080x1920 --box 80,120,920,260 --font-size 72 \\
                       --dur 3 --out title.mov [--ink "#FFFFFF" --accent "#7DD3FC"]

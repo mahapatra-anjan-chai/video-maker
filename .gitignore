@@ -1,8 +1,10 @@
 # secrets
 .env
 
-# dependencies and caches
+# dependencies and caches (setup.sh installs its own tools into .tools/ and .venv/)
 node_modules/
+.tools/
+.venv/
 __pycache__/
 *.pyc
 .DS_Store
@@ -21,12 +23,10 @@ videos/_shared/sfx/*
 .claude/skills/youtube-edit/assets/vendor/
 .claude/skills/localize/fonts/*.ttf
 
-# local only: my company's brand kit and notes, and the old upload page
+# local only: my company's brand kit and notes
 CLAUDE.local.md
 .claude/skills/youtube-edit/styles/glance.json
 .claude/skills/youtube-edit/styles/glance/
-ui/
-.claude/launch.json
 
 # demo build scratch (docs/demo/make-demo.py regenerates it)
 docs/demo/work/

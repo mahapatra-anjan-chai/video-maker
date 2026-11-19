@@ -10,7 +10,8 @@ render. Run everything from the project folder with `FC=".claude/skills/fast-cut
 
 ## The route (aim: first draft in front of the creator within ~10 minutes)
 
-1. **Read the brief once.** The upload page's `brief.json` (purpose, shape, notes) and the files in `$W/raw/`. The
+1. **Read the brief once.** What the creator said in the chat (written to `brief.json`: purpose, shape, notes) and the
+   files in `$W/raw/` (copy what they dragged into the chat there). The
    project's standing check still applies: confirm Personal or Office in the same message as the cut list, never as a
    separate round. Ask only what blocks the edit; state every default instead of asking about it. In the same message,
    ask for reference videos (`$W/refs/`); if there are any, run the `reference-style` scan first and cut to its style

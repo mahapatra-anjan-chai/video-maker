@@ -48,6 +48,8 @@ class Parse(unittest.TestCase):
     def test_flash_costs_half(self):
         self.assertEqual(el.credits_per_char("eleven_flash_v2_5"), 0.5)
         self.assertEqual(el.credits_per_char("eleven_multilingual_v2"), 1.0)
+        self.assertEqual(el.credits_per_char(el.DRAFT_MODEL), 0.0)                       # the Mac's own voice is free
+        self.assertEqual(el.pick_model("eleven_multilingual_v2"), ("eleven_multilingual_v2", "chosen"))
 
 
 class Gate(unittest.TestCase):
@@ -77,11 +79,12 @@ class Stitch(unittest.TestCase):
         os.makedirs(cache)
         items, _ = el.parse_script(SCRIPT, "Brian", {"HOST": "Daniel"})
         for it in (i for i in items if i["kind"] == "line"):
-            key = el.cache_key(el.voice_id(it["voice"]), "eleven_multilingual_v2", None, it["text"])
+            key = el.cache_key(el.voice_id(it["voice"]), "eleven_flash_v2_5", None, it["text"])
             ffmpeg("-f", "lavfi", "-i", "sine=f=440:d=1.0", "-ar", "44100", "-b:a", "128k", os.path.join(cache, key + ".mp3"))
             write(os.path.join(cache, key + ".json"), {"text": it["text"], "alignment": alignment(it["text"], per=1.0 / len(it["text"]))})
         sp = write(os.path.join(d, "script.txt"), SCRIPT)
-        r = run("elevenlabs.py", "voiceover", "--script", sp, "--out", os.path.join(d, "vo"), "--cache", cache, "--cast", "HOST=Daniel")
+        r = run("elevenlabs.py", "voiceover", "--script", sp, "--out", os.path.join(d, "vo"), "--cache", cache, "--cast", "HOST=Daniel",
+                "--model", "eleven_flash_v2_5")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("4 of 4 lines cached", r.stdout)
         meta = load(os.path.join(d, "vo", "voiceover.json"))

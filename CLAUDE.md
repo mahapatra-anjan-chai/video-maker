@@ -6,6 +6,15 @@ ElevenLabs (API), driven from Claude Code.
 **First, if `CLAUDE.local.md` exists, read it:** it names the creator's company, its brand kit and any local rules.
 It is never committed.
 
+**New here, or a tool is missing?** Use the `setup` skill (`.claude/skills/setup/SKILL.md`): it installs everything
+inside this folder with `bash setup.sh` (no Homebrew, no admin password) and walks the person through it in the chat.
+When `python3` lacks Pillow, or `ffmpeg` / `npx` is not found, prefix the command with `. .tools/env.sh 2>/dev/null;`.
+
+**Everything happens in this chat.** The people using this are product marketers, not developers: ask with
+AskUserQuestion, show stills, sheets and drafts with SendUserFile, use the in-chat text-animation picker. Never open or
+point them to a web page, a local server, `hyperframes preview` / Studio, a Terminal window or a settings file, and never
+ask them to type a command.
+
 - **Any video request in this folder goes through the `youtube-edit` skill** (`.claude/skills/youtube-edit/SKILL.md`),
   starting with its "Before every video: ask first" section. The global HyperFrames skills (`hyperframes`,
   `hyperframes-core`, `media-use`, ...) are reference for composition details only; they do not replace this workflow.
@@ -20,6 +29,9 @@ It is never committed.
   ripples (with a click in the mix), zooms on the feature being explained, and section headlines that open full screen
   and glide to the top.
 - **Screens that must change** (new copy inside the UI, removed elements): the youtube-edit skill and HyperFrames.
+- **A launch demo** (a 60-90 s announcement: the pain, the product's name, the feature on an iPhone, a montage on the
+  music's drop, a logo lockup on the music's final hit): the `launch-demo` skill. It is the recipe of Video maker's own
+  demo, so launch videos look the same whoever makes them.
 - **A finished video in another language** (new voiceover and subtitles, same picture): the `localize` skill.
   The voice is separated out of the mix so the music stays, every line is dubbed into its original slot with a voice
   per character, and a frosted band covers the burned-in subtitles with the translated ones. Ask yes on the
@@ -42,7 +54,13 @@ It is never committed.
    storyboard's `"style"`). After delivering a video made from a reference, save its style as a skill
    (`reference-style`, step 7).
 3. Before using any of the company's own videos as inspiration or reference: name it and wait for a yes.
-4. Before any ElevenLabs generation or AI B-roll: show the plan and cost, wait for a yes.
+4. Before any ElevenLabs generation or AI B-roll: show the plan and cost, wait for a yes. Spend as few credits as
+   possible (most people are on the free plan, 10,000 credits a month). The flow is the same for everyone: show the
+   full script, get a yes, generate once. The model follows the plan (`--model auto`): Flash on free accounts (half the
+   credits), the richer Multilingual v2 on paid ones (`ELEVENLABS_MODEL` in `.env` overrides). Only changed lines are paid
+   for again; never generate samples to pick a voice (they listen free on elevenlabs.io → Voices); show the credits
+   left (`elevenlabs.py balance`). `--draft` (the Mac's own voice, free) only when someone wants to hear the timing
+   before approving the script.
 5. Which text animations: show the `text-animations` picker (live previews of all 42, a dropdown by group) and save
    the pick in `brief.json` `text_animations`.
 

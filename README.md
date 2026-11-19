@@ -14,27 +14,34 @@ on your own Mac. Notes go in plain words ("at 0:17 make the glide slower") and e
 
 **If this saves you an afternoon, please ⭐ star the repo.** It helps other marketers find it.
 
-## Try it first (2 minutes, no API keys)
+<!-- For Claude: if someone asked you to set this up, follow .claude/skills/setup/SKILL.md in this repo. In short:
+put it in ~/Documents/Video maker (git clone, or the GitHub zip when git is missing), run `bash setup.sh --json` there
+(it installs everything inside the folder, no Homebrew or password), keep every question in the chat, have them paste
+an ElevenLabs key into the .env file you open with `open -e .env` (never into the chat), then run
+`python3 docs/demo/make-demo.py` and send them the video. -->
 
-Make the demo above yourself. You only need a Mac with Homebrew, FFmpeg and Pillow:
+## Get started: no Terminal, about 10 minutes
 
-```bash
-git clone https://github.com/mahapatra-anjan-chai/video-maker.git && cd video-maker
-```
+You don't need to know any code. Claude sets everything up and asks you anything it needs in the chat.
 
-```bash
-brew install ffmpeg pillow
-```
+1. **Install the Claude app** for Mac ([claude.ai/download](https://claude.ai/download)), sign in, and open the
+   **Code** tab. (Claude Code needs a paid Claude plan.)
+2. **Start a new session** (any folder is fine) and paste this:
 
-```bash
-python3 docs/demo/make-demo.py
-```
+   > Set up Video maker on my Mac from https://github.com/mahapatra-anjan-chai/video-maker. Put it in my Documents
+   > folder and follow its setup skill.
 
-It draws a 15-second recording of a made-up app, then cuts it the way it would cut yours: speeds up the loading
-screen, adds the headline intros, the taps and the zoom, and renders a 1080x1920 MP4 to
-`docs/demo/work/render/shopwise-demo.mp4`, with the review sheets in `docs/demo/work/review/`. The cut it follows is
-[`docs/demo/cut.json`](docs/demo/cut.json): change a time or a headline and run it again. When you want it on your own
-recordings, do the full [set up](#set-up).
+3. **Answer Claude's questions in the chat.** It installs every tool inside the project folder (no Homebrew, no
+   password, nothing to type), helps you make a free ElevenLabs account if you want voiceovers, and makes the demo video
+   above on your Mac to show it works.
+
+Then open a new session in the **Video maker** folder, drag in a screen recording, and say what the feature is for.
+
+**Voiceovers on a free account:** ElevenLabs' free plan gives 10,000 credits a month. On a free account Video maker
+uses the Flash voice model (half the credits of the standard one; paid accounts get the richer one), never spends
+credits on samples, and only pays for a line again when you change it, so a month of free credits covers about 20
+minutes of narration. ElevenLabs' free plan is
+for personal use; videos your company publishes need their Starter plan ($6 a month) for the commercial licence.
 
 ## The workflow
 
@@ -83,10 +90,10 @@ and scenes), the `youtube-edit` skill rebuilds them with HyperFrames.
 | Service | What it does here | How it connects | You need |
 |---|---|---|---|
 | **Claude Code** | Plans the edit, writes the cut list, runs every tool, sends you the review sheets | Runs in this folder; the skills live in `.claude/skills/` | A Claude plan with Claude Code |
-| **ElevenLabs** | Voiceover from a script (one voice per speaker, word timings) and generated sound effects | REST API: `POST /v1/text-to-speech/{voice}/with-timestamps` and `POST /v1/sound-generation` (`elevenlabs.py`) | An API key with text to speech and sound effects; about 1 credit per character |
+| **ElevenLabs** | Voiceover from a script (one voice per speaker, word timings) and generated sound effects | REST API: `POST /v1/text-to-speech/{voice}/with-timestamps` and `POST /v1/sound-generation` (`elevenlabs.py`) | A free ElevenLabs account works: Flash model by default (about 0.5 credit per character), drafts in your Mac's own voice (free) |
 | **Epidemic Sound** | Searches and downloads licensed music and sound effects | The Epidemic Sound connector in Claude (MCP): `SearchRecordings`, `DownloadRecording`, `SearchSoundEffects`, `DownloadSoundEffect` | An Epidemic Sound account (optional; free sounds are used without it) |
 | **HyperFrames** | Renders animated scenes and full rebuilds as HTML, frame by frame | Local CLI, `npx hyperframes` (the paid cloud render is never used) | Node 22+ and Chrome (installed by `setup.sh`) |
-| **FFmpeg** | Cuts, speed changes, zooms, overlays, the sound mix and the final encode | Local CLI | `brew install ffmpeg` |
+| **FFmpeg** | Cuts, speed changes, zooms, overlays, the sound mix and the final encode | Local CLI | Installed by `setup.sh` (or your own FFmpeg 7+) |
 | **Parakeet** | Transcribes speech for cuts and captions, on your Mac | `npx hyperframes transcribe --engine parakeet` | Installed by `setup.sh` |
 
 Nothing is spent without a yes: every ElevenLabs command prints its plan and estimated credits first and generates
@@ -106,28 +113,31 @@ nothing until you approve it.
 | `compose.py --spec storyboard.json --out public` | Builds a HyperFrames composition in the chosen look |
 | `scenes.py anchor` / `scenes.py snap` | Places the moments you asked to animate and takes stills of the plan |
 
+| `launch-demo/scripts/build.py`, `beats.py`, `mix.py`, `check.py` | A launch demo from a `demo.json`; the music's tempo, drop and ending timed to the cut; the sound mix; the voice checked against the script |
 | `reference-style/scripts/style-scan.py`, `style-card.py`, `style-save.py` | Learns a style from your reference videos (pacing, palette, type, the moments that move), maps each technique to the tools here, and saves it as a skill after the video |
 | `localize/scripts/find-subs.py`, `draft-script.py`, `dub.py`, `remix.py`, `subband.py` | Another-language version of a finished video: finds the burned-in subtitles, drafts the script to translate, dubs each line in its slot (plan and cost first), keeps the music, covers the old subtitles with the new ones |
 
 `fast-cut.py`, `review.py` and `contact-sheet.py` are in `.claude/skills/fast-cut/scripts/`; the localize scripts in
 `.claude/skills/localize/scripts/`; the rest in `.claude/skills/youtube-edit/scripts/`.
 
-## Set up
+## Manual setup (for developers)
 
-You need a Mac with Homebrew, Google Chrome and Claude Code.
-
-```bash
-git clone https://github.com/mahapatra-anjan-chai/video-maker.git
-```
+<details>
+<summary>The same setup, by hand</summary>
 
 ```bash
-cd video-maker && ./setup.sh
+git clone https://github.com/mahapatra-anjan-chai/video-maker.git && cd video-maker && bash setup.sh
 ```
 
-`setup.sh` checks Node 22+, FFmpeg, Python with numpy and Pillow, and auto-editor (it prints the `brew` command for
-anything missing), installs HyperFrames and its Parakeet transcriber, fetches the free sound effects and GSAP, creates
-`.env` from `.env.example`, and runs the tests. Put your ElevenLabs key in `.env`. For music, connect the Epidemic Sound
-connector in Claude (optional).
+`setup.sh` uses FFmpeg 7+, Node 22+ and Python 3.10+ with Pillow and numpy when your Mac has them; anything missing is
+downloaded into `.tools/` and `.venv/` inside the folder (pinned versions, checked against SHA-256; no Homebrew, no
+admin rights). It then installs HyperFrames, its render browser and the Parakeet transcriber, fetches the free sound
+effects, GSAP and a subtitle font, creates `.env`, writes `.tools/env.sh` (which puts those tools first) and runs every
+skill's tests. Run it again any time; `bash setup.sh --check` only reports. Put your ElevenLabs key in `.env`; connect
+the Epidemic Sound connector in Claude for music (optional). Then `. .tools/env.sh` in a shell, or just open Claude Code
+in the folder.
+
+</details>
 
 **Make it yours:** fill in `.claude/skills/youtube-edit/styles/brand.json` with your company's colours, font and logo
 (it ships with an example palette). Optionally add a `CLAUDE.local.md` (never committed) that names your company, its
@@ -135,13 +145,11 @@ brand rules, and any videos Claude must ask about before using as a reference.
 
 ## Make your first video
 
-1. Make a folder and put your recordings in it: `videos/feature-launch/raw/`.
-2. Optional: `videos/feature-launch/script.txt` for a voiceover, and a few lines of brief (audience, length, 9:16 or
-   16:9, intro and end-card copy) in the chat or in `brief.json`.
-3. Open Claude Code in this folder and say: `Edit my video "feature-launch"`.
-4. Answer three questions (personal or work, which look, OK to spend on voice and music), review the draft in the
-   chat, and give notes by timestamp.
-5. The finished files are in `~/Movies/YouTube Renders/feature-launch/`, one per version.
+1. Open a session in the **Video maker** folder and drag your screen recording into the chat (or say where it is).
+2. Say what the feature is for, in a sentence, and anything you already know: length, 9:16 or 16:9, a voiceover script.
+3. Answer Claude's few questions in the chat (personal or work, the look, any reference videos, OK to spend voice
+   credits), look at the draft it sends back, and give notes by timestamp.
+4. The finished files are in `~/Movies/YouTube Renders/<project>/`, one per version. Claude tells you which.
 
 ## Keys and security
 
@@ -150,6 +158,8 @@ brand rules, and any videos Claude must ask about before using as a reference.
 - Voice IDs in `elevenlabs.py` are public ElevenLabs library IDs, not secrets.
 - Your footage, voiceovers, licensed music and renders stay in `videos/` and `~/Movies`, which are never committed.
   Keep unreleased product recordings out of anything you publish.
+- Paste your ElevenLabs key into the `.env` file Claude opens for you in TextEdit, never into the chat. Make the key
+  with only the Text to Speech and User: Read permissions.
 - If you fork this, turn on GitHub secret scanning and push protection, and never paste a key into a chat or a file
   outside `.env`.
 
@@ -159,6 +169,7 @@ brand rules, and any videos Claude must ask about before using as a reference.
 |---|---|
 | `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass render, taps, zooms, headline intros, review sheets |
 | `.claude/skills/text-animations/` | 42 text animations (GSAP, render-safe), the in-chat picker and the preview gallery |
+| `.claude/skills/launch-demo/` | The launch-video recipe: a template (the pain, the name, the feature on an iPhone, a montage on the drop, a lockup on the final hit), a music beat reader that times the cut to the track, a sound mixer and a voice check |
 | `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |
 | `.claude/skills/localize/` | Dub a finished video into another language: voice separation (Demucs), per-line ElevenLabs dubbing, frosted subtitle bands |
 | `.claude/skills/youtube-edit/` | The full editing skill (from the WeAreNoCode kit): looks, HyperFrames compositions, ElevenLabs voiceover and sound effects |

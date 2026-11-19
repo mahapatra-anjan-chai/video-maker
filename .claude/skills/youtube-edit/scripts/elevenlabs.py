@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
 """elevenlabs.py: voiceover from a script, and sound effects, through the ElevenLabs API.
 
-Nothing is generated without --yes: every command first prints its plan (lines, voices, characters, estimated credits),
-so the creator can say yes before credits are spent. Lines already generated come from the cache and cost nothing.
+Nothing is generated without --yes: every command first prints its plan (lines, voices, characters, estimated credits
+and, when the key may read it, the credits left), so the creator can say yes before credits are spent.
 
+Spending as few credits as possible (most creators are on the free plan, 10,000 credits a month):
+  - The model follows the plan (--model auto): free accounts get Flash v2.5 (eleven_flash_v2_5, half the credits per
+    character, natural sounding); paid accounts get the richer Multilingual v2. ELEVENLABS_MODEL in .env overrides it,
+    and so does --model. Without the key's User: Read permission the plan is unknown, so Flash is used.
+  - --draft voices the script with the Mac's built-in voice: free, offline, same files and timings shape. Only when
+    someone wants to hear the timing before approving the script; the usual flow is script approved, then one
+    ElevenLabs generation.
+  - Lines already generated come from the cache: an edit pays only for the lines that changed.
+  - Never generate samples to pick a voice: the creator listens free on elevenlabs.io (Voices).
+
+  python3 elevenlabs.py balance                        credits used and left this month (needs the key's User: Read)
   python3 elevenlabs.py voices
   python3 elevenlabs.py voiceover --script W/script.txt --out W/voiceover [--voice Brian] [--cast "HOST=Brian,GUEST=Sarah"]
-                                  [--model eleven_multilingual_v2] [--speed 1.0] [--gap 0.25] [--para-gap 0.6] [--yes]
+                                  [--draft] [--model eleven_flash_v2_5] [--speed 1.0] [--gap 0.25] [--para-gap 0.6] [--yes]
   python3 elevenlabs.py voiceover --text "One line to say." --out W/voiceover [--yes]
   python3 elevenlabs.py sfx --prompt "soft UI click" --out videos/_shared/sfx/ui-click.mp3 [--seconds 0.8] [--yes]
 
@@ -59,7 +70,68 @@ SFX_PRICE = "about $0.12 a sound on the API price list"
 
 
 def credits_per_char(model):
+    if model == DRAFT_MODEL:
+        return 0.0
     return 0.5 if ("flash" in model or "turbo" in model) else 1.0
+
+
+DRAFT_MODEL = "macos-say"                    # --draft: the Mac's own voice, free and offline
+FREE_MODEL, PAID_MODEL = "eleven_flash_v2_5", "eleven_multilingual_v2"
+
+
+def env_setting(name):
+    v = os.environ.get(name, "").strip()
+    env = os.path.join(ROOT, ".env")
+    if not v and os.path.exists(env):
+        for line in open(env):
+            if line.strip().startswith(name + "="):
+                v = line.split("=", 1)[1].strip().strip('"').strip("'")
+    return v
+
+
+def pick_model(requested):
+    """--model auto: ELEVENLABS_MODEL from .env, else Multilingual v2 on a paid plan and Flash on the free plan."""
+    if requested != "auto":
+        return requested, "chosen"
+    m = env_setting("ELEVENLABS_MODEL")
+    if m:
+        return m, "ELEVENLABS_MODEL in .env"
+    b = balance()
+    if b and b[2] and b[2].lower() != "free":
+        return PAID_MODEL, "%s plan" % b[2]
+    return FREE_MODEL, "free plan" if b else "plan unknown, so the cheaper model"
+
+
+def say_line(text, path):
+    """A draft take with macOS `say` (no credits)."""
+    subprocess.run(["say", "-r", "185", "-o", path, text], check=True)
+
+
+def even_words(text, dur, offset):
+    """Word timings for a take without alignment (a draft): spread over the take by word length."""
+    ws = text.split()
+    total = sum(len(w) + 1 for w in ws) or 1
+    out, t = [], offset
+    for w in ws:
+        d = dur * (len(w) + 1) / total
+        out.append({"text": w, "start": round(t, 3), "end": round(t + d * 0.9, 3)})
+        t += d
+    return out
+
+
+def balance():
+    """(used, limit, tier) this month, or None when the key may not read it."""
+    try:
+        key = api_key()
+    except SystemExit:                       # no key yet: the plan still shows, just without the balance
+        return None
+    try:
+        req = urllib.request.Request(API + "/user/subscription", headers={"xi-api-key": key})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            d = json.loads(r.read())
+        return d.get("character_count", 0), d.get("character_limit", 0), d.get("tier", "")
+    except Exception:
+        return None
 
 
 def voice_id(v):
@@ -172,6 +244,13 @@ def cmd_voices(_):
     print("\nAny 20-character voice_id from your ElevenLabs dashboard also works (your own cloned or designed voice).")
 
 
+def cmd_balance(_):
+    b = balance()
+    if not b:
+        raise SystemExit("can't read the balance: give the key the 'User: Read' permission on elevenlabs.io > API keys")
+    print("%d of %d credits left this month (%s plan, %d used)" % (b[1] - b[0], b[1], b[2], b[0]))
+
+
 def cmd_voiceover(a):
     text = open(a.script).read() if a.script else (a.text or "")
     cast = {}
@@ -189,6 +268,8 @@ def cmd_voiceover(a):
     todo = [it for it in lines if not it["cached"]]
     chars = sum(len(it["text"]) for it in todo)
     est = int(round(chars * credits_per_char(a.model)))
+    if a.draft:
+        print("DRAFT the Mac's own voice: free, for timing; generate on ElevenLabs once the script is approved")
 
     print("PLAN  %d lines, model %s%s" % (len(lines), a.model, ", speed %.2f" % a.speed if a.speed else ""))
     for spk, v in sorted(auto.items()):
@@ -197,13 +278,24 @@ def cmd_voiceover(a):
         print("  %2d. %-9s %-8s %s%s" % (i, (it["speaker"] or "-")[:9], it["voice"][:8], it["text"][:70] + ("..." if len(it["text"]) > 70 else ""),
                                        "   (cached)" if it["cached"] else ""))
     print("COST  %d new characters = about %d credits; %d of %d lines cached (free)" % (chars, est, len(lines) - len(todo), len(lines)))
-    if todo and not a.yes:
+    if todo and not a.draft:
+        b = balance()
+        if b:
+            left = b[1] - b[0]
+            print("LEFT  %d of %d credits this month (%s plan)%s" % (left, b[1], b[2],
+                  "  NOT ENOUGH: shorten the script or wait for the monthly reset" if est > left else ""))
+    if todo and not a.yes and not a.draft:
         print("nothing generated: rerun with --yes once the creator agrees to the cost")
         return
 
     os.makedirs(a.cache, exist_ok=True)
     for n, it in enumerate(todo, 1):
         print("  generating %d/%d ..." % (n, len(todo)), flush=True)
+        if a.draft:
+            say_line(it["text"], os.path.join(a.cache, it["key"] + ".aiff"))
+            json.dump({"text": it["text"], "voice_id": it["voice_id"], "model": a.model, "alignment": None},
+                      open(os.path.join(a.cache, it["key"] + ".json"), "w"))
+            continue
         body = {"text": it["text"], "model_id": a.model}
         if a.speed:
             body["voice_settings"] = {"speed": a.speed}
@@ -225,9 +317,10 @@ def cmd_voiceover(a):
             gap = a.para_gap if prev == "para" else a.gap
             pcm += silence(gap); t += gap
         meta = json.load(open(os.path.join(a.cache, it["key"] + ".json")))
-        audio = decode_pcm(os.path.join(a.cache, it["key"] + ".mp3"))
+        take = os.path.join(a.cache, it["key"] + ".mp3")
+        audio = decode_pcm(take if os.path.exists(take) else os.path.join(a.cache, it["key"] + ".aiff"))
         dur = len(audio) / 2.0 / RATE
-        for w in words_from_alignment(meta["alignment"], t) if meta.get("alignment") else []:
+        for w in words_from_alignment(meta["alignment"], t) if meta.get("alignment") else even_words(it["text"], dur, t):
             w["speaker"] = it["speaker"]
             words.append(w)
         out_lines.append({"speaker": it["speaker"], "voice": it["voice"], "voice_id": it["voice_id"], "text": it["text"],
@@ -273,13 +366,15 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("voices")
+    sub.add_parser("balance")
     v = sub.add_parser("voiceover")
     src = v.add_mutually_exclusive_group(required=True)
     src.add_argument("--script"); src.add_argument("--text")
     v.add_argument("--out", required=True)
     v.add_argument("--voice", default=DEFAULT_VOICE)
     v.add_argument("--cast", default="")
-    v.add_argument("--model", default="eleven_multilingual_v2")
+    v.add_argument("--model", default="auto", help="auto (by plan), eleven_flash_v2_5 or eleven_multilingual_v2")
+    v.add_argument("--draft", action="store_true", help="the Mac's built-in voice: free, for drafts")
     v.add_argument("--speed", type=float, default=None)
     v.add_argument("--gap", type=float, default=0.25)
     v.add_argument("--para-gap", type=float, default=0.6)
@@ -292,7 +387,12 @@ def main(argv=None):
     s.add_argument("--influence", type=float, default=0.3)
     s.add_argument("--yes", action="store_true")
     a = ap.parse_args(argv)
-    {"voices": cmd_voices, "voiceover": cmd_voiceover, "sfx": cmd_sfx}[a.cmd](a)
+    if getattr(a, "draft", False):
+        a.model = DRAFT_MODEL
+    elif a.cmd == "voiceover":
+        a.model, why = pick_model(a.model)
+        print("MODEL %s (%s)" % (a.model, why))
+    {"voices": cmd_voices, "voiceover": cmd_voiceover, "sfx": cmd_sfx, "balance": cmd_balance}[a.cmd](a)
 
 
 if __name__ == "__main__":

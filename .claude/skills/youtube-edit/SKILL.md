@@ -1,6 +1,6 @@
 ---
 name: youtube-edit
-description: Edit a YouTube video end to end in Claude Code. Also the entry point for the Video maker upload page ("edit my video <project>", "I uploaded my files", "make the video in videos/<project>") and for narrated videos from a script (ElevenLabs voiceover, voices for each speaker, generated sound effects). Takes a raw camera clip (retakes and all) or a flat cut, cuts it, adds animated overlays, cutaways, stock or AI B-roll, camera moves and the few sounds that earn a place, then renders a tagged 4K MP4 locally with HyperFrames. Use whenever the user drops a video file or an SD-card clip and says "cut this", "edit this", "overlay this", "add animations", "edit this hook", "add B-roll", "render it in 4K", "edit the Tella tutorial", "assemble the video" or "put the segments together", or names a video file to edit. Covers the cut stage (paper cut, hand cut, tighten, sliver and edge checks, dead-air scan), the storyboard composer and its format library, long-form pacing, camera, sound, Tella screen tutorials, assembly into one master, render checks and delivery.
+description: Edit a YouTube video end to end in Claude Code. Also the entry point for "edit my video <project>", "I put my files in videos/<project>", "make the video from this recording" and for narrated videos from a script (ElevenLabs voiceover, voices for each speaker, generated sound effects). Takes a raw camera clip (retakes and all) or a flat cut, cuts it, adds animated overlays, cutaways, stock or AI B-roll, camera moves and the few sounds that earn a place, then renders a tagged 4K MP4 locally with HyperFrames. Use whenever the user drops a video file or an SD-card clip and says "cut this", "edit this", "overlay this", "add animations", "edit this hook", "add B-roll", "render it in 4K", "edit the Tella tutorial", "assemble the video" or "put the segments together", or names a video file to edit. Covers the cut stage (paper cut, hand cut, tighten, sliver and edge checks, dead-air scan), the storyboard composer and its format library, long-form pacing, camera, sound, Tella screen tutorials, assembly into one master, render checks and delivery.
 ---
 
 # YouTube editor
@@ -32,8 +32,8 @@ Commands run from your project folder with `SK=".claude/skills/youtube-edit"` (w
 
 The creator's standing rules for this system. They come before any cut, storyboard or generation.
 
-1. **Read what was uploaded.** Each video lives in `videos/<project>/` (the creator drops files there, or the optional
-   local upload page does): clips and screen recordings in `raw/`, images in `img/`, audio (their own voice, music) in
+1. **Read what was shared.** Each video lives in `videos/<project>/` (the creator drags files into the chat or names
+   them, and you copy them there; or they drop them in the folder): clips and screen recordings in `raw/`, images in `img/`, audio (their own voice, music) in
    `audio/`, documents in `docs/`, a pasted voiceover script in `script.txt`, and `brief.json` (`purpose`
    `personal|office`, `style`, `shape`
    `landscape|vertical`, `notes`, `music_notes`), `scenes.json` (scene cards, see "Scene cards"), and after a pass
@@ -66,18 +66,19 @@ The creator's standing rules for this system. They come before any cut, storyboa
 5. **Ask before spending credits.** ElevenLabs commands print their plan and cost and generate nothing without `--yes`:
    show the plan, wait for a yes, then rerun with `--yes`. AI B-roll is the same (see "AI B-roll route"). Renders are
    free but long: say how long before starting one over 2 minutes.
-6. **Show the plan on the page, then render.** Scene cards and the music pick are planned into `scene-plan.json` and
-   `music.json` (below); the upload page shows both with stills and previews. Render after the creator says yes.
+6. **Show the plan in the chat, then render.** Scene cards and the music pick are planned into `scene-plan.json` and
+   `music.json` (below); send the stills (SendUserFile) and the music pick with its preview link in one message. Render
+   after the creator says yes.
 
 7. **Show the text-animation picker, every video,** right after the look: the `text-animations` skill's live
-   picker (a dropdown of the five groups over looping previews of all 42) in the chat, or its preview gallery and a
-   style question in the terminal. Save the pick as `brief.json` `text_animations` and animate the copy only with those.
+   picker (a dropdown of the five groups over looping previews of all 42) in the chat, or the preview video and a
+   question in the chat when the widget is not available. Save the pick as `brief.json` `text_animations` and animate the copy only with those.
 
 ## Scene cards (the creator's own animations)
 
-The page's step 06 writes `$W/scenes.json`: one card per moment the creator wants animated, in their words: `when`
-("when I say pricing", or a script line they picked), `what` (what to show; often several animations in one card),
-`files` (uploaded files to use). Plan them before the storyboard, and again whenever the page says a card changed.
+Ask in the chat which moments they want animated, and write their answers to `$W/scenes.json`: one card per moment, in
+their words: `when` ("when I say pricing", or a script line they picked), `what` (what to show; often several animations
+in one card), `files` (files they shared for it). Plan them before the storyboard, and again whenever they change one.
 
 1. **Anchor:** after the cut (or the voiceover), `python3 "$SK/scripts/scenes.py" anchor --project "$W"` prints where each
    card's words are said. Exact hits are the moment; a fuzzy hit needs a look; NOT FOUND means place it by meaning or
@@ -94,14 +95,14 @@ The page's step 06 writes `$W/scenes.json`: one card per moment the creator want
    needs-info, `conflict`). A row is `planned` only when everything its `build` describes is in the storyboard now;
    anything promised for later ("a bounce at render") makes it `custom`. Compose, then
    `python3 "$SK/scripts/scenes.py" snap --project "$W"`: it checks the plan
-   against the cards and the storyboard and takes the stills the page shows under each card. Exit 1 = fix the plan.
-5. **Checkpoint B on the page:** tell the creator to look at step 06 (and the music in step 07). After the render, set
-   the rows to `built` and rerun `snap`. When the page shows "Changed after Claude's plan" (the creator said "Update my
-   video"), replan only those cards.
+   against the cards and the storyboard and takes a still for each card. Exit 1 = fix the plan.
+5. **Checkpoint B in the chat:** send the card stills and the music pick, and ask for a yes or changes. After the
+   render, set the rows to `built` and rerun `snap`. When they change a card later, replan only that card.
 
-## Music pick (shown on the page)
+## Music pick (shown in the chat)
 
-Pick the bed with the Epidemic Sound connector before rendering and write `$W/music.json`, so the page can show it:
+Pick the bed with the Epidemic Sound connector before rendering and write `$W/music.json`, then tell the creator the
+pick and the two alternatives in the chat:
 `chosen` and two `alternatives` (`id`, `title`, `artist`, `bpm`, `duration_ms`, `moods`, `genres`, `cover` = the
 recording's `coverArtUrl`, `preview` = its `audioFile.lqmp3Url`, `why` = one plain sentence on why it fits this video),
 `searched` (the terms and filters used), `placement` (where it plays, how far under the voice, fades), `requested`: null.
@@ -112,7 +113,7 @@ recording's `coverArtUrl`, `preview` = its `audioFile.lqmp3Url`, `why` = one pla
 - **Fit it at render:** `DownloadRecording`, trim to the video's length with short fades, then the ducked bed from
   "Sound". `EditRecording` (`targetDurationMs`) can make a version that ends on a phrase; it is untested here, so try it
   once and only promise it in `placement` after it worked. Write in `placement` only what will really happen.
-- **The creator can swap it:** "Use this instead" on the page writes `requested` (`id`, `title`). On "Update my video",
+- **The creator can swap it:** when they pick an alternative in the chat, write it to `requested` (`id`, `title`), then
   move that track into `chosen`, keep the old one as an alternative, clear `requested`, and remix.
 
 ## Setup check (first use, and after any update)
@@ -133,7 +134,6 @@ runs the tests. Check again after updating HyperFrames or moving the skill.
 | yt-dlp (optional) | `yt-dlp --version` | `brew install yt-dlp` or `pip install yt-dlp` |
 | ElevenLabs key (voiceover, sound effects) | `python3 "$SK/scripts/elevenlabs.py" voices` runs; the key is `ELEVENLABS_API_KEY` in the project's `.env` | elevenlabs.io > API keys. The current key can do text to speech, dialogue and sound effects, but lacks `voices_read`, `models_read` and `user_read` (no voice list, no balance): the built-in voice list covers it |
 | Style presets | `styles/kit.json`, `styles/brand.json` (+ `styles/brand/fonts/Poppins-*.woff2`), `styles/mine.json` | Poppins is from Google Fonts (SIL OFL, `styles/brand/fonts/OFL.txt`) |
-| Upload page | `npm run ui` in the project folder, then http://localhost:4500 | `ui/server.mjs` (Node, no packages) |
 
 Then, from the scripts folder (not from inside `tests/`): `cd "$SK/scripts" && python3 -m unittest tests`. The tests use
 synthetic media and must end with `OK` (the media tests skip themselves without ffmpeg). Run them after touching any script.
@@ -218,7 +218,7 @@ when long); you answer in plain words ("keep the earlier take of the studio line
 | `screen-activity.py` | how much a screen recording changes over time (`activity.json`) | `--video --out [--fps 2]` |
 | `teardown.py` | measures any video; counts a storyboard exactly; compares reports | `--video` / `--storyboard` / `--compare`, `--out [--transcript] [--every 2]` |
 | `elevenlabs.py` | ElevenLabs: `voices` (the built-in list), `voiceover` (a script or one line → `voiceover.wav` + word-timed `transcript.json` + `voiceover.json`, cached per line), `sfx` (a described sound → trimmed, -3 dBFS mp3). Prints plan and cost; generates only with `--yes` | `voiceover --script F \| --text T --out DIR [--voice Brian] [--cast "HOST=Brian,GUEST=Sarah"] [--model] [--speed] [--gap 0.25] [--para-gap 0.6] [--yes]`; `sfx --prompt --out [--seconds] [--yes]` |
-| `scenes.py` | the page's scene cards: `anchor` (where each card's "when" is said), `snap` (checks `scene-plan.json` against the cards and storyboard, takes the stills the page shows) | `anchor --project W [--json]`; `snap --project W [--no-snap]` |
+| `scenes.py` | the scene cards: `anchor` (where each card's "when" is said), `snap` (checks `scene-plan.json` against the cards and storyboard, takes a still per card) | `anchor --project W [--json]`; `snap --project W [--no-snap]` |
 | `narration-video.py` | a voiceover → `public/input-video.mp4` on a plain plate, a still or a looped clip, encoded like Pipeline step 2 | `--audio --out [--bg "#1A1A2E" \| image \| video] [--size 1920x1080] [--tail 0.5]` |
 
 `formats/claude_chat.py` is the AI chat window (format 13b).
@@ -1177,7 +1177,7 @@ editing the manifest and running again: **the master is never hand-edited.**
 - **Sound** as in "Sound"; **loudness** with `ebur128` (about -14 LUFS, true peak under -1); **lip sync** on a long cut:
   a flat frame matches the source near `src_start + x` within one frame for a few late segments.
 - **Deliver** to `~/Movies/YouTube Renders/<project>/<project>-v<N>-4k.mp4`, N = the next free number, never overwriting an
-  earlier version: the upload page lists every version there with a Download button and marks the newest "Latest". Copy
+  earlier version; tell the creator the file name and reveal it in Finder (`open -R <file>`). Copy
   `storyboard.json` and `transcript.json` to `$W/versions/v<N>/` with it, so any version's edit can be restored (md5 it against the render) with `STORYBOARD.md`
   next to it (`storyboard-md.py`: time / beat / what is on screen, what changed, your concerns, every stock clip with
   page, licence and seconds) and, for a cut from raw, `PAPER-CUT.md`. Open it from Finder (or Explorer); never pass the
