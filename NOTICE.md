@@ -22,6 +22,7 @@ The MIT licence in `LICENSE` covers Video maker's own work:
 | DM Sans | `.claude/skills/youtube-edit/assets/fonts/` | SIL Open Font License (`kit/LICENSES/OFL-DM-Sans.txt`) |
 | devices.css 0.2.0 (the iPhone frame) | `.claude/skills/launch-demo/vendor/devices.css` | MIT, Yan Zhu (`vendor/devices-LICENSE.txt`) |
 | Shopwise demo product photos | `docs/demo/photos/` | CC0 (public domain); sources in `docs/demo/photos/CREDITS.md` |
+| Stock footage in the launch video's highlights | `docs/images/launch-demo.gif` (the opening shots) | Mixkit clips 25575 and 39854, Mixkit Stock Video Free License; not covered by this repo's licence |
 | Noto Sans JP | `.claude/skills/localize/fonts/` (fetched by `setup.sh`, not committed) | SIL Open Font License (`OFL.txt` next to it) |
 | Demucs | installed on first use by `localize/scripts/separate.sh` into its own venv | MIT (Meta) |
 | Poppins | `.claude/skills/fast-cut/assets/fonts/`, `.claude/skills/youtube-edit/styles/brand/fonts/` | SIL Open Font License (`OFL.txt` next to the fonts) |

@@ -9,8 +9,24 @@ Turn a screen recording into a product video without opening an editor. Drop the
 Code what the feature is for, and get back a cut with headlines, taps, zooms, a voiceover and licensed music, rendered
 on your own Mac. Notes go in plain words ("at 0:17 make the glide slower") and each round is a new version.
 
-<p align="center"><img src="docs/images/demo.gif" width="270" alt="A 15-second demo: a headline opens full screen and glides to the top, a tap ripple lands on a product, the view zooms in on the size badge, and a second tap adds it to the bag."></p>
-<p align="center"><sub>Made by this repo from a 15-second recording of a made-up app (<code>docs/demo/make-demo.py</code>).</sub></p>
+<p align="center"><img src="docs/images/launch-demo.gif" width="440" alt="Highlights of Video maker's launch video: a marketer buried in requests for a product explainer, the words VIDEO MAKER filled with footage, a feature playing on an iPhone with a headline that opens big, a montage of text animations (mask reveal, stamp, scramble) with a different transition each, and the logo locking up."></p>
+<p align="center"><sub>Video maker's own launch video, made with Video maker. 13 seconds of highlights from the 83-second cut, without sound.</sub></p>
+
+**What you're watching.** The whole video came out of one chat: a brief, a script approved before any voice credits
+were spent, and notes by timestamp. Each part is something you can ask for:
+
+- **The pain:** stock footage of people buried in work, request bubbles piling up, a ping for each one.
+- **The name:** the product's name fills the frame with footage inside the letters (`fast-cut` text mask).
+- **The feature:** a screen recording on a real iPhone frame, with taps, zooms and a headline that opens big, then
+  glides to the top (`fast-cut`).
+- **The montage:** one card every two beats on the music's drop, each a different text animation with a different
+  transition: wipe, iris, glitch, whip, push, zoom (`text-animations`).
+- **The outro:** six capability tiles on six beats fly into the centre, and the logo locks up on the music's final hit.
+- **The sound:** a voice from ElevenLabs, music and sound effects from Epidemic Sound, the cut timed to the track's
+  beats and spliced into its own ending. Captions run under every spoken line for muted autoplay.
+
+The recipe is the `launch-demo` skill: say "make a launch demo for my product" and you get the same structure, timed to
+your script and your music.
 
 **If this saves you an afternoon, please ⭐ star the repo.** It helps other marketers find it.
 
@@ -32,8 +48,8 @@ You don't need to know any code. Claude sets everything up and asks you anything
    > folder and follow its setup skill.
 
 3. **Answer Claude's questions in the chat.** It installs every tool inside the project folder (no Homebrew, no
-   password, nothing to type), helps you make a free ElevenLabs account if you want voiceovers, and makes the demo video
-   above on your Mac to show it works.
+   password, nothing to type), helps you make a free ElevenLabs account if you want voiceovers, and makes a 15-second demo
+   video on your Mac to show it works.
 
 Then open a new session in the **Video maker** folder, drag in a screen recording, and say what the feature is for.
 
