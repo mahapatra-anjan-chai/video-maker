@@ -16,6 +16,7 @@ FC = os.path.join(ROOT, ".claude", "skills", "fast-cut", "scripts")
 FONTS = os.path.join(ROOT, ".claude", "skills", "fast-cut", "assets", "fonts")
 WORK = os.path.join(HERE, "work")
 IMAGES = os.path.join(ROOT, "docs", "images")
+PHOTOS = os.path.join(HERE, "photos")           # CC0 product photos (photos/CREDITS.md); drawn icons when one is missing
 W, H, FPS, DUR = 390, 844, 30, 15.0
 S = 2                                            # drawn at 2x, so the 1080-wide cut stays sharp
 
@@ -92,7 +93,44 @@ def icon(pen, kind, cx, cy, s, color):
         pen.circle(cx + .24 * s, cy, .12 * s, outline=c, width=max(2, int(.05 * s)))
 
 
-ITEMS = [("Trail Sneakers", "$120", "#DCEBDD", "shoe"), ("Desk Lamp", "$45", "#E3E7F3", "lamp"),
+# kind -> photo file and how it sits in its tile: "contain" for cut-outs on white, "cover" for photos with a setting
+PHOTO = {"jacket": ("jacket.jpg", "contain"), "lamp": ("lamp.jpg", "contain"), "shoe": ("sneakers.jpg", "cover"),
+         "bag": ("bag.jpg", "cover"), "beanie": ("beanie.jpg", "cover"), "mug": ("mug.jpg", "cover")}
+_photos = {}
+
+
+def photo(img, pen, kind, x0, y0, x1, y1, r, darken=0.0):
+    """The product's photo in the box (phone points), rounded; False when there is no photo for it."""
+    f, mode = PHOTO.get(kind, (None, None))
+    path = os.path.join(PHOTOS, f) if f else None
+    if not path or not os.path.exists(path):
+        return False
+    if path not in _photos:
+        _photos[path] = Image.open(path).convert("RGB")
+    src = _photos[path]
+    bx0, by0 = pen.p(x0, y0); bx1, by1 = pen.p(x1, y1)
+    bw, bh = int(bx1 - bx0), int(by1 - by0)
+    if bw <= 0 or bh <= 0:
+        return True
+    if mode == "cover":
+        k = max(bw / src.width, bh / src.height)
+        im = src.resize((max(bw, round(src.width * k)), max(bh, round(src.height * k))), Image.LANCZOS)
+        ox, oy = (im.width - bw) // 2, (im.height - bh) // 2
+        tile = im.crop((ox, oy, ox + bw, oy + bh))
+    else:
+        tile = Image.new("RGB", (bw, bh), (255, 255, 255))
+        k = min(bw * 0.86 / src.width, bh * 0.86 / src.height)
+        im = src.resize((round(src.width * k), round(src.height * k)), Image.LANCZOS)
+        tile.paste(im, ((bw - im.width) // 2, (bh - im.height) // 2))
+    if darken:
+        tile = Image.blend(tile, Image.new("RGB", tile.size, (0, 0, 0)), darken)
+    mask = Image.new("L", (bw, bh), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, bw - 1, bh - 1], radius=r * S, fill=255)
+    img.paste(tile, (int(bx0), int(by0)), mask)
+    return True
+
+
+ITEMS = [("Canvas Sneakers", "$120", "#DCEBDD", "shoe"), ("Desk Lamp", "$45", "#E3E7F3", "lamp"),
          ("Field Jacket", "$89", "#F3E3D3", "jacket"), ("Weekend Bag", "$140", "#EADCF0", "bag"),
          ("Wool Beanie", "$25", "#F0E6D8", "beanie"), ("Ceramic Mug", "$18", "#DDEFEF", "mug")]
 SCROLL = 150                                     # the home feed scrolls this far, so the jacket sits at (103, 391)
@@ -112,8 +150,9 @@ def home(img, t):
         x = 20 if i % 2 == 0 else 203
         y = 204 + (i // 2) * 252 - scroll
         pressed = kind == "jacket" and 2.95 <= t < 3.25
-        pen.box(x, y, x + 167, y + 170, r=16, fill=shade(col, 0.92) if pressed else col)
-        icon(pen, kind, x + 83, y + 88, 110, col)
+        if not photo(img, pen, kind, x, y, x + 167, y + 170, 16, 0.08 if pressed else 0.0):
+            pen.box(x, y, x + 167, y + 170, r=16, fill=shade(col, 0.92) if pressed else col)
+            icon(pen, kind, x + 83, y + 88, 110, col)
         pen.circle(x + 145, y + 22, 13, fill=(255, 255, 255))
         pen.text(x + 4, y + 180, name, font("SemiBold", 14), INK)
         pen.text(x + 4, y + 202, price, font("Regular", 13), MUTED)
@@ -151,8 +190,9 @@ def product(img, t):
     pen.box(0, 0, W, H, fill=BG); status(pen)
     pen.text(28, 52, "<", font("SemiBold", 22), INK)
     pen.circle(352, 64, 15, fill=LINE)
-    pen.box(20, 96, 370, 470, r=22, fill="#F3E3D3")
-    icon(pen, "jacket", 195, 290, 300, "#F3E3D3")
+    if not photo(img, pen, "jacket", 20, 96, 370, 470, 22):
+        pen.box(20, 96, 370, 470, r=22, fill="#F3E3D3")
+        icon(pen, "jacket", 195, 290, 300, "#F3E3D3")
     pen.text(24, 486, "Field Jacket", font("Bold", 24), INK)
     pen.text(24, 524, "$89", font("SemiBold", 20), INK)
     pen.text(76, 530, "4.8 stars  |  1.2k reviews", font("Regular", 13), MUTED)
