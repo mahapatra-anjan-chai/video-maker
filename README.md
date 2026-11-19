@@ -189,17 +189,24 @@ brand rules, and any videos Claude must ask about before using as a reference.
 | `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |
 | `.claude/skills/localize/` | Dub a finished video into another language: voice separation (Demucs), per-line ElevenLabs dubbing, frosted subtitle bands |
 | `.claude/skills/youtube-edit/` | The full editing skill (from the WeAreNoCode kit): looks, HyperFrames compositions, ElevenLabs voiceover and sound effects |
+| `.claude/skills/share-skill/` | Send a skill to this repo as a pull request from the chat: the sharing rules, a dry run, then fork, one commit and the pull request after a yes |
 | `docs/` | This README's images, and the scripts that make them (`make-visuals.py`, `demo/make-demo.py`) |
 | `kit/` | The kit's style guide, prompts and licences |
 | `videos/` | One folder per video (never committed); `_shared/sfx` holds reusable sounds |
 | `setup.sh` | One-time setup after cloning |
+| `tests.sh`, `.github/` | Every skill's tests (`npm test` runs them), and the same tests plus the sharing check on every pull request |
 
-`npm test` runs the skills' tests.
+`npm test` runs every skill's tests; new skills are found on their own.
 
 ## Contributing
 
-Ideas, bugs and new effects are welcome: open an issue with what you were making and what got in the way, or a pull
-request with a test (`npm test` must end `OK`). Never attach footage you can't share publicly.
+Made a skill, or improved one? Open a session in the **Video maker** folder and say **"share my skill"**: Claude checks
+it against the repo's rules, shows exactly what would be published, and opens a pull request after your yes. You need
+a free GitHub account for that step only; making videos doesn't need one. The owner reviews every pull request before
+it goes in. The rules, the skill layout and the by-hand route for developers are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Bugs and ideas: open an issue with what you were making and what got in the way. Never attach footage you can't share
+publicly.
 
 ## Licence and credits
 

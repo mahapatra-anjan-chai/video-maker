@@ -5,14 +5,15 @@
 #   bash setup.sh            set up (or repair) everything and say what was done
 #   bash setup.sh --check    only report what is missing
 #   bash setup.sh --json     the same report as JSON on the last line (for Claude to relay in the chat)
+#   bash setup.sh --tools    only FFmpeg, Node and Python (what the tests need; used by the GitHub test run)
 #
 # Downloads are pinned and checked against SHA-256 before use: FFmpeg (martin-riedl.de static build), Node (nodejs.org),
 # uv (astral.sh, GitHub release), which brings Python 3.12 and installs Pillow and numpy into .venv.
 set -u
 cd "$(dirname "$0")"
 ROOT="$(pwd)"
-MODE=install; JSON=0
-for a in "$@"; do case "$a" in --check) MODE=check ;; --json) JSON=1 ;; esac; done
+MODE=install; JSON=0; TOOLS_ONLY=0
+for a in "$@"; do case "$a" in --check) MODE=check ;; --json) JSON=1 ;; --tools) TOOLS_ONLY=1 ;; esac; done
 TOOLS="$ROOT/.tools"; BIN="$TOOLS/bin"; DL="$TOOLS/downloads"
 mkdir -p "$BIN" "$DL"
 export PATH="$BIN:$ROOT/.venv/bin:$PATH"
@@ -97,7 +98,7 @@ else
 fi
 
 # ---- HyperFrames, its browser, the speech-to-text model ---------------------------------------------------------
-if [ "$MODE" = install ] && has_node; then
+if [ "$MODE" = install ] && [ "$TOOLS_ONLY" = 0 ] && has_node; then
   say "  … installing HyperFrames (npm)"
   if npm install --silent --no-audit --no-fund >/dev/null 2>&1; then ok "HyperFrames $(npx --no-install hyperframes --version 2>/dev/null)"
   else miss "HyperFrames" "npm install failed; run setup again"; fi
@@ -111,7 +112,7 @@ elif [ "$MODE" = check ]; then
 fi
 
 # ---- small assets: sound effects, GSAP, a Japanese subtitle font ------------------------------------------------
-if [ "$MODE" = install ] && has_node; then
+if [ "$MODE" = install ] && [ "$TOOLS_ONLY" = 0 ] && has_node; then
   SFXSRC="$HOME/.claude/skills/media-use/audio/assets/sfx"
   [ -d "$SFXSRC" ] || npx --no-install hyperframes skills update media-use </dev/null >/dev/null 2>&1
   mkdir -p videos/_shared/sfx
@@ -137,13 +138,9 @@ if grep -qE '^ELEVENLABS_API_KEY=.+' .env 2>/dev/null; then ok "ElevenLabs key (
 else miss "ElevenLabs key" "optional: only for AI voiceovers"; fi
 
 # ---- a quick self-test -------------------------------------------------------------------------------------------
-if [ "$MODE" = install ] && has_python && has_ffmpeg; then
+if [ "$MODE" = install ] && [ "$TOOLS_ONLY" = 0 ] && has_python && has_ffmpeg; then
   say "  … checking everything works"
-  FAILS=0
-  for d in .claude/skills/youtube-edit/scripts .claude/skills/fast-cut/scripts .claude/skills/text-animations/scripts \
-           .claude/skills/localize/scripts .claude/skills/reference-style/scripts .claude/skills/launch-demo/scripts; do
-    ( cd "$d" && python3 -m unittest tests >/dev/null 2>&1 ) || FAILS=$((FAILS + 1))
-  done
+  FAILS=$(bash tests.sh -q 2>/dev/null | grep -c '✗')
   [ "$FAILS" = 0 ] && ok "Self-test (all skills)" || miss "Self-test" "$FAILS skill test suites failed; tell Claude so it can look"
 fi
 

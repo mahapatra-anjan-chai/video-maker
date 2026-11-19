@@ -36,6 +36,8 @@ ask them to type a command.
   The voice is separated out of the mix so the music stays, every line is dubbed into its original slot with a voice
   per character, and a frosted band covers the burned-in subtitles with the translated ones. Ask yes on the
   ElevenLabs cost; on-screen copy stays as is.
+- **Sharing a skill with the repo** ("share my skill", "send this to Video maker"): the `share-skill` skill. It checks
+  the skill, shows what would be published, and opens a pull request only after a yes. Never push to the repo for them.
 - **Quick mode for short ads:** no separate question round when the brief has the copy and assets; state defaults
   instead of asking, and put the Personal/Work confirmation in the same message as the plan. First draft within
   ~15 minutes, then iterate on notes. Take every still in ONE `hyperframes snapshot --at a,b,c --no-end` run, never one
@@ -73,7 +75,8 @@ ask them to type a command.
   overwritten; each version's cut or storyboard is kept in `videos/<project>/versions/v<N>/`.
 - Looks: `.claude/skills/youtube-edit/styles/{kit,brand,mine}.json`; rules in `kit/STYLE-GUIDE.md`.
 - Secrets: `.env` (`ELEVENLABS_API_KEY`). Never print it or commit it.
-- `npm test` runs the skills' tests (must end `OK`); `npm run doctor` checks HyperFrames.
+- `npm test` runs every skill's tests (`tests.sh` finds them; must end `OK`); `npm run doctor` checks HyperFrames.
+  New skills follow `CONTRIBUTING.md` (SKILL.md front matter, `scripts/tests/`, credits, nothing private).
 
 ## Watch the disk
 Hooks and short sections are fine; over ~2 minutes of 4K use the streaming / segmented render flags in SKILL.md
