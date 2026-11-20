@@ -36,6 +36,11 @@ ask them to type a command.
   The voice is separated out of the mix so the music stays, every line is dubbed into its original slot with a voice
   per character, and a frosted band covers the burned-in subtitles with the translated ones. Ask yes on the
   ElevenLabs cost; on-screen copy stays as is.
+- **Watching a video from a link** (what a reference or a competitor's video says and shows): the Watch plugin
+  (`/watch`), if installed on this Mac (it is not part of this repo). Always `--engine local` for anything in
+  `videos/`, work projects or company material; its Gemini engine uploads the video to Google, so only for a public
+  link the person picked. Its keys go in `~/.config/watch/.env`, opened with `open -t`, never in the chat. It looks at 2
+  frames a second at most, so it cannot see easing: motion timing comes from `reference-style`'s `motion.py`.
 - **Sharing a skill with the repo** ("share my skill", "send this to Video maker"): the `share-skill` skill. It checks
   the skill, shows what would be published, and opens a pull request only after a yes. Never push to the repo for them.
 - **Quick mode for short ads:** no separate question round when the brief has the copy and assets; state defaults
@@ -50,7 +55,8 @@ ask them to type a command.
    brand rules apply, confirm the music and voice accounts are cleared for company use, and unreleased product footage
    never leaves this machine. Personal = no company branding.
 2. Any reference videos whose style they want? (Ask in the same first message; skip it for localisations.) They drop
-   them in `videos/<project>/refs/`, and the `reference-style` skill turns them into a style card and a look
+   them in `videos/<project>/refs/`, and the `reference-style` skill (pacing, palette, type, and every move's ease
+   and length measured at the full frame rate) turns them into a style card and a look
    (`ref-<slug>`) before the plan. Saved styles (`.claude/skills/style-*/`) are offered as looks.
    Which look: Kit, Brand (or the company kit named in `CLAUDE.local.md`), Mine, or a saved `ref-<slug>` style (the
    storyboard's `"style"`). After delivering a video made from a reference, save its style as a skill

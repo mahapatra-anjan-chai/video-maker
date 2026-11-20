@@ -27,6 +27,14 @@ class Scan(unittest.TestCase):
         run(os.path.join(HERE, "style-scan.py"), "--video", v, "--out", cls.out, "--no-text", "--strips", "2")
         cls.scan = json.load(open(os.path.join(cls.out, "scan.json")))
 
+    def test_motion_is_measured_at_the_full_frame_rate(self):
+        m = json.load(open(os.path.join(self.out, "motion.json")))
+        slides = [x for x in m["moves"] if x["kind"] == "slide"]
+        self.assertTrue(slides, m["moves"])
+        self.assertEqual((slides[0]["direction"], slides[0]["family"]), ("right", "linear"))   # x = 20 + 110 t
+        self.assertTrue(os.path.exists(os.path.join(self.out, "curves.png")))
+        self.assertIn("measured", self.scan["motion"])
+
     def test_cuts_and_shots(self):
         p = self.scan["pacing"]
         self.assertAlmostEqual(p["median_shot_s"], 2.0, delta=0.3)

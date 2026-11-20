@@ -77,9 +77,19 @@ def main():
     d.text((48, y + 36), "median shot %s s  ·  %s cuts a minute" % (p.get("median_shot_s", "?"), p.get("cuts_per_min", "?")), font=f_b, fill=(40, 40, 48))
     for k, line in enumerate(textwrap.wrap(p.get("rhythm", ""), 64)[:3]):
         d.text((48, y + 66 + k * 24), line, font=f_s, fill=(110, 110, 120))
+    mo = s.get("motion") or {}
+    bits = []
+    for k in ("entrance", "emphasis", "camera"):
+        v = mo.get(k) or {}
+        if v.get("ease"):
+            bits.append("%s %s %ss" % (k, v["ease"], v.get("dur", "?")))
+    if mo.get("stagger_s"):
+        bits.append("stagger %ss" % mo["stagger_s"])
+    if bits:
+        d.text((48, y + 142), "Motion: " + "  ·  ".join(bits), font=f_s, fill=(40, 40, 48))
     tx = s.get("text_animations", [])
     if tx:
-        d.text((48, y + 150), "Text animations: " + ", ".join(tx), font=f_b, fill=(91, 52, 245))
+        d.text((48, y + 172), "Text animations: " + ", ".join(tx), font=f_b, fill=(91, 52, 245))
     # techniques
     x0, y = 860, 200
     d.text((x0, y), "Techniques and what makes them here", font=f_h, fill=(20, 20, 24)); y += 40

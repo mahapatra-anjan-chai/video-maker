@@ -186,7 +186,7 @@ brand rules, and any videos Claude must ask about before using as a reference.
 | `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass render, taps, zooms, headline intros, review sheets |
 | `.claude/skills/text-animations/` | 42 text animations (GSAP, render-safe), the in-chat picker and the preview gallery |
 | `.claude/skills/launch-demo/` | The launch-video recipe: a template (the pain, the name, the feature on an iPhone, a montage on the drop, a lockup on the final hit), a music beat reader that times the cut to the track, a sound mixer and a voice check |
-| `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |
+| `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, every move's ease, length, overshoot and stagger measured at the full frame rate, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |
 | `.claude/skills/localize/` | Dub a finished video into another language: voice separation (Demucs), per-line ElevenLabs dubbing, frosted subtitle bands |
 | `.claude/skills/youtube-edit/` | The full editing skill (from the WeAreNoCode kit): looks, HyperFrames compositions, ElevenLabs voiceover and sound effects |
 | `.claude/skills/share-skill/` | Send a skill to this repo as a pull request from the chat: the sharing rules, a dry run, then fork, one commit and the pull request after a yes |

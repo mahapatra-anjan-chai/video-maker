@@ -12,6 +12,9 @@ Writes into --out:
   shots.jpg      one frame from the middle of every shot, with its start and length
   motion.jpg     strips of 8 frames over ~0.7 s at the busiest moments that are not cuts: entrances, camera moves,
                  transitions and animated graphics show here, so read the techniques off this sheet
+  motion.json    every move measured at the full frame rate (motion.py): kind, direction, length, ease family and
+  MOTION.md      GSAP ease, overshoot, staggers, time from a cut, holds, steady cutting, beats (with --bpm)
+  curves.png     each move's measured progress with the fitted ease drawn over it, to check the fits by eye
   text.jpg       the largest on-screen text cards, cropped, to read the type treatment (weight, case, boxes, colour)
   palette.png    the colours with their share of the screen
   SCAN.md        the numbers in words, for the style card
@@ -208,6 +211,8 @@ def main():
     ap.add_argument("--text-fps", type=float, default=2.0)
     ap.add_argument("--strips", type=int, default=8)
     ap.add_argument("--no-text", action="store_true", help="skip the OCR (not on macOS, or no text in the video)")
+    ap.add_argument("--no-motion", action="store_true", help="skip the full-frame-rate motion measurement")
+    ap.add_argument("--bpm", type=float, help="the music's tempo, when known: timing is then checked against its beats")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     W, H, fps, dur = probe(a.video)
@@ -263,6 +268,16 @@ def main():
     sheet(strip_imgs, strip_lbls, 8, os.path.join(a.out, "motion.jpg"))
     motion = {"busiest_moments": [round(p, 2) for p in picks],
               "mean_change": round(float(diff.mean()), 2), "share_of_time_moving": round(float((diff > 2.0).mean()), 2)}
+    measured = None
+    if not a.no_motion:                       # how things move, at the full frame rate: eases, lengths, timing
+        sys.path.insert(0, HERE)
+        import motion as mo
+        measured = mo.analyse(a.video, bpm=a.bpm)
+        mo.write(measured, a.out)
+        motion["measured"] = measured["summary"]
+        motion["staggers"] = measured["staggers"]; motion["cut_rhythm"] = measured.get("cut_rhythm")
+        motion["beat"] = measured.get("beat")
+        print("motion: %d moves, eases %s" % (measured["summary"]["moves"], measured["summary"]["families"]))
 
     # on-screen text
     text, cards = {"share_of_time": None}, []
@@ -309,9 +324,13 @@ def main():
                   "left/centre/right): %s." % (text["share_of_time"] * 100, text["cards_per_min"], text["card_seconds_median"],
                   text["words_per_card_median"], text["height_share_median"] * 100, text["height_share_p90"] * 100,
                   text["uppercase_share"] * 100, text["grows_word_by_word"], text["grid_top_mid_bottom_x_left_centre_right"]))
-    md += ["", "Sheets: shots.jpg (a frame a shot), motion.jpg (the busiest moments, 8 frames each), text.jpg, palette.png."]
+    if measured:
+        md += [""] + [l for l in mo.words(measured).splitlines() if l.startswith("- ")]
+    md += ["", "Sheets: shots.jpg (a frame a shot), motion.jpg (the busiest moments, 8 frames each), curves.png (the measured "
+           "eases), text.jpg, palette.png. Every move: motion.json."]
     open(os.path.join(a.out, "SCAN.md"), "w").write("\n".join(md) + "\n")
-    print("wrote %s/scan.json, SCAN.md, shots.jpg, motion.jpg%s, palette.png" % (a.out, ", text.jpg" if text.get("cards") else ""))
+    print("wrote %s/scan.json, SCAN.md, shots.jpg, motion.jpg%s%s, palette.png" % (
+        a.out, ", motion.json, MOTION.md, curves.png" if measured else "", ", text.jpg" if text.get("cards") else ""))
 
 
 if __name__ == "__main__":
