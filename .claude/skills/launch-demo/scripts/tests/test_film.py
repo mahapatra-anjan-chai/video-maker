@@ -68,7 +68,8 @@ class Build(unittest.TestCase):
         P = self.page_plan(page)
         self.assertEqual([s.get("tr") for s in P["scenes"]], ["pixel", "wipe", "blur", "cut", None])
         self.assertEqual(P["scenes"][1]["anim"], "fade-up")
-        for f in ("vendor/gsap.min.js", "vendor/text-fx.js", "hyperframes.json"):
+        gsap = os.path.exists(os.path.join(os.path.dirname(os.path.dirname(HERE)), "youtube-edit", "assets", "vendor", "gsap.min.js"))  # from setup.sh
+        for f in (["vendor/gsap.min.js"] if gsap else []) + ["vendor/text-fx.js", "hyperframes.json"]:
             self.assertTrue(os.path.exists(os.path.join(self.out, f)), f)
 
     def test_timing_is_written_back_and_the_plan_kept(self):

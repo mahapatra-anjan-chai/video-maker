@@ -222,7 +222,10 @@ def build(scenes_path, out):
     open(os.path.join(out, "index.html"), "w").write(page)
     for src, dst in ((os.path.join(SKILLS, "youtube-edit", "assets", "vendor", "gsap.min.js"), "vendor/gsap.min.js"),
                      (os.path.join(SKILLS, "text-animations", "text-fx.js"), "vendor/text-fx.js")):
-        shutil.copy2(src, os.path.join(out, dst))
+        if os.path.exists(src):                           # GSAP comes from setup.sh; without it the page still builds
+            shutil.copy2(src, os.path.join(out, dst))
+        else:
+            print("  missing (run setup.sh before rendering): %s" % src)
     hf = os.path.join(out, "hyperframes.json")
     if not os.path.exists(hf):
         json.dump({"$schema": "https://hyperframes.heygen.com/schema/hyperframes.json", "media": {"autoProxy": True}}, open(hf, "w"), indent=2)
