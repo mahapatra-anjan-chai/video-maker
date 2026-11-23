@@ -1,6 +1,6 @@
 ---
 name: reference-style
-description: Learn a style from reference videos the creator uploads (an explainer channel they admire, an ad they like) and make the new video in it. Measures pacing, palette and on-screen type, and every move's ease, length, overshoot, stagger and timing at the full frame rate (with curves to check the fits), lays out the moments where things move, writes a style card that maps every technique to the 42 text animations, fast-cut features, HyperFrames registry blocks or a component to build. After delivery, it saves the tuned style as its own skill so the next video can say "in the <name> style". Use when the creator shares a reference video, says "make it look like this", "in the style of", "use this as inspiration", or picks a saved style. The ask-first round asks for references on every new video.
+description: Learn a style from reference videos the creator uploads (an explainer channel they admire, an ad they like) and make the new video in it. Measures pacing, palette and on-screen type, and every move's ease, length, overshoot, stagger and timing at the full frame rate (with curves to check the fits), lays out the moments where things move, writes a style card that maps every technique to the 51 animations (text, cards and cursors, transitions), fast-cut features, HyperFrames registry blocks or a component to build. After delivery, it saves the tuned style as its own skill so the next video can say "in the <name> style". Use when the creator shares a reference video, says "make it look like this", "in the style of", "use this as inspiration", or picks a saved style. The ask-first round asks for references on every new video.
 ---
 
 # Reference style
@@ -52,7 +52,8 @@ never do. Run from the project folder with `R=".claude/skills/reference-style/sc
    `curves.png` shows the dots on the line; `unclear` means busy footage under it, so judge by eye and say so. Never
    claim to have heard the audio from the numbers.
 3. **Map each technique** (`maps_to` in `style.json`), in this order of preference:
-   - `text-animation`: one of the 42 (`text-animations/SKILL.md`);
+   - `text-animation`: one of the 51 (`text-animations/SKILL.md`): text, cards and cursors, the pixel and blur
+     transitions; for a halftone background, `text-animations/scripts/halftone.py` in the look's colours;
    - `fast-cut`: a feature and its numbers (zoom scale and ease, headline `intro` with `entrance`, `mark`, text-mask,
      taps);
    - `registry`: a HyperFrames block or component. Search before calling anything custom:
@@ -64,7 +65,7 @@ never do. Run from the project folder with `R=".claude/skills/reference-style/sc
    **Timing goes only where a parameter takes it** (the `motion` block in `style.json`):
    - custom HyperFrames/GSAP code: the measured ease and length as they are (`ease: "power3.out", duration: 0.42`),
      the stagger interval, the hold, the delay after a cut;
-   - a text animation (the 42 have their own eases): match its speed with `tl.timeScale(its length / the measured
+   - a text animation (each has its own eases): match its speed with `tl.timeScale(its length / the measured
      length)` on the timeline `TextFX.build` returns;
    - fast-cut zooms: `ease` = the measured zoom length in seconds (the curve itself is fixed, a cubic in-out); a
      headline `intro`: `move` = the measured glide, `hold` = the measured hold;

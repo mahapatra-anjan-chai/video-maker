@@ -85,11 +85,19 @@ def main():
             bits.append("%s %s %ss" % (k, v["ease"], v.get("dur", "?")))
     if mo.get("stagger_s"):
         bits.append("stagger %ss" % mo["stagger_s"])
-    if bits:
-        d.text((48, y + 142), "Motion: " + "  ·  ".join(bits), font=f_s, fill=(40, 40, 48))
+    ty = y + 172
+    if bits:                                                   # both lines wrap to stay in the left column
+        ml = textwrap.wrap("Motion: " + "  ·  ".join(bits), 78)[:2]
+        for k, line in enumerate(ml):
+            d.text((48, y + 142 + k * 22), line, font=f_s, fill=(40, 40, 48))
+        ty = y + 142 + len(ml) * 22 + 8
     tx = s.get("text_animations", [])
     if tx:
-        d.text((48, y + 172), "Text animations: " + ", ".join(tx), font=f_b, fill=(91, 52, 245))
+        lines = textwrap.wrap("Text animations: " + ", ".join(tx), 54)
+        if len(lines) > 3:
+            lines = lines[:3]; lines[-1] = lines[-1].rstrip(",") + " ..."
+        for k, line in enumerate(lines):
+            d.text((48, ty + k * 30), line, font=f_b, fill=(91, 52, 245))
     # techniques
     x0, y = 860, 200
     d.text((x0, y), "Techniques and what makes them here", font=f_h, fill=(20, 20, 24)); y += 40

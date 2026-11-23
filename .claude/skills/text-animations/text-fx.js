@@ -1,4 +1,4 @@
-/* text-fx.js: 42 text animations as GSAP timelines (needs gsap 3 on the page).
+/* text-fx.js: 51 text, card, cursor and transition animations as GSAP timelines (needs gsap 3 on the page).
  *
  *   const { tl, dur } = TextFX.build(stageEl, "fade-up", { text: "Launch day, sorted", size: 64 });
  *   master.add(tl.play(), 2.0);          // in a HyperFrames composition: place it at 2 s
@@ -7,6 +7,11 @@
  * Every timeline is paused, deterministic and seek-safe: no Math.random, no CSS animations, no timers, so HyperFrames
  * can render any frame in any order. The stage is any sized element; the animation fills it, centred.
  * Options: text ("a|b" for parts), size (px), ink (text colour), accent, accent2, accent3, accent4, paper, font, weight, hold.
+ *
+ * Transitions for any composition (seek-safe, colours from the look):
+ *   const { cover, end } = TextFX.pixel(tl, containerEl, { at: 4.0, colors: [accent, accent2], origin: [0.6, 0.5] });
+ *     blocks grow from origin (0.4 s), cover the container at `cover` (swap the scenes there), clear sideways (0.35 s)
+ *   TextFX.blurSwap(tl, outgoingEl, incomingEl, 4.0)    outgoing blurs out in 0.15 s, incoming sharpens in 0.3 s
  */
 (function (root) {
   "use strict";
@@ -52,9 +57,18 @@
     ["karaoke", "Karaoke captions", "Video and UI", "Notes in plain words get a new version", "Captions for a voiceover"],
     ["text-mask", "Text mask", "Video and UI", "PLAY", "Footage or colour inside big letters"],
     ["chat-bubbles", "Chat bubbles", "Video and UI", "Can it do vertical?|Yes, and 16:9.|Ship it.", "Conversations, support, AI chat features"],
-    ["counter", "Counter", "Video and UI", "Monthly revenue|48.2", "Metrics, growth, results"]
+    ["counter", "Counter", "Video and UI", "Monthly revenue|48.2", "Metrics, growth, results"],
+    ["accent-words", "Accent words", "Entrances", "Ship the demo, not the deck.", "A line built word by word, the newest word in the accent colour"],
+    ["roll-list", "Roll list", "Swaps and loops", "Ready for|launch.|feedback.|scale.", "One lead word, the ending rolls through a list"],
+    ["prompt-type", "Typed prompt", "Video and UI", "Show me the pricing page|You", "Typing into a prompt bar, then a click on send"],
+    ["card-cloud", "Card cloud", "Cards and cursors", "Your launch kit|Pricing|Insights|Reports|Billing|Teams|Exports|Roadmap|Changelog", "Everything your product does, gathered round one idea"],
+    ["stack-cards", "Notification stack", "Cards and cursors", "Updates|Build ready|Docs updated|Video exported", "Things happening on their own: syncs, updates, alerts"],
+    ["chips-to-card", "Chips into a card", "Cards and cursors", "New signups|Ada|Search|Ben|Ads|Cy|Social|Di|Email", "Many sources becoming one list: leads, tickets, feedback"],
+    ["cursor-tour", "Cursor tour", "Cards and cursors", "Visitor|Revenue is up 12% this quarter|Guide", "A labelled cursor points, rings, explains and clicks"],
+    ["pixel-dissolve", "Pixel dissolve", "Transitions", "Before|After", "A scene change in blocks of the brand colours"],
+    ["blur-swap", "Blur swap", "Transitions", "Draft|Final", "A soft scene change: one line blurs out, the next sharpens in"]
   ];
-  var CATS = ["Entrances", "Emphasis", "Swaps and loops", "Transformations", "Video and UI"];
+  var CATS = ["Entrances", "Emphasis", "Swaps and loops", "Transformations", "Video and UI", "Cards and cursors", "Transitions"];
 
   function seeded(seed) {                       // the same "random" numbers on every render
     var s = (seed >>> 0) || 1;
@@ -487,6 +501,275 @@
     tl.from(bar, { scaleX: 0, duration: 1.6, ease: "power2.out" }, 0.2);
   };
 
+  // ---- learned from a reference (word-by-word accent lines, rolling lists, prompt bars, cards, cursors, dissolves)
+  function measure(el) { return el && el.getBoundingClientRect ? el.getBoundingClientRect() : { left: 0, right: 0, width: 0 }; }
+  function shadow(o) { return "box-shadow:0 " + (o.W * 0.006) + "px " + (o.W * 0.03) + "px " + o.ink + "1F"; }
+  function cursorEl(o, label, color) {
+    var u = o.base * 0.3;
+    var c = E("div", "position:absolute;left:0;top:0;width:0;height:0;z-index:5");
+    c.appendChild(E("div", "position:absolute;left:0;top:0;width:" + (u * 1.5) + "px",
+      '<svg viewBox="0 0 24 24" width="100%"><path d="M3 2 L20 12 L12 13.5 L8 21 Z" fill="' + color + '" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>'));
+    if (label) c.appendChild(E("div", "position:absolute;left:" + (u * 1.1) + "px;top:" + (u * 1.3) + "px;padding:.3em .7em;border-radius:.45em;" +
+      "white-space:nowrap;font-weight:600;font-size:" + (u * 0.75) + "px;background:" + color + ";color:#fff", label));
+    return c;
+  }
+  function ripple(o, color) {
+    var d = o.base * 0.8;
+    return E("div", "position:absolute;left:0;top:0;width:" + d + "px;height:" + d + "px;margin:-" + (d / 2) + "px;" +
+      "border-radius:50%;border:" + Math.max(2, o.base * 0.04) + "px solid " + color + ";opacity:0");
+  }
+  function click(tl, rp, at) {                               // the ripple stays hidden until the click
+    tl.set(rp, { opacity: 0 }, 0);
+    tl.fromTo(rp, { scale: 0.35, opacity: 0.85 }, { scale: 2.2, opacity: 0, duration: 0.42, ease: "power2.out", immediateRender: false }, at);
+  }
+  function centreOf(el, b) {                                 // an element's centre inside the stage, measured when played
+    var r = measure(el), q = measure(b);
+    return [r.left + r.width / 2 - q.left, r.top + r.height / 2 - q.top];
+  }
+  function moveTo(tl, el, x, y, at, d) {                     // a curved, eased path: x and y on different eases
+    tl.to(el, { x: x, duration: d || 0.6, ease: "power2.inOut" }, at);    // x, y: numbers or functions (measured when played)
+    tl.to(el, { y: y, duration: d || 0.6, ease: "sine.inOut" }, at);
+  }
+  function typeInto(tl, el, text, at, cps) {                 // one set per character: seek-safe typing
+    var c = chars(el, text);
+    tl.set(c, { display: "none" }, 0);
+    c.forEach(function (x, i) { tl.set(x, { display: "inline-block" }, at + i / (cps || 30)); });
+    return at + c.length / (cps || 30);
+  }
+
+  B["accent-words"] = function (b, o, tl) {
+    var line = E("div", "white-space:nowrap;font-weight:" + (o.weight > 600 ? 600 : o.weight)); b.appendChild(line);
+    var w = words(line, o.text), blur = Math.round(o.fs * 0.25);
+    var span = function (i) {                                 // keep the words shown so far centred, measured when played
+      var r0 = measure(w[0]), ri = measure(w[i]), rl = measure(line);
+      return ((rl.left + rl.right) / 2 - (r0.left + ri.right) / 2) - 0;
+    };
+    tl.set(w, { opacity: 0, color: o.accent }, 0);
+    tl.set(line, { x: function () { return span(0); } }, 0);
+    var t = 0.15;
+    w.forEach(function (x, i) {
+      tl.fromTo(x, { opacity: 0, filter: "blur(" + blur + "px)", y: o.fs * 0.06 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.14, ease: "power2.out" }, t);
+      if (i > 0) {
+        tl.to(w[i - 1], { color: o.ink, duration: 0.16 }, t);
+        tl.to(line, { x: function () { return span(i); }, duration: 0.3, ease: "power2.out" }, t);
+      }
+      t += /[,.;:!?]$/.test(x.textContent) ? 0.42 : 0.2;
+    });
+  };
+  B["roll-list"] = function (b, o, tl) {
+    var p = o.text.split("|"), lead = p.shift();
+    var longest = Math.max.apply(null, p.map(function (x) { return x.length; }));
+    var fs = Math.min(o.fs, o.W * 0.86 / ((lead.length + longest + 1) * 0.58)), lh = fs * 1.2, blur = Math.round(fs * 0.06);
+    var row = E("div", "display:flex;align-items:center;gap:.28em;white-space:nowrap;font-size:" + fs + "px"); b.appendChild(row);
+    row.appendChild(E("span", "color:" + o.ink, lead));
+    var win = E("div", "position:relative;height:" + (lh * 3) + "px;overflow:hidden;text-align:left;-webkit-mask-image:linear-gradient(transparent,#000 28%,#000 72%,transparent)");
+    var col = E("div", "position:relative;top:" + lh + "px");
+    var items = p.map(function (t) { var s = E("div", "height:" + lh + "px;line-height:" + lh + "px;width:max-content", t); col.appendChild(s); return s; });
+    win.appendChild(col); row.appendChild(win);
+    var widest = function () { return Math.max.apply(null, items.map(function (x) { return measure(x).width; })); };
+    var centre = function (i) { return (widest() - measure(items[i]).width) / 2; };
+    tl.set(items, { color: o.ink, opacity: 0.32, filter: "blur(" + blur + "px)" }, 0);
+    tl.set(items[0], { color: o.accent, opacity: 1, filter: "blur(0px)" }, 0);
+    tl.set(row, { x: function () { return centre(0); } }, 0);
+    tl.from(row, { opacity: 0, y: fs * 0.25, duration: 0.4, ease: "power2.out" }, 0);
+    for (var i = 1; i < items.length; i++) {
+      var at = 0.4 + i * 1.05;
+      tl.to(col, { y: -lh * i, duration: 0.32, ease: "power2.inOut" }, at);
+      tl.to(items[i - 1], { color: o.ink, opacity: 0, filter: "blur(" + blur + "px)", duration: 0.28 }, at);
+      tl.to(items[i], { color: o.accent, opacity: 1, filter: "blur(0px)", duration: 0.28 }, at + 0.06);
+      tl.to(row, { x: (function (k) { return function () { return centre(k); }; })(i), duration: 0.32, ease: "power2.inOut" }, at);
+    }
+  };
+  B["prompt-type"] = function (b, o, tl) {
+    var p = o.text.split("|"), fz = Math.min(o.base * 0.4, o.W * 0.7 / Math.max(12, p[0].length * 0.55));
+    var bar = E("div", "position:relative;width:78%;padding:" + (fz * 0.9) + "px " + (fz) + "px " + (fz * 2.6) + "px;border-radius:" + (fz * 0.9) + "px;" +
+      "background:" + o.paper + ";" + shadow(o) + ";text-align:left;font-weight:400;font-size:" + fz + "px;color:" + o.ink); b.appendChild(bar);
+    var ph = E("div", "position:absolute;left:" + fz + "px;top:" + (fz * 0.9) + "px;color:" + o.ink + "66", "Ask anything"); bar.appendChild(ph);
+    var line = E("span", "white-space:pre"); bar.appendChild(line);
+    var caret = E("span", "display:inline-block;width:2px;height:1em;vertical-align:-0.15em;background:" + o.ink); bar.appendChild(caret);
+    var send = E("div", "position:absolute;right:" + (fz * 0.7) + "px;bottom:" + (fz * 0.7) + "px;width:" + (fz * 1.7) + "px;height:" + (fz * 1.7) + "px;" +
+      "border-radius:" + (fz * 0.45) + "px;display:flex;align-items:center;justify-content:center;background:" + o.accent + ";color:" + o.paper + ";font-weight:700", "↑");
+    bar.appendChild(send);
+    var cur = cursorEl(o, p[1] || "You", o.accent2), rp = ripple(o, o.accent); b.appendChild(rp); b.appendChild(cur);
+    tl.from(bar, { opacity: 0, y: o.fs * 0.3, scale: 0.97, duration: 0.4, ease: "power2.out" }, 0);
+    tl.set(ph, { opacity: 0 }, 0.5);
+    var done = typeInto(tl, line, p[0], 0.5, 32);
+    tl.to(caret, { opacity: 0, duration: 0.01, repeat: 3, yoyo: true, repeatDelay: 0.3 }, 0.2);
+    var bx = function () { return centreOf(send, b)[0]; }, by = function () { return centreOf(send, b)[1]; };
+    tl.set(cur, { x: o.W * 0.98, y: o.H * 0.95, opacity: 0 }, 0);
+    tl.to(cur, { opacity: 1, duration: 0.2 }, done - 0.5);
+    moveTo(tl, cur, bx, by, done - 0.45, 0.5);
+    tl.to(send, { scale: 0.88, duration: 0.08, yoyo: true, repeat: 1 }, done + 0.08);
+    tl.set(rp, { x: bx, y: by }, done);
+    click(tl, rp, done + 0.1);
+  };
+  B["card-cloud"] = function (b, o, tl) {
+    var p = o.text.split("|"), centre = p.shift(), r = seeded(11), fz = o.base * 0.24, cards = [];
+    var pill = E("div", "position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:.55em 1.1em;border-radius:2em;white-space:nowrap;" +
+      "font-weight:500;font-size:" + (fz * 1.25) + "px;background:" + o.paper + ";color:" + o.ink + ";" + shadow(o) + ";z-index:2", centre);
+    b.appendChild(pill);
+    var slots = [[0.16, 0.2], [0.5, 0.14], [0.84, 0.2], [0.13, 0.52], [0.87, 0.5], [0.2, 0.83], [0.5, 0.86], [0.8, 0.82], [0.33, 0.33], [0.67, 0.68]];
+    p.forEach(function (t, i) {
+      var s = slots[i % slots.length], dark = i % 4 === 2, warm = i % 4 === 0;
+      var bg = dark ? o.ink : warm ? "linear-gradient(135deg," + o.accent + "," + o.accent2 + ")" : o.paper;
+      var card = E("div", "position:absolute;left:" + (s[0] * 100) + "%;top:" + (s[1] * 100) + "%;width:" + (o.W * 0.17) + "px;height:" + (o.W * 0.095) + "px;" +
+        "margin:-" + (o.W * 0.0475) + "px 0 0 -" + (o.W * 0.085) + "px;border-radius:" + (o.W * 0.012) + "px;background:" + bg + ";" + shadow(o) + ";overflow:hidden;" +
+        "padding:" + (o.W * 0.012) + "px;box-sizing:border-box;text-align:left;font-weight:600;font-size:" + fz + "px;color:" + (dark || warm ? o.paper : o.ink));
+      card.appendChild(E("div", "white-space:nowrap;overflow:hidden;text-overflow:ellipsis", t));
+      var bars = E("div", "position:absolute;right:" + (o.W * 0.012) + "px;bottom:" + (o.W * 0.012) + "px;display:flex;gap:2px;align-items:flex-end;height:40%");
+      for (var k = 0; k < 5; k++) bars.appendChild(E("div", "width:" + (o.W * 0.006) + "px;height:" + (30 + 14 * k * r()) + "%;border-radius:1px;background:" + (dark || warm ? o.paper + "AA" : o.accent)));
+      card.appendChild(bars); b.appendChild(card); cards.push(card);
+    });
+    var order = cards.map(function (c, i) { return [r(), c]; }).sort(function (a, z) { return a[0] - z[0]; }).map(function (x) { return x[1]; });
+    tl.from(pill, { opacity: 0, scale: 0.92, duration: 0.35, ease: "power2.out" }, 0);
+    order.forEach(function (c, i) {
+      tl.fromTo(c, { opacity: 0, scale: 0.9, filter: "blur(" + Math.round(o.W * 0.004) + "px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.35, ease: "power2.out" }, 0.3 + i * 0.15);
+    });
+    tl.to(cards, { y: "-=" + (o.H * 0.02), duration: 0.3 + order.length * 0.15 + 0.9, ease: "none" }, 0.3);   // a slow drift
+  };
+  B["stack-cards"] = function (b, o, tl) {
+    var p = o.text.split("|"), title = p.shift(), fz = o.base * 0.27, ih = fz * 3.1;
+    var panel = E("div", "width:46%;padding:" + (fz * 0.9) + "px;border-radius:" + (fz * 1.1) + "px;background:linear-gradient(160deg," + o.accent2 + "," + o.accent + ");" +
+      shadow(o) + ";box-sizing:border-box;text-align:left"); b.appendChild(panel);
+    panel.appendChild(E("div", "font-weight:700;font-size:" + (fz * 1.1) + "px;color:" + o.paper + ";margin-bottom:" + (fz * 0.6) + "px", title));
+    var list = E("div", "display:flex;flex-direction:column"); panel.appendChild(list);
+    var items = p.map(function (t, i) {
+      var it = E("div", "height:0;opacity:0;overflow:hidden");
+      var inner = E("div", "display:flex;align-items:center;gap:.6em;height:" + (ih - fz * 0.5) + "px;margin-bottom:" + (fz * 0.5) + "px;padding:0 " + (fz * 0.8) + "px;" +
+        "border-radius:" + (fz * 0.7) + "px;background:" + o.paper + ";font-size:" + fz + "px;font-weight:600;color:" + o.ink);
+      inner.appendChild(E("span", "width:1.2em;height:1.2em;border-radius:.3em;display:inline-flex;align-items:center;justify-content:center;background:" + o.accent + ";color:" + o.paper + ";font-size:.8em", "✓"));
+      inner.appendChild(E("span", "flex:1", t));
+      inner.appendChild(E("span", "font-weight:500;color:" + o.ink + "88", "v1." + (i + 1)));
+      it.appendChild(inner); return it;
+    });
+    items.slice().reverse().forEach(function (it) { list.appendChild(it); });   // newest on top
+    tl.from(panel, { opacity: 0, y: o.fs * 0.3, duration: 0.4, ease: "power2.out" }, 0);
+    items.forEach(function (it, i) {
+      var at = 0.45 + i * 0.6;
+      tl.to(it, { height: ih, duration: 0.18, ease: "power2.out" }, at);
+      tl.fromTo(it, { opacity: 0, y: -fz }, { opacity: 1, y: 0, duration: 0.22, ease: "power2.out" }, at + 0.04);
+    });
+  };
+  B["chips-to-card"] = function (b, o, tl) {
+    var p = o.text.split("|"), title = p.shift(), fz = o.base * 0.24, pairs = [];
+    for (var i = 0; i + 1 < p.length; i += 2) pairs.push([p[i], p[i + 1]]);
+    var cw = o.W * 0.26, rowh = fz * 2.3, cx = o.W / 2, cy = o.H / 2;
+    var card = E("div", "position:absolute;left:" + (cx - cw / 2) + "px;top:" + (cy - rowh * 2.6) + "px;width:" + cw + "px;min-height:" + (rowh * 5.2) + "px;" +
+      "padding:" + (fz * 0.8) + "px;border-radius:" + (fz * 0.8) + "px;background:" + o.paper + ";" + shadow(o) + ";box-sizing:border-box;text-align:left;z-index:2");
+    card.appendChild(E("div", "font-weight:700;font-size:" + fz + "px;color:" + o.ink + ";margin-bottom:" + (fz * 0.5) + "px", title));
+    b.appendChild(card);
+    var svg = document.createElementNS ? document.createElementNS("http://www.w3.org/2000/svg", "svg") : E("div");
+    svg.setAttribute && svg.setAttribute("style", "position:absolute;inset:0;width:100%;height:100%");
+    b.insertBefore(svg, card);
+    var dots = [o.accent, o.accent2, o.accent3, o.accent4];
+    pairs.forEach(function (q, k) {
+      var ang = -Math.PI / 2 + k * 2 * Math.PI / pairs.length + 0.35, px = cx + Math.cos(ang) * o.W * 0.36, py = cy + Math.sin(ang) * o.H * 0.36;
+      var chip = E("div", "position:absolute;left:0;top:0;padding:.35em .8em;border-radius:2em;white-space:nowrap;font-size:" + fz + "px;font-weight:500;" +
+        "background:" + o.paper + ";color:" + o.ink + ";" + shadow(o) + ";transform:translate(-50%,-50%)");
+      chip.innerHTML = '<span style="display:inline-block;width:.6em;height:.6em;border-radius:50%;margin-right:.45em;background:' + dots[k % 4] + '"></span>' + q[0] + ' <span style="opacity:.5">· ' + q[1] + "</span>";
+      b.appendChild(chip);
+      var ln = document.createElementNS ? document.createElementNS("http://www.w3.org/2000/svg", "line") : E("div");
+      if (ln.setAttribute) { ln.setAttribute("x1", px); ln.setAttribute("y1", py); ln.setAttribute("x2", cx); ln.setAttribute("y2", cy); ln.setAttribute("stroke", o.ink); ln.setAttribute("stroke-opacity", "0.15"); ln.setAttribute("stroke-width", "1.5"); }
+      svg.appendChild(ln);
+      var row = E("div", "display:flex;align-items:center;gap:.5em;height:" + rowh + "px;font-size:" + fz + "px;color:" + o.ink + ";opacity:0");
+      row.innerHTML = '<span style="width:.7em;height:.7em;border-radius:50%;background:' + dots[k % 4] + '"></span><span style="flex:1;font-weight:600">' + q[0] +
+        '</span><span style="padding:.1em .5em;border-radius:.4em;font-size:.8em;background:' + o.accent + '22;color:' + o.accent + '">New</span>';
+      card.appendChild(row);
+      tl.set(chip, { x: px, y: py }, 0);
+      tl.from([chip, ln], { opacity: 0, duration: 0.3, ease: "power2.out" }, 0.2 + k * 0.06);
+      var at = 0.9 + k * 0.22, ry = cy - rowh * 2.6 + fz * 2.1 + rowh * (k + 0.5);
+      tl.to(chip, { x: cx - cw * 0.12, y: ry, scale: 0.7, duration: 0.45, ease: "power2.inOut" }, at);
+      tl.to(chip, { opacity: 0, duration: 0.12 }, at + 0.38);
+      tl.to(ln, { opacity: 0, duration: 0.2 }, at);
+      tl.fromTo(row, { opacity: 0, x: -fz }, { opacity: 1, x: 0, duration: 0.25, ease: "power2.out" }, at + 0.36);
+    });
+    tl.from(card, { opacity: 0, scale: 0.95, duration: 0.35, ease: "power2.out" }, 0);
+  };
+  B["cursor-tour"] = function (b, o, tl) {
+    var p = o.text.split("|"), fz = o.base * 0.24;
+    b.style.background = o.paper;
+    var dash = E("div", "position:absolute;left:8%;top:12%;width:84%;height:76%;border-radius:" + (fz) + "px;background:" + o.paper + ";" + shadow(o) + ";padding:" + fz + "px;box-sizing:border-box");
+    b.appendChild(dash);
+    var tiles = [], labels = [["Revenue", "$42k"], ["Win rate", "28%"], ["Avg deal", "$2.4k"]];
+    var tr = E("div", "display:flex;gap:" + fz + "px;margin-bottom:" + fz + "px"); dash.appendChild(tr);
+    labels.forEach(function (l) {
+      var t = E("div", "flex:1;padding:" + (fz * 0.7) + "px;border-radius:" + (fz * 0.6) + "px;border:1px solid " + o.ink + "18;text-align:left;font-size:" + fz + "px;color:" + o.ink + "99",
+        l[0] + '<div style="font-size:1.6em;font-weight:700;color:' + o.ink + '">' + l[1] + "</div>");
+      tr.appendChild(t); tiles.push(t);
+    });
+    var chart = E("div", "position:relative;height:52%;border-radius:" + (fz * 0.6) + "px;border:1px solid " + o.ink + "18",
+      '<svg viewBox="0 0 100 40" preserveAspectRatio="none" style="position:absolute;inset:8% 4%;width:92%;height:84%"><polyline points="0,34 12,30 24,31 36,24 48,26 60,18 72,20 84,12 100,6" fill="none" stroke="' + o.accent + '" stroke-width="1.2"/></svg>');
+    dash.appendChild(chart);
+    var ring = E("div", "position:absolute;left:0;top:0;border-radius:" + (fz * 0.7) + "px;border:2px solid " + o.accent + ";opacity:0");
+    b.appendChild(ring);
+    var tip = E("div", "position:absolute;left:0;top:0;padding:.45em .8em;border-radius:.6em;white-space:pre;font-size:" + fz + "px;font-weight:500;background:" + o.paper + ";color:" + o.ink + ";" + shadow(o) + ";opacity:0;z-index:4");
+    b.appendChild(tip);
+    var guide = cursorEl(o, p[2] || "Guide", o.ink), vis = cursorEl(o, p[0] || "Visitor", o.accent2), rp = ripple(o, o.accent2);
+    b.appendChild(rp); b.appendChild(guide); b.appendChild(vis);
+    var tx = function () { return centreOf(tiles[0], b)[0] + o.base * 0.25; }, ty = function () { return centreOf(tiles[0], b)[1] + o.base * 0.1; };
+    tl.from(dash, { opacity: 0, y: o.base * 0.2, duration: 0.4, ease: "power2.out" }, 0);
+    tl.set(guide, { x: o.W * 0.84, y: o.H * 0.66 }, 0); tl.from(guide, { opacity: 0, duration: 0.3 }, 0.3);
+    moveTo(tl, guide, o.W * 0.78, o.H * 0.36, 0.9, 1.8);
+    tl.set(vis, { x: o.W * 0.95, y: o.H * 0.9 }, 0); tl.from(vis, { opacity: 0, duration: 0.25 }, 0.4);
+    moveTo(tl, vis, tx, ty, 0.45, 0.7);
+    var box = function (k) { return function () { var r = measure(tiles[0]), q = measure(b), pad = fz * 0.35;
+      return [r.left - q.left - pad, r.top - q.top - pad, r.width + 2 * pad, r.height + 2 * pad][k]; }; };
+    tl.set(ring, { x: box(0), y: box(1), width: box(2), height: box(3), opacity: 0 }, 1.05);
+    tl.fromTo(ring, { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out", immediateRender: false }, 1.1);
+    tl.set(tip, { x: function () { return tx() + o.base * 0.45; }, y: function () { return ty() + o.base * 0.55; } }, 1.15);
+    tl.to(tip, { opacity: 1, duration: 0.2 }, 1.2);
+    var done = typeInto(tl, tip, p[1] || "", 1.25, 34);
+    moveTo(tl, vis, o.W * 0.56, o.H * 0.66, done + 0.3, 0.6);
+    tl.to([ring, tip], { opacity: 0, duration: 0.25 }, done + 0.45);
+    tl.set(rp, { x: o.W * 0.56, y: o.H * 0.66 }, 0);
+    click(tl, rp, done + 0.95);
+  };
+
+  function pixel(tl, el, opt) {
+    opt = opt || {};
+    var at = opt.at || 0, grow = opt.grow || 0.4, clear = opt.clear || 0.35, r = seeded(opt.seed || 5);
+    var W = opt.W || el.clientWidth || 1280, H = opt.H || el.clientHeight || 720, cols = opt.cols || 24, cell = W / cols, rows = Math.ceil(H / cell);
+    var col = opt.colors || ["#4F46E5", "#A5B4FC"], ox = (opt.origin || [0.6, 0.5])[0], oy = (opt.origin || [0.6, 0.5])[1];
+    var layer = E("div", "position:absolute;inset:0;pointer-events:none;z-index:" + (opt.z || 50)); el.appendChild(layer);
+    var maxd = Math.hypot(Math.max(ox, 1 - ox), Math.max(oy, 1 - oy) * H / W);
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
+      var kind = r(), fill = kind < 0.5 ? col[0] : kind < 0.75 ? (col[1] || col[0]) :
+        "radial-gradient(circle," + col[0] + " 34%,transparent 36%) 0 0/" + (cell / 4) + "px " + (cell / 4) + "px," + (col[1] || col[0]);
+      var bl = E("div", "position:absolute;left:" + (x * cell) + "px;top:" + (y * cell) + "px;width:" + (cell + 1) + "px;height:" + (cell + 1) + "px;background:" + fill + ";opacity:0");
+      layer.appendChild(bl);
+      var d = Math.hypot((x + 0.5) / cols - ox, ((y + 0.5) / rows - oy) * H / W) / maxd;
+      var on = at + grow * Math.min(1, d * 0.8 + r() * 0.25);
+      var off = at + grow + 0.04 + clear * Math.min(1, (1 - (x + 0.5) / cols) * 0.8 + r() * 0.2);
+      tl.set(bl, { opacity: kind > 0.92 ? 0.7 : 1 }, on);
+      tl.set(bl, { opacity: 0 }, off);
+    }
+    return { cover: at + grow + 0.02, end: at + grow + 0.04 + clear, layer: layer };
+  }
+  function blurSwap(tl, out, inn, at, opt) {
+    var px = (opt && opt.blur) || 18;
+    if (out) tl.to(out, { filter: "blur(" + px + "px)", opacity: 0, duration: 0.16, ease: "power2.in" }, at);
+    if (inn) tl.fromTo(inn, { filter: "blur(" + px + "px)", opacity: 0 }, { filter: "blur(0px)", opacity: 1, duration: 0.3, ease: "power2.out" }, at + 0.08);
+  }
+  function scene(b, o, text, bg, ink) {
+    var s = E("div", "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;background:" + bg + ";color:" + ink, text);
+    b.appendChild(s); return s;
+  }
+  B["pixel-dissolve"] = function (b, o, tl) {
+    var p = o.text.split("|");
+    var a = scene(b, o, p[0], o.paper, o.ink), z = scene(b, o, p[1] || "", o.accent, o.paper);
+    tl.set(z, { opacity: 0 }, 0);
+    tl.from(a.firstChild ? a : a, { opacity: 0, duration: 0.3 }, 0);
+    var t = pixel(tl, b, { at: 0.8, colors: [o.accent, o.accent2], origin: [0.62, 0.5], W: o.W, H: o.H, cols: 20 });
+    tl.set(a, { opacity: 0 }, t.cover); tl.set(z, { opacity: 1 }, t.cover);
+  };
+  B["blur-swap"] = function (b, o, tl) {
+    var p = o.text.split("|");
+    var a = scene(b, o, p[0], "transparent", o.ink), z = scene(b, o, p[1] || "", "transparent", o.accent);
+    tl.set(z, { opacity: 0 }, 0);
+    tl.from(a, { opacity: 0, filter: "blur(12px)", duration: 0.3 }, 0);
+    blurSwap(tl, a, z, 1.0);
+  };
+
   var uid = 0;
   function build(stage, id, opts) {
     if (!root.gsap) throw new Error("text-fx.js needs GSAP on the page");
@@ -510,6 +793,8 @@
   }
   root.TextFX = {
     build: build,
+    pixel: pixel,
+    blurSwap: blurSwap,
     ids: LIST.map(function (x) { return x[0]; }),
     list: LIST.map(function (x, i) { return { n: i + 1, id: x[0], name: x[1], category: x[2], sample: x[3], use: x[4] }; }),
     categories: CATS

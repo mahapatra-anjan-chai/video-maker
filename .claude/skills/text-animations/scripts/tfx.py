@@ -2,7 +2,7 @@
 """tfx.py: the text-animation picker, the preview gallery, and single animated texts for a video.
 
   python3 tfx.py picker                      write picker.widget.html (the in-chat picker) and gallery.html (the render page)
-  python3 tfx.py gallery --out DIR           render all 42 as a looping preview: DIR/text-animations.mp4 and DIR/preview.png
+  python3 tfx.py gallery --out DIR           render all 51 as a looping preview: DIR/text-animations.mp4 and DIR/preview.png
   python3 tfx.py clip --id fade-up --text "Launch day, sorted" --size 1080x1920 --box 80,120,920,260 --font-size 72 \\
                       --dur 3 --out title.mov [--ink "#FFFFFF" --accent "#7DD3FC"]
                                              one animation as a transparent ProRes 4444 MOV, to lay over footage
@@ -18,7 +18,7 @@ LIB = os.path.join(HERE, "text-fx.js")
 GSAP = os.path.join(SKILLS, "youtube-edit", "assets", "vendor", "gsap.min.js")
 FONTS = os.path.join(SKILLS, "youtube-edit", "styles", "brand", "fonts")
 GSAP_CDN = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
-CATS = ["Entrances", "Emphasis", "Swaps and loops", "Transformations", "Video and UI"]
+CATS = ["Entrances", "Emphasis", "Swaps and loops", "Transformations", "Video and UI", "Cards and cursors", "Transitions"]
 
 
 def fontfaces(prefix="fonts/"):
@@ -27,10 +27,10 @@ def fontfaces(prefix="fonts/"):
 
 
 # ------------------------------------------------------------------ picker: the dropdown with live previews
-PICKER = r"""<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Text animation picker: 42 live previews in five groups; pick the ones for this video.</h2>
+PICKER = r"""<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Animation picker: 51 live previews in seven groups (text, cards and cursors, transitions); pick the ones for this video.</h2>
 <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 1rem">
   <label for="tfx-cat" style="font-size:14px;color:var(--text-secondary)">Which kind of text animation?</label>
-  <select id="tfx-cat" style="min-width:220px"><option value="">All 42 animations</option></select>
+  <select id="tfx-cat" style="min-width:220px"><option value="">All 51 animations</option></select>
   <span id="tfx-count" style="font-size:13px;color:var(--text-secondary)">Tap a preview to pick it</span>
 </div>
 <div id="tfx-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
@@ -114,7 +114,7 @@ button{cursor:pointer}
 </style></head>
 <body><main>
 <h1>Text animations</h1>
-<p class="lead">42 text animations for product videos. Pick the ones you want, then press the button and paste the line into Claude Code.</p>
+<p class="lead">51 animations for product videos: text, cards and cursors, transitions. Pick the ones you want, then press the button and paste the line into Claude Code.</p>
 %s
 </main></body></html>
 """
@@ -180,7 +180,7 @@ def cmd_gallery(a):
     a.out = os.path.abspath(a.out)
     W, cardw, cardh, gap = 1920, 280, 236, 20
     body, y, n = ['<div style="position:absolute;left:80px;top:56px;font:700 60px/1 Poppins;color:#0F172A">Text animations</div>',
-                  '<div style="position:absolute;left:84px;top:132px;font:400 24px/1 Poppins;color:#475569">42 animations for product videos, in five groups</div>'], 200, 0
+                  '<div style="position:absolute;left:84px;top:132px;font:400 24px/1 Poppins;color:#475569">51 animations for product videos, in seven groups</div>'], 200, 0
     meta = json.loads(subprocess.run(["node", "-e", "global.window=global;global.document=undefined;require('%s');"
                                       "console.log(JSON.stringify(TextFX.list))" % LIB.replace("'", "\\'")],
                                      capture_output=True, text=True, check=True).stdout)

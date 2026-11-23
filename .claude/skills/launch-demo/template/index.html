@@ -244,7 +244,7 @@
     const M = C.montage;
     if (M) {
       const B = (M.beats || 2) * 60 / M.bpm;
-      const TR = { wipe: "Wipe", iris: "Iris", glitch: "Glitch", whip: "Whip pan", push: "Push", zoom: "Zoom-through" };
+      const TR = { wipe: "Wipe", iris: "Iris", glitch: "Glitch", whip: "Whip pan", push: "Push", zoom: "Zoom-through", pixel: "Pixel dissolve", blur: "Blur swap" };
       root.set("#mont", { visibility: "visible" }, M.t0 - 0.01);
       M.cards.forEach((c, i) => {
         const card = el("div", "mc", '<div class="st"></div><div class="a"><div class="k">' + (c.kind || "Text animation") + '</div><div class="v">' + (c.label || c.fx) +
@@ -273,6 +273,12 @@
           if (prev) root.to(prev, { scale: 5, opacity: 0, duration: 0.32, ease: "power2.in" }, t - 0.04);
           root.fromTo(card, { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "power3.out" }, t + 0.06);
         }
+        if (c.tr === "pixel") {                         // blocks of the palette grow from the right, the card swaps in under them
+          root.set(card, { opacity: 0 }, t);
+          const px = TextFX.pixel(root, $("#mont"), { at: t - 0.3, colors: [c.accent || C.palette.a1, C.palette.a2 || c.bg], origin: [0.62, 0.5], W: 1080, H: 1080, cols: 22, seed: 3 + i });
+          root.set(card, { opacity: 1 }, px.cover);
+        }
+        if (c.tr === "blur") TextFX.blurSwap(root, prev, card, t - 0.08);
         if (prev) root.set(prev, { visibility: "hidden" }, t + 0.4);
       });
       const T5 = M.t0 + M.cards.length * B;              // out: an iris on the accent colour

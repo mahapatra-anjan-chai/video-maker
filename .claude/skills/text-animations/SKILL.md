@@ -1,6 +1,6 @@
 ---
 name: text-animations
-description: 42 text animations for product videos (fade up, typewriter, mask reveal, text scramble, highlight, hand-drawn circle, shimmer, word carousel, marquee, 3D extrude, zoom through, karaoke captions, chat bubbles, counter and more), with a live picker shown before a video starts so the creator chooses the motion by sight. Use whenever a video gets headlines, titles, captions, callouts or on-screen copy; when the creator asks for "text animation", "animated text", "kinetic type", "make the headline pop", "which animations"; and at the start of every video (the picker step). Works in fast-cut cut lists ("anim") and in HyperFrames compositions (text-fx.js).
+description: 51 animations for product videos: 45 for text (fade up, typewriter, mask reveal, text scramble, highlight, hand-drawn circle, shimmer, word carousel, accent words, roll list, typed prompt, marquee, 3D extrude, zoom through, karaoke captions, chat bubbles, counter and more), cards and cursors (card cloud, notification stack, chips into a card, a labelled cursor tour), two transitions (pixel dissolve, blur swap) and an animated halftone background in any look's colours, with a live picker shown before a video starts so the creator chooses the motion by sight. Use whenever a video gets headlines, titles, captions, callouts, on-screen copy, product UI moments or scene changes; when the creator asks for "text animation", "animated text", "kinetic type", "make the headline pop", "which animations"; and at the start of every video (the picker step). Works in fast-cut cut lists ("anim") and in HyperFrames compositions (text-fx.js).
 ---
 
 # Text animations
@@ -16,17 +16,18 @@ Right after the Personal / Work and look questions, before any cut list or story
 
 1. **If the `show_widget` tool is available** (Claude desktop and web): call `read_me` (module `interactive`) once,
    then `show_widget` with the contents of `$TA/picker.widget.html` as `widget_code` (title `text_animation_picker`).
-   It shows a dropdown of the five groups ("Which kind of text animation?") over live, looping previews of all 42; the
+   It shows a dropdown of the seven groups ("Which kind of text animation?") over live, looping previews of all 51; the
    creator taps the ones they want and presses "Use the picked animations", which sends you a line like
    `Text animations for this video: 01 Fade up (fade-up), 13 Highlight (highlight)`. Regenerate the file with
    `python3 $TA/scripts/tfx.py picker` whenever `text-fx.js` changed.
 2. **Otherwise** (no in-chat widget): send `$TA/preview/preview.png` and `$TA/preview/text-animations.mp4` with SendUserFile
    (the numbered gallery; refresh it with `python3 $TA/scripts/tfx.py gallery --out $TA/preview`), then ask with
    AskUserQuestion, multi-select, "Which text animation style for this video?":
-   - **Clean** (fade up, mask reveal, highlight, word carousel): launches, B2B, most product explainers
+   - **Clean** (fade up, mask reveal, accent words, roll list, highlight, blur swap): launches, B2B, most product explainers
    - **Playful** (pop in, drop in, squash and stretch, wave, float): consumer apps, social
    - **Bold** (stamp, tracking in, marquee, oversized crop, 3D extrude): announcements, events, ads
-   - **Product UI** (typewriter, karaoke captions, chat bubbles, counter, tracked callout): demos, AI and data features
+   - **Product UI** (typed prompt, cursor tour, card cloud, notification stack, chat bubbles, counter, pixel dissolve):
+     demos, AI and data features
    "Other" lets them name numbers from the gallery.
 3. Write the answer into `brief.json` as `"text_animations": ["fade-up", "highlight"]` and use only those (plus plain
    fades) for the video's copy. Say which line gets which animation in the cut table or storyboard.
@@ -34,7 +35,7 @@ Right after the Personal / Work and look questions, before any cut list or story
 Taste rules: two or three animation types per video, one entrance for every headline, emphasis only on the phrase that
 carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 1.5 s after it lands.
 
-## The 42
+## The 51
 
 | # | id | Name | Group | Best for | Text |
 |---|---|---|---|---|---|
@@ -80,6 +81,20 @@ carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 
 | 40 | `text-mask` | Text mask | Video and UI | Footage or colour inside big letters | one line |
 | 41 | `chat-bubbles` | Chat bubbles | Video and UI | Conversations, support, AI chat features | `message|reply|message` |
 | 42 | `counter` | Counter | Video and UI | Metrics, growth, results | `label|48.2|$#K` |
+| 43 | `accent-words` | Accent words | Entrances | A line built word by word, the newest word in the accent colour | one line |
+| 44 | `roll-list` | Roll list | Swaps and loops | One lead word, the ending rolls through a list | `lead|word|word|word` |
+| 45 | `prompt-type` | Typed prompt | Video and UI | Typing into a prompt bar, then a click on send | `prompt|cursor label` |
+| 46 | `card-cloud` | Card cloud | Cards and cursors | Everything your product does, gathered round one idea | `centre|card|card|...` |
+| 47 | `stack-cards` | Notification stack | Cards and cursors | Things happening on their own: syncs, updates, alerts | `title|first|second|...` |
+| 48 | `chips-to-card` | Chips into a card | Cards and cursors | Many sources becoming one list: leads, tickets, feedback | `title|name|source|name|source...` |
+| 49 | `cursor-tour` | Cursor tour | Cards and cursors | A labelled cursor points, rings, explains and clicks | `cursor label|tooltip|second cursor` |
+| 50 | `pixel-dissolve` | Pixel dissolve | Transitions | A scene change in blocks of the brand colours | `before|after` |
+| 51 | `blur-swap` | Blur swap | Transitions | A soft scene change: one line blurs out, the next sharpens in | `before|after` |
+
+43-51 and the background below follow the motion measured frame by frame in a reference launch video (the style,
+never its copy, colours or assets): words land in about 0.1 s and blur in from soft to sharp; lists roll in 0.3 s
+and hold about a second; cards arrive every 0.15 s with a soft shadow; cursors travel on eased curves, ring what they
+point at and click with a 0.4 s ripple; the pixel dissolve grows from a point in 0.4 s and clears sideways in 0.35 s.
 
 Text with `|` splits into parts as shown (e.g. `"Weeks|Minutes"` strikes Weeks and brings in Minutes). Line breaks are
 ignored: the animation lays the words out.
@@ -131,16 +146,46 @@ Copy `text-fx.js` next to `index.html`, load it after GSAP, and add each animati
 
 Options: `text`, `size` (px; default fits the box), `ink`, `accent`, `accent2`, `accent3`, `accent4`, `paper`,
 `font` (default Poppins), `weight`, `hold` (seconds held at the end). `TextFX.list` has every id, name, group and use.
+Cards and cursors size themselves from the box; give them a box at least a third of the frame.
+
+**Transitions between any two scenes** (seek-safe, colours from the look):
+
+```js
+// blocks grow from `origin` for 0.4 s, cover the container at px.cover (swap the scenes there), clear sideways in 0.35 s
+const px = TextFX.pixel(master, document.getElementById("stage"), { at: 4.0, colors: [accent, accent2], origin: [0.6, 0.5] });
+master.set("#sceneA", { opacity: 0 }, px.cover); master.set("#sceneB", { opacity: 1 }, px.cover);
+// the outgoing scene blurs out in 0.15 s while the next sharpens in over 0.3 s
+TextFX.blurSwap(master, document.getElementById("sceneB"), document.getElementById("sceneC"), 8.0);
+```
+
+In the launch-demo template these are `"tr": "pixel"` and `"tr": "blur"` on a montage card.
+
+## Animated halftone background
+
+`scripts/halftone.py` draws pale blobs that drift and morph, ringed by halftone dots that are biggest just outside
+each blob and fade into the paper: a seamless loop at any size, coloured from a look.
+
+```bash
+python3 $TA/scripts/halftone.py --look brand --size 1920x1080 --out videos/<project>/img/bg.mp4      # light, 12 s loop
+python3 $TA/scripts/halftone.py --look brand --mode dark --size 1080x1920 --out videos/<project>/img/bg-dark.mp4
+python3 $TA/scripts/halftone.py --look brand --still videos/<project>/img/bg.png                     # one frame, for the chat
+```
+
+`--look` reads any look in `youtube-edit/styles/` (a company look kept on this Mac works the same way, and its colours
+never enter the repo); `--colors paper,blob,dots,dots2` sets them directly; `--speed 1-3` the drift. Show a still first.
+In HyperFrames, lay the MP4 in an untimed layer as a muted `<video>` with its own `data-start`; in fast-cut, use it as
+a segment's footage. Keep text on it dark on the pale blobs or on a card.
 
 ## Files
 
 | File | What it is |
 |---|---|
-| `text-fx.js` | The 42 animations |
+| `text-fx.js` | The 51 animations, and `TextFX.pixel` / `TextFX.blurSwap` for transitions |
+| `scripts/halftone.py` | The animated halftone background, in any look's colours |
 | `scripts/tfx.py` | `picker` (writes the picker files), `gallery` (renders the preview), `clip` (one transparent MOV) |
 | `picker.widget.html` | The in-chat picker (generated) |
 | `gallery.html` | The page `tfx.py gallery` renders the preview video from (never shown to the creator) |
-| `preview/` | `preview.png` and `text-animations.mp4`: all 42, numbered, in motion |
+| `preview/` | `preview.png` and `text-animations.mp4`: all 51, numbered, in motion |
 
 The catalogue follows the "Claude + Figma Motion: Text Animations" board curated by Shlomo Genchin (Unbore.com); the
 code and sample copy here are original.

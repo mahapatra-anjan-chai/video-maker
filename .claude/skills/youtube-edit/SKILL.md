@@ -71,7 +71,7 @@ The creator's standing rules for this system. They come before any cut, storyboa
    after the creator says yes.
 
 7. **Show the text-animation picker, every video,** right after the look: the `text-animations` skill's live
-   picker (a dropdown of the five groups over looping previews of all 42) in the chat, or the preview video and a
+   picker (a dropdown of the seven groups over looping previews of all 51) in the chat, or the preview video and a
    question in the chat when the widget is not available. Save the pick as `brief.json` `text_animations` and animate the copy only with those.
 
 ## Scene cards (the creator's own animations)

@@ -69,7 +69,7 @@ ask them to type a command.
    for again; never generate samples to pick a voice (they listen free on elevenlabs.io → Voices); show the credits
    left (`elevenlabs.py balance`). `--draft` (the Mac's own voice, free) only when someone wants to hear the timing
    before approving the script.
-5. Which text animations: show the `text-animations` picker (live previews of all 42, a dropdown by group) and save
+5. Which text animations: show the `text-animations` picker (live previews of all 51, a dropdown by group) and save
    the pick in `brief.json` `text_animations`.
 
 ## Where things are

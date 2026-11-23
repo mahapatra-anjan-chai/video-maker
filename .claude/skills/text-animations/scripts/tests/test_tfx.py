@@ -1,4 +1,4 @@
-"""text-fx.js lists the 42 animations once each, in five groups, and the picker files carry all of them."""
+"""text-fx.js lists the 51 animations once each, in seven groups, and the picker files carry all of them."""
 import json, os, shutil, subprocess, sys, unittest
 
 SKILL = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -12,12 +12,18 @@ class TextFX(unittest.TestCase):
                             "ids:TextFX.ids}))" % json.dumps(LIB)], capture_output=True, text=True, check=True)
         return json.loads(r.stdout)
 
-    def test_42_unique_in_five_groups(self):
+    def test_51_unique_in_seven_groups(self):
         c = self.catalogue()
-        self.assertEqual(len(c["list"]), 42)
-        self.assertEqual(len(set(c["ids"])), 42)
+        self.assertEqual(len(c["list"]), 51)
+        self.assertEqual(len(set(c["ids"])), 51)
         counts = {g: sum(1 for a in c["list"] if a["category"] == g) for g in c["cats"]}
-        self.assertEqual(counts, {"Entrances": 12, "Emphasis": 12, "Swaps and loops": 6, "Transformations": 6, "Video and UI": 6})
+        self.assertEqual(counts, {"Entrances": 13, "Emphasis": 12, "Swaps and loops": 7, "Transformations": 6, "Video and UI": 7,
+                                  "Cards and cursors": 4, "Transitions": 2})
+
+    def test_transitions_are_exported(self):
+        r = subprocess.run(["node", "-e", "global.window=global;require(%s);console.log(typeof TextFX.pixel, typeof TextFX.blurSwap)" % json.dumps(LIB)],
+                           capture_output=True, text=True, check=True)
+        self.assertEqual(r.stdout.split(), ["function", "function"])
 
     def test_every_animation_has_a_builder(self):
         src = open(LIB).read()
