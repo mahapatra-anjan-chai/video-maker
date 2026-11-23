@@ -71,7 +71,7 @@ The creator's standing rules for this system. They come before any cut, storyboa
    after the creator says yes.
 
 7. **Show the text-animation picker, every video,** right after the look: the `text-animations` skill's live
-   picker (a dropdown of the seven groups over looping previews of all 57, and the backgrounds) in the chat, or the
+   picker (a dropdown of the seven groups over looping previews of all 58, and the backgrounds) in the chat, or the
    preview video and a question in the chat when the widget is not available. Save the pick as `brief.json`
    `text_animations` and animate the copy only with those. A film built from scenes (a launch film) uses the scene
    planner instead and gets a storyboard before the render (`text-animations`, `storyboard`, `launch-demo`).

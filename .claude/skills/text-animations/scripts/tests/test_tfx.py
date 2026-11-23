@@ -1,4 +1,4 @@
-"""text-fx.js lists the 57 animations once each, in seven groups; the picker carries all of them; the scene planner shows a
+"""text-fx.js lists the 58 animations once each, in seven groups; the picker carries all of them; the scene planner shows a
 video's scenes and its sent line writes back into scenes.json."""
 import json, os, shutil, subprocess, sys, unittest
 
@@ -13,19 +13,19 @@ class TextFX(unittest.TestCase):
                             "ids:TextFX.ids}))" % json.dumps(LIB)], capture_output=True, text=True, check=True)
         return json.loads(r.stdout)
 
-    def test_57_unique_in_seven_groups(self):
+    def test_58_unique_in_seven_groups(self):
         c = self.catalogue()
-        self.assertEqual(len(c["list"]), 57)
-        self.assertEqual(len(set(c["ids"])), 57)
+        self.assertEqual(len(c["list"]), 58)
+        self.assertEqual(len(set(c["ids"])), 58)
         counts = {g: sum(1 for a in c["list"] if a["category"] == g) for g in c["cats"]}
         self.assertEqual(counts, {"Entrances": 13, "Emphasis": 12, "Swaps and loops": 7, "Transformations": 6, "Video and UI": 7,
-                                  "Cards and cursors": 4, "Transitions": 8})
+                                  "Cards and cursors": 4, "Transitions": 9})
 
     def test_transitions_are_exported(self):
         r = subprocess.run(["node", "-e", "global.window=global;require(%s);console.log(typeof TextFX.pixel, typeof TextFX.blurSwap, "
                             "typeof TextFX.transition, TextFX.transitions.map(function(t){return t.id}).join(','))" % json.dumps(LIB)],
                            capture_output=True, text=True, check=True)
-        self.assertEqual(r.stdout.split(), ["function", "function", "function", "cut,pixel,blur,wipe,iris,whip,push,zoom,glitch"])
+        self.assertEqual(r.stdout.split(), ["function", "function", "function", "cut,pixel,blur,wipe,iris,whip,push,zoom,glitch,slice"])
         ids = set(a["id"] for a in self.catalogue()["list"])
         r = subprocess.run(["node", "-e", "global.window=global;require(%s);console.log(JSON.stringify(TextFX.transitions))" % json.dumps(LIB)],
                            capture_output=True, text=True, check=True)
@@ -40,7 +40,7 @@ class TextFX(unittest.TestCase):
               "var r=TextFX.transition(tl,t.id,{parentNode:box},{parentNode:box},10,{W:100,H:100,container:box,manage:true,clearFrom:true});"
               "out[t.id]=[+(r.cover-10).toFixed(3),TextFX.transitionCover[t.id]]});console.log(JSON.stringify(out))" % json.dumps(LIB))
         out = json.loads(subprocess.run(["node", "-e", js], capture_output=True, text=True, check=True).stdout)
-        self.assertEqual(len(out), 9)
+        self.assertEqual(len(out), 10)
         for k, (got, table) in out.items():
             self.assertAlmostEqual(got, table, places=3, msg=k)
 

@@ -1,6 +1,6 @@
 ---
 name: text-animations
-description: 57 animations for product videos: 45 for text (fade up, typewriter, mask reveal, text scramble, highlight, hand-drawn circle, shimmer, word carousel, accent words, roll list, typed prompt, marquee, 3D extrude, zoom through, karaoke captions, chat bubbles, counter and more), cards and cursors (card cloud, notification stack, chips into a card, a labelled cursor tour), eight transitions between scenes (pixel dissolve, blur swap, wipe, iris, whip pan, push, zoom, glitch) and an animated halftone background in any look's colours, with a live picker shown before a video starts so the creator chooses the motion by sight, and a scene planner that plays each scene's own line with its animation, the transition into the next scene and the background, in the video's colours, so the creator picks per scene in the chat. Use whenever a video gets headlines, titles, captions, callouts, on-screen copy, product UI moments or scene changes; when the creator asks for "text animation", "animated text", "kinetic type", "make the headline pop", "which animations"; "which transition", "plan the scenes"; and at the start of every video (the picker or planner step). Works in fast-cut cut lists ("anim") and in HyperFrames compositions (text-fx.js).
+description: 58 animations for product videos: 45 for text (fade up, typewriter, mask reveal, text scramble, highlight, hand-drawn circle, shimmer, word carousel, accent words, roll list, typed prompt, marquee, 3D extrude, zoom through, karaoke captions, chat bubbles, counter and more), cards and cursors (card cloud, notification stack, chips into a card, a labelled cursor tour), nine transitions between scenes (pixel dissolve, blur swap, wipe, iris, whip pan, push, zoom, glitch, and a slice where a character or mascot dashes through and cuts the scene in two) and an animated halftone background in any look's colours, with a live picker shown before a video starts so the creator chooses the motion by sight, and a scene planner that plays each scene's own line with its animation, the transition into the next scene and the background, in the video's colours, so the creator picks per scene in the chat. Use whenever a video gets headlines, titles, captions, callouts, on-screen copy, product UI moments or scene changes; when the creator asks for "text animation", "animated text", "kinetic type", "make the headline pop", "which animations"; "which transition", "plan the scenes"; and at the start of every video (the picker or planner step). Works in fast-cut cut lists ("anim") and in HyperFrames compositions (text-fx.js).
 ---
 
 # Text animations
@@ -16,7 +16,7 @@ Right after the Personal / Work and look questions, before any cut list or story
 
 1. **If the `show_widget` tool is available** (Claude desktop and web): call `read_me` (module `interactive`) once,
    then `show_widget` with the contents of `$TA/picker.widget.html` as `widget_code` (title `text_animation_picker`).
-   It shows a dropdown of the seven groups ("Which kind of text animation?") over live, looping previews of all 57, and
+   It shows a dropdown of the seven groups ("Which kind of text animation?") over live, looping previews of all 58, and
    below them the backgrounds (halftone light, halftone dark, plain, drawn live); the creator taps the ones they want
    and presses "Use the picked animations", which sends you a line like
    `Text animations for this video: 01 Fade up (fade-up), 13 Highlight (highlight); background: halftone-light`.
@@ -55,7 +55,7 @@ screens appear in the storyboard.
 Taste rules: two or three animation types per video, one entrance for every headline, emphasis only on the phrase that
 carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 1.5 s after it lands.
 
-## The 57
+## The 58
 
 | # | id | Name | Group | Best for | Text |
 |---|---|---|---|---|---|
@@ -116,6 +116,7 @@ carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 
 | 55 | `push-cut` | Push | Transitions | The next scene pushes the last one up and out | `before|after` |
 | 56 | `zoom-cut` | Zoom | Transitions | The scene rushes past the camera; the next settles in | `before|after` |
 | 57 | `glitch-cut` | Glitch | Transitions | A stepped jitter with a colour shift: tech, AI, energy | `before|after` |
+| 58 | `slice-cut` | Slice | Transitions | A character dashes through on a diagonal and the scene splits along the cut | `before|after` |
 
 43-51 and the background below follow the motion measured frame by frame in a reference launch video (the style,
 never its copy, colours or assets): words land in about 0.1 s and blur in from soft to sharp; lists roll in 0.3 s
@@ -183,6 +184,19 @@ TextFX.transition(master, "wipe", sceneA, sceneB, at, { manage: true, W: 1920, H
 // see-through scenes over one shared background. To land a transition on a beat: at = beat - TextFX.transitionCover[kind].
 ```
 
+**The slice** (`slice`): a character winds up over the outgoing scene, dashes through on a diagonal leaving a glowing
+trail, the frame flashes and shakes, and the scene splits along the trail; the halves fly apart onto the next scene. Its
+run-up starts about 1.1 s before `at` (the split), so give the outgoing scene that long. The character is any image
+(`sprite: "media/mascot.png"`, or an element), else a glowing orb in the look's colours; `size` (px), `cut: [left y,
+right y]` (shares of the height, default `[0.68, 0.30]`), `land: [x, y]` (shares) or `false` to fly off, `stay: true`
+keeps it in the next scene. The halves are a copy of the outgoing scene at rest, so text still fading in shows complete.
+
+```js
+TextFX.transition(master, "slice", sceneA, sceneB, 4.0, { manage: true, W: 1920, H: 1080, container: stage,
+  colors: [accent, accent2], sprite: "media/mascot.png", size: 280, stay: true });
+```
+A company's mascot stays out of this repo: keep it in the video's folder (`videos/<project>/img/`) and pass its path.
+
 The two building blocks, for hand-built pages:
 
 ```js
@@ -216,12 +230,12 @@ a segment's footage. Keep text on it dark on the pale blobs or on a card.
 
 | File | What it is |
 |---|---|
-| `text-fx.js` | The 57 animations, `TextFX.transition` (nine kinds) and its building blocks `TextFX.pixel` / `TextFX.blurSwap` |
+| `text-fx.js` | The 58 animations, `TextFX.transition` (ten kinds) and its building blocks `TextFX.pixel` / `TextFX.blurSwap` / `TextFX.slice` |
 | `scripts/halftone.py` | The animated halftone background, in any look's colours |
 | `scripts/tfx.py` | `picker` (writes the picker files), `planner` / `apply` (the scene planner and its sent line), `gallery` (renders the preview), `clip` (one transparent MOV) |
 | `picker.widget.html` | The in-chat picker, with the backgrounds (generated) |
 | `gallery.html` | The page `tfx.py gallery` renders the preview video from (never shown to the creator) |
-| `preview/` | `preview.png` and `text-animations.mp4`: all 57, numbered, in motion |
+| `preview/` | `preview.png` and `text-animations.mp4`: all 58, numbered, in motion |
 
 The catalogue follows the "Claude + Figma Motion: Text Animations" board curated by Shlomo Genchin (Unbore.com); the
 code and sample copy here are original.

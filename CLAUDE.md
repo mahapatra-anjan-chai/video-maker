@@ -74,7 +74,7 @@ local server, `hyperframes preview` / Studio, a Terminal window or a settings fi
    for again; never generate samples to pick a voice (they listen free on elevenlabs.io → Voices); show the credits
    left (`elevenlabs.py balance`). `--draft` (the Mac's own voice, free) only when someone wants to hear the timing
    before approving the script.
-5. Which text animations: show the `text-animations` picker (live previews of all 57 and the backgrounds, a dropdown
+5. Which text animations: show the `text-animations` picker (live previews of all 58 and the backgrounds, a dropdown
    by group) and save the pick in `brief.json` `text_animations`. A film built from scenes gets the scene planner
    instead: each scene's own line in its animation, the transition into the next scene and the background, in the
    video's colours; the picks come back as one line for `film.json`. Then a storyboard of the built film before any

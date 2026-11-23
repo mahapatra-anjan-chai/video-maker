@@ -1,6 +1,6 @@
 ---
 name: reference-style
-description: Learn a style from reference videos the creator uploads (an explainer channel they admire, an ad they like) and make the new video in it. Measures pacing, palette and on-screen type, and every move's ease, length, overshoot, stagger and timing at the full frame rate (with curves to check the fits), lays out the moments where things move, writes a style card that maps every technique to the 57 animations (text, cards and cursors, transitions), fast-cut features, HyperFrames registry blocks or a component to build. After delivery, it saves the tuned style as its own skill so the next video can say "in the <name> style". Use when the creator shares a reference video, says "make it look like this", "in the style of", "use this as inspiration", or picks a saved style. The ask-first round asks for references on every new video.
+description: Learn a style from reference videos the creator uploads (an explainer channel they admire, an ad they like) and make the new video in it. Measures pacing, palette and on-screen type, and every move's ease, length, overshoot, stagger and timing at the full frame rate (with curves to check the fits), lays out the moments where things move, writes a style card that maps every technique to the 58 animations (text, cards and cursors, transitions), fast-cut features, HyperFrames registry blocks or a component to build. After delivery, it saves the tuned style as its own skill so the next video can say "in the <name> style". Use when the creator shares a reference video, says "make it look like this", "in the style of", "use this as inspiration", or picks a saved style. The ask-first round asks for references on every new video.
 ---
 
 # Reference style
@@ -52,7 +52,7 @@ never do. Run from the project folder with `R=".claude/skills/reference-style/sc
    `curves.png` shows the dots on the line; `unclear` means busy footage under it, so judge by eye and say so. Never
    claim to have heard the audio from the numbers.
 3. **Map each technique** (`maps_to` in `style.json`), in this order of preference:
-   - `text-animation`: one of the 57 (`text-animations/SKILL.md`): text, cards and cursors, the pixel and blur
+   - `text-animation`: one of the 58 (`text-animations/SKILL.md`): text, cards and cursors, the pixel and blur
      transitions; for a halftone background, `text-animations/scripts/halftone.py` in the look's colours;
    - `fast-cut`: a feature and its numbers (zoom scale and ease, headline `intro` with `entrance`, `mark`, text-mask,
      taps);

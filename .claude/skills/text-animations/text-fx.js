@@ -13,7 +13,8 @@
  *     blocks grow from origin (0.4 s), cover the container at `cover` (swap the scenes there), clear sideways (0.35 s)
  *   TextFX.blurSwap(tl, outgoingEl, incomingEl, 4.0)    outgoing blurs out in 0.15 s, incoming sharpens in 0.3 s
  *   TextFX.transition(tl, "wipe", fromEl, toEl, 4.0, { W, H, manage: true })    any of TextFX.transitions:
- *     cut, pixel, blur, wipe, iris, whip, push, zoom, glitch; returns { cover, end }
+ *     cut, pixel, blur, wipe, iris, whip, push, zoom, glitch, slice; returns { cover, end }
+ *   TextFX.slice(tl, containerEl, { at, from, colors, sprite: "media/mascot.png" })   a character slices the scene in two
  */
 (function (root) {
   "use strict";
@@ -74,7 +75,8 @@
     ["whip-pan", "Whip pan", "Transitions", "Before|After", "A fast, blurred slide sideways into the next scene"],
     ["push-cut", "Push", "Transitions", "Before|After", "The next scene pushes the last one up and out"],
     ["zoom-cut", "Zoom", "Transitions", "Before|After", "The scene rushes past the camera; the next settles in"],
-    ["glitch-cut", "Glitch", "Transitions", "Before|After", "A stepped jitter with a colour shift: tech, AI, energy"]
+    ["glitch-cut", "Glitch", "Transitions", "Before|After", "A stepped jitter with a colour shift: tech, AI, energy"],
+    ["slice-cut", "Slice", "Transitions", "Before|After", "A character dashes through on a diagonal and the scene splits along the cut"]
   ];
   var CATS = ["Entrances", "Emphasis", "Swaps and loops", "Transformations", "Video and UI", "Cards and cursors", "Transitions"];
 
@@ -770,7 +772,8 @@
     ["whip", "Whip pan", "whip-pan", "A fast, blurred slide sideways"],
     ["push", "Push", "push-cut", "The next scene pushes the last one up and out"],
     ["zoom", "Zoom", "zoom-cut", "The scene rushes past the camera; the next settles in"],
-    ["glitch", "Glitch", "glitch-cut", "A stepped jitter with a colour shift"]
+    ["glitch", "Glitch", "glitch-cut", "A stepped jitter with a colour shift"],
+    ["slice", "Slice", "slice-cut", "A character dashes through on a diagonal; the scene splits along the cut"]
   ];
   function transition(tl, kind, from, to, at, opt) {
     opt = opt || {};
@@ -803,6 +806,10 @@
       if (from) tl.to(from, { y: -H, duration: 0.35, ease: "power3.inOut" }, at);
       if (to) tl.fromTo(to, { y: H }, { y: 0, duration: 0.35, ease: "power3.inOut" }, at);
       r = { cover: at + 0.35, end: at + 0.35 };
+    } else if (kind === "slice") {
+      var sl = slice(tl, opt.container || par, { at: at, from: from, W: W, H: H, colors: opt.colors, sprite: opt.sprite, size: opt.size,
+                                                 cut: opt.cut, land: opt.land, stay: opt.stay, shake: opt.shake, flash: opt.flashSlice });
+      r = { cover: at, end: sl.end };
     } else if (kind === "zoom") {
       if (from) tl.to(from, { scale: 5, opacity: 0, duration: 0.32, ease: "power2.in" }, at - 0.04);
       if (to) tl.fromTo(to, { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "power3.out" }, at + 0.06);
@@ -821,7 +828,7 @@
     return r;
   }
   // when the next scene is fully in, counted from the transition's `at`: start a transition at (beat - COVER[kind]) to land it on the beat
-  var COVER = { cut: 0, pixel: 0.12, blur: 0.08, wipe: 0.32, iris: 0.36, glitch: 0.12, whip: 0.16, push: 0.35, zoom: 0.2 };
+  var COVER = { cut: 0, pixel: 0.12, blur: 0.08, wipe: 0.32, iris: 0.36, glitch: 0.12, whip: 0.16, push: 0.35, zoom: 0.2, slice: 0 };
   function demo(b, o, tl, kind) {                              // a library preview: scene A, the transition, scene B
     var p = o.text.split("|");
     var a = scene(b, o, p[0], o.paper, o.ink), z = scene(b, o, p[1] || "", o.accent, o.paper);
@@ -835,6 +842,107 @@
   B["push-cut"] = function (b, o, tl) { demo(b, o, tl, "push"); };
   B["zoom-cut"] = function (b, o, tl) { demo(b, o, tl, "zoom"); };
   B["glitch-cut"] = function (b, o, tl) { demo(b, o, tl, "glitch"); };
+  B["slice-cut"] = function (b, o, tl) {                       // the run-up needs time on scene A: the split lands at 1.9 s
+    var p = o.text.split("|");
+    var a = scene(b, o, p[0], o.paper, o.ink), z = scene(b, o, p[1] || "", o.accent, o.paper);
+    tl.set(z, { opacity: 0 }, 0);
+    transition(tl, "slice", a, z, 1.9, { manage: true, W: o.W, H: o.H, colors: [o.accent, o.accent2] });
+  };
+
+  // ---- the slice: a character winds up, dashes through on a diagonal, the scene splits along its trail ----------------
+  // A copy of the outgoing scene, at rest (inline animation styles cleared), is cut in two along the line; the halves fly
+  // apart from `at`, showing the next scene underneath. The run-up starts ~1.1 s before `at`, over the outgoing scene.
+  // opt: at, from, W, H, colors [main, glow], sprite (an image URL or an element; default a glowing orb), size (px),
+  // cut [left y, right y] as shares of H (default [0.68, 0.30]), land [x, y] shares (default [0.8, 0.555]) or false to
+  // fly off, stay (keep the character after), shake / flash (default true). Returns { cover, end, layer }.
+  function rest(n) {
+    var all = [n].concat([].slice.call(n.querySelectorAll ? n.querySelectorAll("*") : []));
+    all.forEach(function (x) {
+      if (!x.style) return;
+      ["opacity", "transform", "filter", "visibility", "clipPath", "translate", "rotate", "scale"].forEach(function (k) { x.style[k] = ""; });
+      if (x.style.display === "none") x.style.display = "";
+      if (x.removeAttribute) x.removeAttribute("id");
+    });
+    return n;
+  }
+  function slice(tl, el, opt) {
+    opt = opt || {};
+    var W = opt.W || el.clientWidth || 1280, H = opt.H || el.clientHeight || 720, at = opt.at || 1.5, t = at - 0.25;
+    var col = opt.colors || ["#4F46E5", "#A5B4FC"], cut = opt.cut || [0.68, 0.30], y1 = H * cut[0], y2 = H * cut[1];
+    var k = (y2 - y1) / W, ang = Math.atan2(y2 - y1, W) * 180 / Math.PI, onLine = function (x) { return y1 + x * k; };
+    var size = opt.size || Math.round(Math.min(W, H) * 0.27), half = size * 0.45, z = opt.z || 60;
+    var cuts = E("div", "position:absolute;inset:0;pointer-events:none;z-index:" + (z - 1)), layer = E("div", "position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:" + z);
+    el.appendChild(cuts); el.appendChild(layer);
+    var halves = [];
+    if (opt.from && opt.from.cloneNode) {
+      [[0, 0, W, 0, W, y2, 0, y1], [0, y1, W, y2, W, H, 0, H]].forEach(function (q) {
+        var c = rest(opt.from.cloneNode(true));
+        c.style.clipPath = "polygon(" + q[0] + "px " + q[1] + "px," + q[2] + "px " + q[3] + "px," + q[4] + "px " + q[5] + "px," + q[6] + "px " + q[7] + "px)";
+        c.style.visibility = "hidden"; cuts.appendChild(c); halves.push(c);
+      });
+      tl.set(halves, { visibility: "visible" }, at);
+      tl.set(opt.from, { opacity: 0 }, at);
+      tl.to(halves[0], { x: -0.31 * W, y: -0.074 * H, rotation: -4, duration: 0.6, ease: "power3.in" }, at);
+      tl.to(halves[1], { x: 0.31 * W, y: 0.19 * H, rotation: 4, duration: 0.6, ease: "power3.in" }, at);
+      tl.to(halves, { opacity: 0, duration: 0.22 }, at + 0.38);
+    }
+    var L = Math.hypot(W + 120, (W + 120) * k);
+    var slash = E("div", "position:absolute;left:-60px;top:" + (onLine(-60) - 3) + "px;width:" + L + "px;height:" + Math.max(4, H * 0.011) + "px;border-radius:4px;" +
+      "background:#FFFFFF;box-shadow:0 0 " + (H * 0.02) + "px " + (H * 0.006) + "px " + col[1] + ",0 0 " + (H * 0.05) + "px " + (H * 0.018) + "px " + col[0] + ";transform-origin:0 50%;transform:rotate(" + ang + "deg) scaleX(0)");
+    layer.appendChild(slash);
+    var sparks = [0.09, 0.22, 0.34, 0.47, 0.54, 0.64, 0.73, 0.83, 0.92].map(function (fx, i) {
+      var d = [8, 6, 9, 7, 6, 8, 6, 9, 7][i] * H / 540, sp = E("div", "position:absolute;left:" + (fx * W) + "px;top:" + (onLine(fx * W) - d / 2) + "px;width:" + d + "px;height:" + d + "px;border-radius:50%;opacity:0;background:" + (i % 3 ? col[1] : "#FFFFFF"));
+      layer.appendChild(sp); return sp;
+    });
+    var make = function () {
+      if (typeof opt.sprite === "string") {
+        var im = document.createElement("img"); im.src = opt.sprite;
+        im.style.cssText = "position:absolute;left:0;top:0;width:" + size + "px;height:auto"; return im;
+      }
+      if (opt.sprite && opt.sprite.cloneNode) return opt.sprite.cloneNode(true);
+      return E("div", "position:absolute;left:0;top:0;width:" + size + "px;height:" + size + "px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#FFFFFFCC," + col[1] + " 34%," + col[0] + " 78%);" +
+        "box-shadow:0 0 " + (size * 0.25) + "px " + col[1] + "99");
+    };
+    var hero = make(), ghosts = [make(), make(), make()];
+    [hero].concat(ghosts).forEach(function (x) { x.style.visibility = "hidden"; x.style.transformOrigin = "50% 100%"; layer.appendChild(x); });
+    var sx = 0.11 * W, ex = 0.79 * W, sy = onLine(sx + size / 2) - half, ey = onLine(ex + size / 2) - half;
+    tl.set(hero, { x: -size * 1.6, y: sy }, 0);
+    tl.set(hero, { visibility: "visible" }, t - 0.85);
+    tl.to(hero, { x: sx, duration: 0.45, ease: "power3.out" }, t - 0.85);
+    tl.to(hero, { y: sy - H * 0.026, duration: 0.22, ease: "sine.out", yoyo: true, repeat: 1 }, t - 0.85);
+    tl.to(hero, { x: sx - 0.025 * W, rotation: -16, scaleX: 1.14, scaleY: 0.86, duration: 0.24, ease: "power2.out" }, t - 0.28);
+    tl.set(hero, { scaleX: 1.25, scaleY: 0.8, rotation: ang, filter: "blur(" + Math.round(size * 0.03) + "px)" }, t - 0.04);
+    tl.to(hero, { x: ex, y: ey, duration: 0.09, ease: "expo.in" }, t - 0.04);
+    tl.set(hero, { filter: "blur(0px)" }, t + 0.07);
+    ghosts.forEach(function (g, i) {
+      var gx = sx + (ex - sx) * [0.3, 0.55, 0.8][i];
+      tl.set(g, { x: gx, y: onLine(gx + size / 2) - half, rotation: ang, scaleX: 1.25, scaleY: 0.8, opacity: [0.4, 0.28, 0.16][i], visibility: "visible" }, t);
+      tl.to(g, { opacity: 0, duration: 0.14 }, t + 0.07);
+    });
+    tl.fromTo(slash, { scaleX: 0, rotation: ang }, { scaleX: 1, rotation: ang, duration: 0.07, ease: "power4.out", immediateRender: false }, t);
+    tl.to(slash, { opacity: 0, duration: 0.3 }, at);
+    if (opt.flash !== false) {
+      var fl = E("div", "position:absolute;inset:0;background:#FFFFFF;opacity:0"); layer.appendChild(fl);
+      tl.set(fl, { opacity: 0.6 }, t + 0.07); tl.to(fl, { opacity: 0, duration: 0.2, ease: "power2.out" }, t + 0.08);
+    }
+    if (opt.shake !== false) [8, -7, 5, -3, 0].forEach(function (dx, i) { tl.set(el, { x: dx * H / 540, y: -dx * H / 1080 }, t + 0.07 + i * 0.033); });
+    sparks.forEach(function (sp, i) {
+      var up = i % 2 ? 1 : -1;
+      tl.fromTo(sp, { opacity: 1, x: 0, y: 0, scale: 1.4 }, { opacity: 0, x: up * -8, y: up * (22 + (i * 7) % 18) * H / 540, scale: 0.3, duration: 0.45, ease: "power2.out", immediateRender: false }, t + 0.07);
+    });
+    tl.to(hero, { x: ex + 0.033 * W, scaleX: 1, scaleY: 1, rotation: 8, duration: 0.14, ease: "power2.out" }, t + 0.07);
+    var end = at + 0.65;
+    if (opt.land === false) {
+      tl.to(hero, { x: W + size, rotation: 0, duration: 0.25, ease: "power2.in" }, at);
+    } else {
+      var land = opt.land || [0.8, 0.555];
+      tl.to(hero, { x: land[0] * W, y: land[1] * H, rotation: 0, duration: 0.3, ease: "power2.in" }, at);
+      tl.to(hero, { scaleX: 1.08, scaleY: 0.92, duration: 0.1, yoyo: true, repeat: 1 }, at + 0.3);
+      if (!opt.stay) { tl.to(hero, { opacity: 0, scale: 0.6, duration: 0.25, ease: "power2.in" }, at + 1.3); end = at + 1.55; }
+      else tl.to(hero, { y: land[1] * H - H * 0.019, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 2 }, at + 0.55);
+    }
+    return { cover: at, end: end, layer: layer };
+  }
   function scene(b, o, text, bg, ink) {
     var s = E("div", "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;background:" + bg + ";color:" + ink, text);
     b.appendChild(s); return s;
@@ -881,6 +989,7 @@
     pixel: pixel,
     blurSwap: blurSwap,
     transition: transition,
+    slice: slice,
     transitionCover: COVER,
     transitions: TRANSITIONS.map(function (x) { return { id: x[0], name: x[1], preview: x[2], use: x[3] }; }),
     ids: LIST.map(function (x) { return x[0]; }),

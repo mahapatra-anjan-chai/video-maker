@@ -244,7 +244,7 @@
     const M = C.montage;
     if (M) {
       const B = (M.beats || 2) * 60 / M.bpm;
-      const TR = { wipe: "Wipe", iris: "Iris", glitch: "Glitch", whip: "Whip pan", push: "Push", zoom: "Zoom-through", pixel: "Pixel dissolve", blur: "Blur swap" };
+      const TR = { wipe: "Wipe", iris: "Iris", glitch: "Glitch", whip: "Whip pan", push: "Push", zoom: "Zoom-through", pixel: "Pixel dissolve", blur: "Blur swap", slice: "Slice" };
       root.set("#mont", { visibility: "visible" }, M.t0 - 0.01);
       M.cards.forEach((c, i) => {
         const card = el("div", "mc", '<div class="st"></div><div class="a"><div class="k">' + (c.kind || "Text animation") + '</div><div class="v">' + (c.label || c.fx) +

@@ -569,7 +569,7 @@ def cmd_render(a):
             fg.append("[%s][l%d]overlay=0:0:eof_action=pass[o%d]" % (last, j, j))
             last = "o%d" % j; n_in += 1
             continue
-        elif kind == "t" and L.get("anim"):      # one of the text-animations skill's 57, rendered with an alpha channel
+        elif kind == "t" and L.get("anim"):      # one of the text-animations skill's 58, rendered with an alpha channel
             dur = float(L["to"]) - start; fade = min(0.2, dur / 3)
             args += ["-i", anim_clip(L, W, H, fps, base, sc, k_out, dur)]
             fg.append("[%d:v]format=rgba,fade=t=out:st=%.3f:d=%.3f:alpha=1,setpts=PTS-STARTPTS+%.3f/TB[l%d]" % (n_in, dur - fade, fade, start, j))

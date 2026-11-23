@@ -84,14 +84,14 @@ then the headline shrinks to the top while the recording plays.
 
 ![A zoom: before, pushing in, full, easing out.](docs/images/demo-zooms.jpg)
 
-**57 animations, picked by sight.** Before a video starts, Claude shows a picker in the chat: a dropdown of seven
+**58 animations, picked by sight.** Before a video starts, Claude shows a picker in the chat: a dropdown of seven
 groups over live previews of every animation. Text (fade up, typewriter, mask reveal, highlight, accent words, roll list,
 karaoke captions, counter and more), cards and cursors (a card cloud, a notification stack, chips flying into a card, a
-labelled cursor that points and clicks) and eight transitions (pixel dissolve, blur swap, wipe, iris, whip pan, push,
-zoom, glitch). Below them, the backgrounds: an animated halftone in the video's colours, light or dark, or plain. Tap
+labelled cursor that points and clicks) and nine transitions (pixel dissolve, blur swap, wipe, iris, whip pan, push,
+zoom, glitch, and a slice where your mascot dashes through and cuts the scene in two). Below them, the backgrounds: an animated halftone in the video's colours, light or dark, or plain. Tap
 the ones you want; the video uses only those.
 
-![All 57 animations in seven groups: entrances, emphasis, swaps and loops, transformations, video and UI, cards and cursors, transitions.](docs/images/text-animations.jpg)
+![All 58 animations in seven groups: entrances, emphasis, swaps and loops, transformations, video and UI, cards and cursors, transitions.](docs/images/text-animations.jpg)
 
 **Scene by scene, before anything renders.** For a film built from scenes (a launch film of text and music), the
 scene planner plays each scene's own line in its animation and your colours, with the transition into the next scene
@@ -199,7 +199,7 @@ brand rules, and any videos Claude must ask about before using as a reference.
 | Folder | What it is |
 |---|---|
 | `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass render, taps, zooms, headline intros, review sheets |
-| `.claude/skills/text-animations/` | 57 animations (GSAP, render-safe): text, cards and cursors, eight transitions; an animated halftone background in any look's colours; the in-chat picker, the scene planner and the preview gallery |
+| `.claude/skills/text-animations/` | 58 animations (GSAP, render-safe): text, cards and cursors, nine transitions (a mascot slice among them); an animated halftone background in any look's colours; the in-chat picker, the scene planner and the preview gallery |
 | `.claude/skills/launch-demo/` | The launch-video recipe: a template (the pain, the name, the feature on an iPhone, a montage on the drop, a lockup on the final hit), a 16:9 launch film built from a scene plan (`film.py`), a music beat reader that times the cut to the track, a sound mixer and a voice check |
 | `.claude/skills/storyboard/` | See a film before it renders: a storyboard of every scene, every transition frame by frame and a clip of them playing, from one snapshot pass |
 | `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, every move's ease, length, overshoot and stagger measured at the full frame rate, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |

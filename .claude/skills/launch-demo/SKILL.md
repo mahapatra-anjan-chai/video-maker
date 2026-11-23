@@ -93,7 +93,7 @@ fields are only ever changed by the planner or by hand.
 `opening` (`to`, `counter`, `clips` [`src`, `start`, `dur`, `media`, `pos`], `requests` [`t`, `who`, `init`, `color`,
 `text`, `file`]); `hook` (`src`, `start`, `dur`); `feature` (`from`, `to`, `phoneIn`, `poster`, `clips`, `callouts`
 [`t`, `label`, `color`, `y`], `headline` [`t`, `lines`, `glide`]); `montage` (`t0`, `bpm`, `beats`, `cards` [`fx` from the
-57, `text`, `bg`, `ink`, `accent`, `tr` = wipe | iris | glitch | whip | push | zoom | pixel | blur, `label`, `size`]); `outro` (`from`,
+58, `text`, `bg`, `ink`, `accent`, `tr` = wipe | iris | glitch | whip | push | zoom | pixel | blur | slice, `label`, `size`]); `outro` (`from`,
 `card` [`t`, `out`, `icon`, `big`, `sub`, `url`], `title` [`t`, `html`], `tiles` [`t`, `label`, `icon`, `color`],
 `converge`, `hit`, `lockup` [`name`, `tagline`, `cta`, `url`, `credits`], `fade`); `custom` (`html`, `css`, `js` files).
 Icons: scissors, zoom, type, sparkle, palette, music, bolt, chat, chart, shield, globe, check, clock, phone, star.
