@@ -46,6 +46,8 @@ local server, `hyperframes preview` / Studio, a Terminal window or a settings fi
   `videos/`, work projects or company material; its Gemini engine uploads the video to Google, so only for a public
   link the person picked. Its keys go in `~/.config/watch/.env`, opened with `open -t`, never in the chat. It looks at 2
   frames a second at most, so it cannot see easing: motion timing comes from `reference-style`'s `motion.py`.
+- **A mascot moment** (a character scrolling an endless feed on a phone, slicing through it and landing in the next
+  scene with a shopping bag): the `mascot-story` skill. One `story.json`, one command, an MP4 and a GIF in about a minute.
 - **Sharing a skill with the repo** ("share my skill", "send this to Video maker"): the `share-skill` skill. It checks
   the skill, shows what would be published, and opens a pull request only after a yes. Never push to the repo for them.
 - **Quick mode for short ads:** no separate question round when the brief has the copy and assets; state defaults
