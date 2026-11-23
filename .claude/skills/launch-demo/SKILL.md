@@ -1,6 +1,6 @@
 ---
 name: launch-demo
-description: Make a 60-90 second launch demo for a product, in the structure of Video maker's own LinkedIn demo. Real people buried in requests open it, the product's name lands with footage inside the letters, the feature plays on a real iPhone frame, a montage of text animations and transitions hits on the music's drop, and the logo locks up on the music's final hit. Square 1:1 with captions for muted autoplay, a voiceover approved as a script before any credits are spent, Epidemic music beat-matched start to end. Use for "make a launch demo", "a demo video like the Video maker one", "a LinkedIn launch video", "announce the feature", "product launch video", "sizzle reel".
+description: Make a 60-90 second launch demo for a product, in the structure of Video maker's own LinkedIn demo. Real people buried in requests open it, the product's name lands with footage inside the letters, the feature plays on a real iPhone frame, a montage of text animations and transitions hits on the music's drop, and the logo locks up on the music's final hit. Square 1:1 with captions for muted autoplay, a voiceover approved as a script before any credits are spent, Epidemic music beat-matched start to end. Also a 16:9 launch film with no voice, built from a scene plan: each scene's line in the text animation picked for it in the chat, the transitions landing on the music's beats, the look's halftone background, a logo card and a lockup with the brand's icon, a storyboard before the render. Use for "make a launch demo", "a demo video like the Video maker one", "a LinkedIn launch video", "announce the feature", "product launch video", "sizzle reel", "a launch film for the website", "text and music only".
 ---
 
 # Launch demo
@@ -56,13 +56,44 @@ Captions run under every spoken line (sentence chunks, the spoken word lit). The
    -shortest -movflags +faststart`) to `~/Movies/YouTube Renders/<project>/<project>-v<N>-1080x1080.mp4`, send it, say the
    preview may start muted. Keep `demo.json`, `mix.json` and the scripts in `$W/versions/v<N>/`.
 
+## A launch film from a scene plan (16:9, text and music)
+
+For a website or YouTube launch film with no voiceover: scenes of on-screen copy over the look's moving halftone, cut on
+the music. `example/film.json` is a whole one (Video maker's own copy, the Brand look).
+
+1. **Brief and script** as above, then the scenes: one line of copy each, the story's beats (the pain, the idea, the
+   name, the product, what it's for, the lockup). Write `$W/film.json` (fields below).
+2. **Music** as above (Epidemic, a clear ending). `beats.py` gives the `bpm` and the first beat (`offset`); give each
+   scene a length in `beats`, and set `duration` and `hit` (the final note) for the lockup.
+3. **Plan in the chat:** the scene planner (`text-animations`, "the scene planner") shows each scene's line in its
+   animation, the transitions and the background; the creator's picks come back as one line, written in with
+   `tfx.py apply`.
+4. **Build:** `python3 $L/film.py --scenes $W/film.json --out $W/public` (it makes the look's halftone loop once, about a
+   minute, and keeps it in `videos/_shared/backgrounds/`), then `npx hyperframes lint` in `$W/public`.
+5. **Storyboard before the render** (`storyboard` skill): the scenes, then the transitions, sent in the chat. Notes
+   come back by scene number; change `film.json`, rebuild, re-take only those scenes (`--only`).
+6. **Render, mix, deliver** as above (steps 6, 7 and 9; no voice to check). Name the file `-1920x1080`.
+
+film.json: the planner's fields (`text`, `parts`, `anim`, `tr`, `background`: halftone-light | halftone-dark | plain)
+plus `look`, `size`, `bpm`, `offset`, `duration`, `hit`, `fade`, `name` (the product's name on the logo and lockup
+cards), `custom` (`css`, `js`, `media`). Per scene: `beats` (or `dur` in seconds), `kind`:
+- `text` (default): the line in its animation. Cards, cursors and UI pieces get the line as a headline above them;
+  `lines` adds more lines in the same scene, each blurring into the next (`line_beats` places them).
+- `logo`: the name (or a `logo` image) with the look's icon, if it has one (`icon: false` hides it), then the line.
+- `lockup`: the same, landing on the music's `hit`; `fade` ends the film.
+- `custom`: the product's own scene, an `html` fragment with `custom.css` / `custom.js` (the script gets `root`, `SC[id]`
+  with the scene's `at` and `end`, `PAL` and `fx(el, anim, opts, at)`). For a storefront, an app screen, a try-on.
+
+The builder writes each scene's `at`, `lands`, `end` and `tr_cover` back into `film.json` for the storyboard; the plan
+fields are only ever changed by the planner or by hand.
+
 ## demo.json
 
 `duration`; `palette` (`bg`, `panel`, `line`, `a1`-`a4`); `tags` (`[time, number, label, hide-at]`);
 `opening` (`to`, `counter`, `clips` [`src`, `start`, `dur`, `media`, `pos`], `requests` [`t`, `who`, `init`, `color`,
 `text`, `file`]); `hook` (`src`, `start`, `dur`); `feature` (`from`, `to`, `phoneIn`, `poster`, `clips`, `callouts`
 [`t`, `label`, `color`, `y`], `headline` [`t`, `lines`, `glide`]); `montage` (`t0`, `bpm`, `beats`, `cards` [`fx` from the
-51, `text`, `bg`, `ink`, `accent`, `tr` = wipe | iris | glitch | whip | push | zoom | pixel | blur, `label`, `size`]); `outro` (`from`,
+57, `text`, `bg`, `ink`, `accent`, `tr` = wipe | iris | glitch | whip | push | zoom | pixel | blur, `label`, `size`]); `outro` (`from`,
 `card` [`t`, `out`, `icon`, `big`, `sub`, `url`], `title` [`t`, `html`], `tiles` [`t`, `label`, `icon`, `color`],
 `converge`, `hit`, `lockup` [`name`, `tagline`, `cta`, `url`, `credits`], `fade`); `custom` (`html`, `css`, `js` files).
 Icons: scissors, zoom, type, sparkle, palette, music, bolt, chat, chart, shield, globe, check, clock, phone, star.
@@ -76,3 +107,10 @@ Icons: scissors, zoom, type, sparkle, palette, music, bolt, chat, chart, shield,
 - Text that changes over time (typing, counters) uses one `set` per step, never `onUpdate`: renders seek frames.
 - Animate `x`/`y`/`scale`, never `left`/`top` (lint fails it; it stutters).
 - A preview player can start muted; the file has sound. Say so when sending.
+- Scenes are placed layers: text-fx makes a stage `position: relative`, so placed stages need `position: absolute
+  !important` (film.html does this), or they stack under each other.
+- The first scene is visible through its own CSS (`style="opacity:1"`), never through a `set` at time 0: two sets on
+  one element at 0 can be dropped, and the film opens on an empty frame.
+- Anything that starts hidden and comes in with a `fromTo` needs `immediateRender: false`, or its start values show at
+  time 0 too (ripples, rings, panels appearing early).
+- One `<img>` per image file: the same source in two places fails lint. Copy it (`icon-3.png`, `icon-10.png`).

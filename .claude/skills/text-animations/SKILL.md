@@ -1,6 +1,6 @@
 ---
 name: text-animations
-description: 51 animations for product videos: 45 for text (fade up, typewriter, mask reveal, text scramble, highlight, hand-drawn circle, shimmer, word carousel, accent words, roll list, typed prompt, marquee, 3D extrude, zoom through, karaoke captions, chat bubbles, counter and more), cards and cursors (card cloud, notification stack, chips into a card, a labelled cursor tour), two transitions (pixel dissolve, blur swap) and an animated halftone background in any look's colours, with a live picker shown before a video starts so the creator chooses the motion by sight. Use whenever a video gets headlines, titles, captions, callouts, on-screen copy, product UI moments or scene changes; when the creator asks for "text animation", "animated text", "kinetic type", "make the headline pop", "which animations"; and at the start of every video (the picker step). Works in fast-cut cut lists ("anim") and in HyperFrames compositions (text-fx.js).
+description: 57 animations for product videos: 45 for text (fade up, typewriter, mask reveal, text scramble, highlight, hand-drawn circle, shimmer, word carousel, accent words, roll list, typed prompt, marquee, 3D extrude, zoom through, karaoke captions, chat bubbles, counter and more), cards and cursors (card cloud, notification stack, chips into a card, a labelled cursor tour), eight transitions between scenes (pixel dissolve, blur swap, wipe, iris, whip pan, push, zoom, glitch) and an animated halftone background in any look's colours, with a live picker shown before a video starts so the creator chooses the motion by sight, and a scene planner that plays each scene's own line with its animation, the transition into the next scene and the background, in the video's colours, so the creator picks per scene in the chat. Use whenever a video gets headlines, titles, captions, callouts, on-screen copy, product UI moments or scene changes; when the creator asks for "text animation", "animated text", "kinetic type", "make the headline pop", "which animations"; "which transition", "plan the scenes"; and at the start of every video (the picker or planner step). Works in fast-cut cut lists ("anim") and in HyperFrames compositions (text-fx.js).
 ---
 
 # Text animations
@@ -16,10 +16,11 @@ Right after the Personal / Work and look questions, before any cut list or story
 
 1. **If the `show_widget` tool is available** (Claude desktop and web): call `read_me` (module `interactive`) once,
    then `show_widget` with the contents of `$TA/picker.widget.html` as `widget_code` (title `text_animation_picker`).
-   It shows a dropdown of the seven groups ("Which kind of text animation?") over live, looping previews of all 51; the
-   creator taps the ones they want and presses "Use the picked animations", which sends you a line like
-   `Text animations for this video: 01 Fade up (fade-up), 13 Highlight (highlight)`. Regenerate the file with
-   `python3 $TA/scripts/tfx.py picker` whenever `text-fx.js` changed.
+   It shows a dropdown of the seven groups ("Which kind of text animation?") over live, looping previews of all 57, and
+   below them the backgrounds (halftone light, halftone dark, plain, drawn live); the creator taps the ones they want
+   and presses "Use the picked animations", which sends you a line like
+   `Text animations for this video: 01 Fade up (fade-up), 13 Highlight (highlight); background: halftone-light`.
+   Regenerate the file with `python3 $TA/scripts/tfx.py picker` whenever `text-fx.js` changed.
 2. **Otherwise** (no in-chat widget): send `$TA/preview/preview.png` and `$TA/preview/text-animations.mp4` with SendUserFile
    (the numbered gallery; refresh it with `python3 $TA/scripts/tfx.py gallery --out $TA/preview`), then ask with
    AskUserQuestion, multi-select, "Which text animation style for this video?":
@@ -32,10 +33,29 @@ Right after the Personal / Work and look questions, before any cut list or story
 3. Write the answer into `brief.json` as `"text_animations": ["fade-up", "highlight"]` and use only those (plus plain
    fades) for the video's copy. Say which line gets which animation in the cut table or storyboard.
 
+## Once the script has scenes: the scene planner
+
+A film built from scenes (a launch film, an explainer) gets the planner instead of, or after, the picker: one row per
+scene with that scene's real line animating in the video's own colours on the chosen background, a dropdown to swap its
+animation, and between rows the transition into the next scene, playing, with its own dropdown.
+
+1. Write `videos/<project>/film.json` from the approved script (the `storyboard` skill has the format): per scene
+   `id`, `label`, `text`, `parts` for the card, list and cursor pieces, a first `anim` and `tr`; at the top `look` and
+   `background`.
+2. `python3 $TA/scripts/tfx.py planner --scenes videos/<project>/film.json` writes `review/planner.widget.html` next
+   to it; pass its contents to `show_widget` (title `<project>_scene_planner`).
+3. "Use these choices" sends `Scene plan: background=halftone-light; 1=accent-words; 1>2=pixel; 2=stack-cards; ...`.
+   Write it into the plan with `python3 $TA/scripts/tfx.py apply --scenes videos/<project>/film.json --line "<line>"`
+   (it checks every id and writes nothing if one is wrong). Then build (`launch-demo`'s `film.py`) and show the
+   `storyboard` before rendering.
+
+The card and cursor previews show each piece's style on sample screens (a dashboard, a stack of cards); the film's own
+screens appear in the storyboard.
+
 Taste rules: two or three animation types per video, one entrance for every headline, emphasis only on the phrase that
 carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 1.5 s after it lands.
 
-## The 51
+## The 57
 
 | # | id | Name | Group | Best for | Text |
 |---|---|---|---|---|---|
@@ -90,6 +110,12 @@ carries the value. Entrances take 0.5 to 1 s; leave the text still for at least 
 | 49 | `cursor-tour` | Cursor tour | Cards and cursors | A labelled cursor points, rings, explains and clicks | `cursor label|tooltip|second cursor` |
 | 50 | `pixel-dissolve` | Pixel dissolve | Transitions | A scene change in blocks of the brand colours | `before|after` |
 | 51 | `blur-swap` | Blur swap | Transitions | A soft scene change: one line blurs out, the next sharpens in | `before|after` |
+| 52 | `wipe-cut` | Wipe | Transitions | The next scene wipes in from the left | `before|after` |
+| 53 | `iris-cut` | Iris | Transitions | The next scene opens from the centre in a circle | `before|after` |
+| 54 | `whip-pan` | Whip pan | Transitions | A fast, blurred slide sideways into the next scene | `before|after` |
+| 55 | `push-cut` | Push | Transitions | The next scene pushes the last one up and out | `before|after` |
+| 56 | `zoom-cut` | Zoom | Transitions | The scene rushes past the camera; the next settles in | `before|after` |
+| 57 | `glitch-cut` | Glitch | Transitions | A stepped jitter with a colour shift: tech, AI, energy | `before|after` |
 
 43-51 and the background below follow the motion measured frame by frame in a reference launch video (the style,
 never its copy, colours or assets): words land in about 0.1 s and blur in from soft to sharp; lists roll in 0.3 s
@@ -148,7 +174,16 @@ Options: `text`, `size` (px; default fits the box), `ink`, `accent`, `accent2`, 
 `font` (default Poppins), `weight`, `hold` (seconds held at the end). `TextFX.list` has every id, name, group and use.
 Cards and cursors size themselves from the box; give them a box at least a third of the frame.
 
-**Transitions between any two scenes** (seek-safe, colours from the look):
+**Transitions between any two scenes** (seek-safe, colours from the look). One call for all nine kinds:
+
+```js
+// kind: cut | pixel | blur | wipe | iris | whip | push | zoom | glitch. Returns {cover, end}: the next scene is fully in at cover.
+TextFX.transition(master, "wipe", sceneA, sceneB, at, { manage: true, W: 1920, H: 1080, container: fxLayer, colors: [accent, accent2] });
+// manage: shows sceneB and hides sceneA at the right moments. clearFrom: also takes sceneA away as sceneB arrives, for
+// see-through scenes over one shared background. To land a transition on a beat: at = beat - TextFX.transitionCover[kind].
+```
+
+The two building blocks, for hand-built pages:
 
 ```js
 // blocks grow from `origin` for 0.4 s, cover the container at px.cover (swap the scenes there), clear sideways in 0.35 s
@@ -158,7 +193,8 @@ master.set("#sceneA", { opacity: 0 }, px.cover); master.set("#sceneB", { opacity
 TextFX.blurSwap(master, document.getElementById("sceneB"), document.getElementById("sceneC"), 8.0);
 ```
 
-In the launch-demo template these are `"tr": "pixel"` and `"tr": "blur"` on a montage card.
+In the launch-demo templates these are `"tr"` on a montage card or a scene; the scene planner previews each one between
+the scene's real lines.
 
 ## Animated halftone background
 
@@ -180,12 +216,12 @@ a segment's footage. Keep text on it dark on the pale blobs or on a card.
 
 | File | What it is |
 |---|---|
-| `text-fx.js` | The 51 animations, and `TextFX.pixel` / `TextFX.blurSwap` for transitions |
+| `text-fx.js` | The 57 animations, `TextFX.transition` (nine kinds) and its building blocks `TextFX.pixel` / `TextFX.blurSwap` |
 | `scripts/halftone.py` | The animated halftone background, in any look's colours |
-| `scripts/tfx.py` | `picker` (writes the picker files), `gallery` (renders the preview), `clip` (one transparent MOV) |
-| `picker.widget.html` | The in-chat picker (generated) |
+| `scripts/tfx.py` | `picker` (writes the picker files), `planner` / `apply` (the scene planner and its sent line), `gallery` (renders the preview), `clip` (one transparent MOV) |
+| `picker.widget.html` | The in-chat picker, with the backgrounds (generated) |
 | `gallery.html` | The page `tfx.py gallery` renders the preview video from (never shown to the creator) |
-| `preview/` | `preview.png` and `text-animations.mp4`: all 51, numbered, in motion |
+| `preview/` | `preview.png` and `text-animations.mp4`: all 57, numbered, in motion |
 
 The catalogue follows the "Claude + Figma Motion: Text Animations" board curated by Shlomo Genchin (Unbore.com); the
 code and sample copy here are original.

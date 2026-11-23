@@ -76,9 +76,9 @@ class Canvas:
 
 
 def workflow():
-    c = Canvas(1200, 710)
+    c = Canvas(1200, 730)
     c.text(48, 44, "How Video maker works", F("Bold", 30), INK)
-    c.text(48, 88, "You bring a screen recording and a brief. Claude Code plans, cuts, voices, scores and renders it on your Mac.",
+    c.text(48, 88, "You bring a recording and a brief. You pick the motion and see the frames in the chat; Claude builds and renders on your Mac.",
            F("Regular", 16), MUTED)
     stages = [
         (INDIGO, "1  YOU BRING", "Recordings + brief",
@@ -87,34 +87,39 @@ def workflow():
         (SKY, "2  CLAUDE PLANS", "Reads it, asks first",
          ["Personal or work, which look, any references, OK to spend on voice and music",
           "Scans each recording, and each reference for its style", "A style card and a cut table you can change"]),
-        (ROSE, "3  CLAUDE BUILDS", "Cut, effects, sound",
-         ["Trims, speeds up loading and AI waits", "Taps with clicks, zooms, headlines that open big", "Voiceover, licensed music ducked under it"]),
-        (AMBER, "4  YOU REVIEW", "In the chat",
-         ["Headline, tap and zoom sheets with timestamps", "A short clip of just those moments", "Notes by time: \"0:17 slower glide\""]),
-        (GREEN, "5  YOU SHIP", "Versioned MP4",
+        (INDIGO, "3  YOU PICK", "Live, in the chat",
+         ["Every animation, transition and background, playing", "Scene by scene: your own lines in your colours",
+          "One button sends your picks back"]),
+        (ROSE, "4  CLAUDE BUILDS", "Cut, effects, sound",
+         ["Trims, speeds up loading and AI waits", "Each scene from your picks, on the music's beats", "Taps, zooms, headlines that open big",
+          "Voiceover, licensed music ducked under it"]),
+        (AMBER, "5  YOU REVIEW", "Before and after the render",
+         ["A storyboard of every scene before anything renders", "Every transition frame by frame, and playing",
+          "After the render: headline, tap and zoom sheets", "Notes by scene or by time"]),
+        (GREEN, "6  YOU SHIP", "Versioned MP4",
          ["v1, v2, ... never overwritten; each cut list kept", "A reference's style is saved as a skill for next time",
           "Ask for cut-downs: 15 s, 16:9", "Made a skill? \"Share my skill\" sends it to the repo for everyone"]),
     ]
-    x, y, w, h, gap = 48, 140, 204, 400, 22
+    x, y, w, h, gap = 48, 140, 170, 420, 16
     for i, (col, tag, title, items) in enumerate(stages):
         x0 = x + i * (w + gap)
         c.box(x0, y, x0 + w, y + h, 18, fill=CARD, outline=LINE)
         c.box(x0, y, x0 + w, y + 8, 4, fill=col)
         c.text(x0 + 18, y + 30, tag, F("SemiBold", 12), col)
-        c.wrap(x0 + 18, y + 50, title, F("Bold", 18), INK, w - 36)
+        c.wrap(x0 + 18, y + 50, title, F("Bold", 17), INK, w - 30)
         yy = y + 112
         for it in items:
             c.d.ellipse([(x0 + 20) * S, (yy + 8) * S, (x0 + 26) * S, (yy + 14) * S], fill=col)
-            yy = c.wrap(x0 + 34, yy, it, F("Regular", 13), MUTED, w - 52, 1.5) + 10
+            yy = c.wrap(x0 + 34, yy, it, F("Regular", 13), MUTED, w - 50, 1.45) + 9
         if i < len(stages) - 1:
             c.arrow(x0 + w + 3, y + h / 2, x0 + w + gap - 3, y + h / 2, (148, 163, 184), 3)
     # the notes loop: review back to build
-    lx0, lx1, ly = x + 2 * (w + gap) + w / 2, x + 3 * (w + gap) + w / 2, y + h + 26
+    lx0, lx1, ly = x + 3 * (w + gap) + w / 2, x + 4 * (w + gap) + w / 2, y + h + 26
     c.d.line([lx1 * S, (y + h) * S, lx1 * S, ly * S, lx0 * S, ly * S], fill=AMBER, width=3 * S, joint="curve")
     c.arrow(lx0, ly, lx0, y + h + 4, AMBER, 3)
     c.text((lx0 + lx1) / 2, ly + 16, "notes become a new version in minutes", F("Medium", 13), AMBER, "mm")
     # where things run
-    yb = 618
+    yb = 638
     c.box(48, yb, 1152, yb + 56, 14, fill=CARD, outline=LINE)
     c.text(68, yb + 28, "On your Mac", F("SemiBold", 13), INK, "lm")
     xx = 170
@@ -143,8 +148,14 @@ def steps():
         ("You + Claude", ROSE, "1 min", "Say: Edit my video \"<name>\"",
          "Answer the checks: personal or work, which look, any reference videos, and a yes on the voice and music cost (shown "
          "before anything is spent)."),
+        ("You", INDIGO, "3 min", "Pick the motion in the chat",
+         "Every animation, transition and background plays live. For a film of scenes, each scene's own line plays in its "
+         "animation and your colours; swap any of them, then press the button to send your picks."),
         ("Claude", SKY, "~10 min", "Draft",
-         "Cut table, sped-up waits, taps, zooms and headlines. A half-size draft renders in seconds."),
+         "Cut table, sped-up waits, taps, zooms and headlines, or each scene built from your picks on the music's beats."),
+        ("You + Claude", ROSE, "2 min", "See the frames before the render",
+         "A storyboard of every scene as it lands and every transition frame by frame, in the chat. Change any scene by its "
+         "number; only that scene is taken again."),
         ("You + Claude", ROSE, "5 min per round", "Review in the chat, give notes",
          "Sheets of every headline, tap and zoom, plus a short clip of those moments. Notes by timestamp; each round is a new version."),
         ("You", GREEN, "1 min", "Ship it",

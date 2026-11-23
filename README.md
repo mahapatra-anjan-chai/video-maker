@@ -61,11 +61,11 @@ for personal use; videos your company publishes need their Starter plan ($6 a mo
 
 ## The workflow
 
-![How Video maker works: you bring recordings, a brief and optionally reference videos whose style you like; Claude plans, asks first and turns any reference into a style card; Claude builds the cut, effects and sound; you review in the chat; and you ship a versioned MP4, with the reference's style saved as a skill; a skill you made can be shared with the repo by saying share my skill. Notes loop back to the build.](docs/images/workflow.png)
+![How Video maker works, in six stages: you bring recordings, a brief and optionally reference videos whose style you like; Claude plans and asks first; you pick the motion live in the chat (every animation, transition and background, and for a film each scene's own line in its animation); Claude builds the cut, effects and sound, or each scene on the music's beats; you review before the render (a storyboard of every scene, every transition frame by frame) and after it (headline, tap and zoom sheets); and you ship a versioned MP4. Notes loop back to the build.](docs/images/workflow.png)
 
 ## Step by step for PMMs
 
-![Ten steps: pick one feature and one message, record the flow, make the video's folder, write the brief, add reference videos whose style you like (optional), say Edit my video, Claude drafts, review in the chat and give notes, ship it, and share a skill you made (optional).](docs/images/pmm-steps.png)
+![Twelve steps: pick one feature and one message, record the flow, make the video's folder, write the brief, add reference videos whose style you like (optional), say Edit my video, pick the motion in the chat, Claude drafts, see the frames before the render, review in the chat and give notes, ship it, and share a skill you made (optional).](docs/images/pmm-steps.png)
 
 ## What you get back
 
@@ -84,13 +84,26 @@ then the headline shrinks to the top while the recording plays.
 
 ![A zoom: before, pushing in, full, easing out.](docs/images/demo-zooms.jpg)
 
-**51 animations, picked by sight.** Before a video starts, Claude shows a picker in the chat: a dropdown of seven
+**57 animations, picked by sight.** Before a video starts, Claude shows a picker in the chat: a dropdown of seven
 groups over live previews of every animation. Text (fade up, typewriter, mask reveal, highlight, accent words, roll list,
 karaoke captions, counter and more), cards and cursors (a card cloud, a notification stack, chips flying into a card, a
-labelled cursor that points and clicks) and transitions (pixel dissolve, blur swap). Tap the ones you want; the video
-uses only those. An animated halftone background comes in any look's colours too.
+labelled cursor that points and clicks) and eight transitions (pixel dissolve, blur swap, wipe, iris, whip pan, push,
+zoom, glitch). Below them, the backgrounds: an animated halftone in the video's colours, light or dark, or plain. Tap
+the ones you want; the video uses only those.
 
-![All 51 animations in seven groups: entrances, emphasis, swaps and loops, transformations, video and UI, cards and cursors, transitions.](docs/images/text-animations.jpg)
+![All 57 animations in seven groups: entrances, emphasis, swaps and loops, transformations, video and UI, cards and cursors, transitions.](docs/images/text-animations.jpg)
+
+**Scene by scene, before anything renders.** For a film built from scenes (a launch film of text and music), the
+scene planner plays each scene's own line in its animation and your colours, with the transition into the next scene
+playing between them. Swap any of them and press one button; your picks come back to Claude.
+
+![The scene planner in the chat: the background choice at the top, then each scene's line animating on the halftone with a dropdown for its animation, and between scenes the transition playing with its own dropdown.](docs/images/scene-planner.jpg)
+
+Once it is built, a storyboard arrives in the chat before the render: every scene at the moment its text lands, and
+every transition frame by frame with a short clip of them playing. Notes go by scene number ("4 > 5 should be a wipe");
+only those scenes are taken again.
+
+![A storyboard of the example launch film: seven scenes, each numbered and labelled with its animation and the transition out.](docs/images/storyboard.jpg)
 
 Also on every video:
 - **Waits removed.** A motion scan finds loading spinners, AI "thinking" and pauses, and speeds them up 6 to 10x.
@@ -186,8 +199,9 @@ brand rules, and any videos Claude must ask about before using as a reference.
 | Folder | What it is |
 |---|---|
 | `.claude/skills/fast-cut/` | Fast edits of recordings: contact sheet, still-stretch scan, cut list, one-pass render, taps, zooms, headline intros, review sheets |
-| `.claude/skills/text-animations/` | 51 animations (GSAP, render-safe): text, cards and cursors, pixel and blur transitions; an animated halftone background in any look's colours; the in-chat picker and the preview gallery |
-| `.claude/skills/launch-demo/` | The launch-video recipe: a template (the pain, the name, the feature on an iPhone, a montage on the drop, a lockup on the final hit), a music beat reader that times the cut to the track, a sound mixer and a voice check |
+| `.claude/skills/text-animations/` | 57 animations (GSAP, render-safe): text, cards and cursors, eight transitions; an animated halftone background in any look's colours; the in-chat picker, the scene planner and the preview gallery |
+| `.claude/skills/launch-demo/` | The launch-video recipe: a template (the pain, the name, the feature on an iPhone, a montage on the drop, a lockup on the final hit), a 16:9 launch film built from a scene plan (`film.py`), a music beat reader that times the cut to the track, a sound mixer and a voice check |
+| `.claude/skills/storyboard/` | See a film before it renders: a storyboard of every scene, every transition frame by frame and a clip of them playing, from one snapshot pass |
 | `.claude/skills/reference-style/` | Reference videos in, style card out: pacing, palette and type measured, every move's ease, length, overshoot and stagger measured at the full frame rate, techniques mapped to text animations, fast-cut and HyperFrames blocks, saved as a `style-<name>` skill after delivery |
 | `.claude/skills/localize/` | Dub a finished video into another language: voice separation (Demucs), per-line ElevenLabs dubbing, frosted subtitle bands |
 | `.claude/skills/youtube-edit/` | The full editing skill (from the WeAreNoCode kit): looks, HyperFrames compositions, ElevenLabs voiceover and sound effects |

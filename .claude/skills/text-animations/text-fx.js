@@ -1,4 +1,4 @@
-/* text-fx.js: 51 text, card, cursor and transition animations as GSAP timelines (needs gsap 3 on the page).
+/* text-fx.js: text, card, cursor and transition animations as GSAP timelines (needs gsap 3 on the page).
  *
  *   const { tl, dur } = TextFX.build(stageEl, "fade-up", { text: "Launch day, sorted", size: 64 });
  *   master.add(tl.play(), 2.0);          // in a HyperFrames composition: place it at 2 s
@@ -12,6 +12,8 @@
  *   const { cover, end } = TextFX.pixel(tl, containerEl, { at: 4.0, colors: [accent, accent2], origin: [0.6, 0.5] });
  *     blocks grow from origin (0.4 s), cover the container at `cover` (swap the scenes there), clear sideways (0.35 s)
  *   TextFX.blurSwap(tl, outgoingEl, incomingEl, 4.0)    outgoing blurs out in 0.15 s, incoming sharpens in 0.3 s
+ *   TextFX.transition(tl, "wipe", fromEl, toEl, 4.0, { W, H, manage: true })    any of TextFX.transitions:
+ *     cut, pixel, blur, wipe, iris, whip, push, zoom, glitch; returns { cover, end }
  */
 (function (root) {
   "use strict";
@@ -66,7 +68,13 @@
     ["chips-to-card", "Chips into a card", "Cards and cursors", "New signups|Ada|Search|Ben|Ads|Cy|Social|Di|Email", "Many sources becoming one list: leads, tickets, feedback"],
     ["cursor-tour", "Cursor tour", "Cards and cursors", "Visitor|Revenue is up 12% this quarter|Guide", "A labelled cursor points, rings, explains and clicks"],
     ["pixel-dissolve", "Pixel dissolve", "Transitions", "Before|After", "A scene change in blocks of the brand colours"],
-    ["blur-swap", "Blur swap", "Transitions", "Draft|Final", "A soft scene change: one line blurs out, the next sharpens in"]
+    ["blur-swap", "Blur swap", "Transitions", "Draft|Final", "A soft scene change: one line blurs out, the next sharpens in"],
+    ["wipe-cut", "Wipe", "Transitions", "Before|After", "The next scene wipes in from the left"],
+    ["iris-cut", "Iris", "Transitions", "Before|After", "The next scene opens from the centre in a circle"],
+    ["whip-pan", "Whip pan", "Transitions", "Before|After", "A fast, blurred slide sideways into the next scene"],
+    ["push-cut", "Push", "Transitions", "Before|After", "The next scene pushes the last one up and out"],
+    ["zoom-cut", "Zoom", "Transitions", "Before|After", "The scene rushes past the camera; the next settles in"],
+    ["glitch-cut", "Glitch", "Transitions", "Before|After", "A stepped jitter with a colour shift: tech, AI, energy"]
   ];
   var CATS = ["Entrances", "Emphasis", "Swaps and loops", "Transformations", "Video and UI", "Cards and cursors", "Transitions"];
 
@@ -750,6 +758,83 @@
     if (out) tl.to(out, { filter: "blur(" + px + "px)", opacity: 0, duration: 0.16, ease: "power2.in" }, at);
     if (inn) tl.fromTo(inn, { filter: "blur(" + px + "px)", opacity: 0 }, { filter: "blur(0px)", opacity: 1, duration: 0.3, ease: "power2.out" }, at + 0.08);
   }
+  // Every scene change, in one place. `at` is when the next scene starts (the montage's card time). By default only the
+  // motion is added (the caller shows and hides its scenes); with opt.manage the next scene is shown when it should be
+  // and the last one hidden once covered. Returns { cover, end }: swap scenes behind `cover`, all done by `end`.
+  var TRANSITIONS = [
+    ["cut", "Cut", "cut", "Straight to the next scene"],
+    ["pixel", "Pixel dissolve", "pixel-dissolve", "Blocks of the brand colours grow from a point, then clear sideways"],
+    ["blur", "Blur swap", "blur-swap", "One scene blurs out while the next sharpens in"],
+    ["wipe", "Wipe", "wipe-cut", "The next scene wipes in from the left"],
+    ["iris", "Iris", "iris-cut", "The next scene opens from the centre in a circle"],
+    ["whip", "Whip pan", "whip-pan", "A fast, blurred slide sideways"],
+    ["push", "Push", "push-cut", "The next scene pushes the last one up and out"],
+    ["zoom", "Zoom", "zoom-cut", "The scene rushes past the camera; the next settles in"],
+    ["glitch", "Glitch", "glitch-cut", "A stepped jitter with a colour shift"]
+  ];
+  function transition(tl, kind, from, to, at, opt) {
+    opt = opt || {};
+    var par = (to && to.parentNode) || (from && from.parentNode);
+    var W = opt.W || (par && par.clientWidth) || 1080, H = opt.H || (par && par.clientHeight) || 1080, r = { cover: at, end: at };
+    if (kind === "pixel") {
+      if (to) tl.set(to, { opacity: 0 }, at);
+      var p = pixel(tl, opt.container || par, { at: at - 0.3, colors: opt.colors, origin: opt.origin || [0.62, 0.5], W: W, H: H, cols: opt.cols || 22, seed: opt.seed });
+      if (to) tl.set(to, { opacity: 1 }, p.cover);
+      r = { cover: p.cover, end: p.end };
+    } else if (kind === "blur") {
+      blurSwap(tl, from, to, at - 0.08, opt);
+      r = { cover: at + 0.08, end: at + 0.3 };
+    } else if (kind === "wipe") {
+      if (to) tl.fromTo(to, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "power3.inOut" }, at);
+      r = { cover: at + 0.32, end: at + 0.32 };
+    } else if (kind === "iris") {
+      if (to) tl.fromTo(to, { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(75% at 50% 50%)", duration: 0.36, ease: "power2.in" }, at);
+      r = { cover: at + 0.36, end: at + 0.36 };
+    } else if (kind === "glitch") {
+      if (to) tl.fromTo(to, { x: -40, filter: "hue-rotate(90deg) saturate(3)" }, { x: 0, filter: "hue-rotate(0deg) saturate(1)", duration: 0.24, ease: "steps(6)" }, at);
+      if (opt.flash) { tl.set(opt.flash, { opacity: 0.55 }, at); tl.to(opt.flash, { opacity: 0, duration: 0.18, ease: "steps(3)" }, at + 0.01); }
+      if (to) tl.fromTo(to, { skewX: 14 }, { skewX: 0, duration: 0.2, ease: "steps(4)" }, at);
+      r = { cover: at + 0.12, end: at + 0.24 };
+    } else if (kind === "whip") {
+      if (from) tl.to(from, { x: -W, filter: "blur(16px)", duration: 0.28, ease: "power3.in" }, at - 0.12);
+      if (to) tl.fromTo(to, { x: W, filter: "blur(16px)" }, { x: 0, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, at);
+      r = { cover: at + 0.16, end: at + 0.3 };
+    } else if (kind === "push") {
+      if (from) tl.to(from, { y: -H, duration: 0.35, ease: "power3.inOut" }, at);
+      if (to) tl.fromTo(to, { y: H }, { y: 0, duration: 0.35, ease: "power3.inOut" }, at);
+      r = { cover: at + 0.35, end: at + 0.35 };
+    } else if (kind === "zoom") {
+      if (from) tl.to(from, { scale: 5, opacity: 0, duration: 0.32, ease: "power2.in" }, at - 0.04);
+      if (to) tl.fromTo(to, { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "power3.out" }, at + 0.06);
+      r = { cover: at + 0.2, end: at + 0.42 };
+    }
+    if (opt.clearFrom && from) {                               // scenes as see-through layers over one background:
+      if (kind === "pixel") tl.set(from, { opacity: 0 }, r.cover);         // the outgoing scene leaves as the next arrives
+      else if (kind === "cut" || kind === "glitch") tl.set(from, { opacity: 0 }, at);
+      else if (kind === "wipe") tl.fromTo(from, { clipPath: "inset(0 0 0 0%)" }, { clipPath: "inset(0 0 0 100%)", duration: 0.32, ease: "power3.inOut", immediateRender: false }, at);
+      else if (kind === "iris") tl.to(from, { opacity: 0, duration: 0.36, ease: "power2.in" }, at);
+    }
+    if (opt.manage) {
+      if (to && kind !== "pixel" && kind !== "blur" && kind !== "zoom") tl.set(to, { opacity: 1 }, at);
+      if (from) tl.set(from, { opacity: 0 }, r.end + 0.01);
+    }
+    return r;
+  }
+  // when the next scene is fully in, counted from the transition's `at`: start a transition at (beat - COVER[kind]) to land it on the beat
+  var COVER = { cut: 0, pixel: 0.12, blur: 0.08, wipe: 0.32, iris: 0.36, glitch: 0.12, whip: 0.16, push: 0.35, zoom: 0.2 };
+  function demo(b, o, tl, kind) {                              // a library preview: scene A, the transition, scene B
+    var p = o.text.split("|");
+    var a = scene(b, o, p[0], o.paper, o.ink), z = scene(b, o, p[1] || "", o.accent, o.paper);
+    tl.set(z, { opacity: 0 }, 0);
+    tl.from(a, { opacity: 0, duration: 0.3 }, 0);
+    transition(tl, kind, a, z, 1.0, { manage: true, W: o.W, H: o.H, colors: [o.accent, o.accent2], cols: 20, flash: null });
+  }
+  B["wipe-cut"] = function (b, o, tl) { demo(b, o, tl, "wipe"); };
+  B["iris-cut"] = function (b, o, tl) { demo(b, o, tl, "iris"); };
+  B["whip-pan"] = function (b, o, tl) { demo(b, o, tl, "whip"); };
+  B["push-cut"] = function (b, o, tl) { demo(b, o, tl, "push"); };
+  B["zoom-cut"] = function (b, o, tl) { demo(b, o, tl, "zoom"); };
+  B["glitch-cut"] = function (b, o, tl) { demo(b, o, tl, "glitch"); };
   function scene(b, o, text, bg, ink) {
     var s = E("div", "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;background:" + bg + ";color:" + ink, text);
     b.appendChild(s); return s;
@@ -795,6 +880,9 @@
     build: build,
     pixel: pixel,
     blurSwap: blurSwap,
+    transition: transition,
+    transitionCover: COVER,
+    transitions: TRANSITIONS.map(function (x) { return { id: x[0], name: x[1], preview: x[2], use: x[3] }; }),
     ids: LIST.map(function (x) { return x[0]; }),
     list: LIST.map(function (x, i) { return { n: i + 1, id: x[0], name: x[1], category: x[2], sample: x[3], use: x[4] }; }),
     categories: CATS

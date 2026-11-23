@@ -254,31 +254,9 @@
         const fx = TextFX.build(card.querySelector(".st"), c.fx, { text: c.text, ink: c.ink, accent: c.accent, paper: c.bg, size: c.size || 110 });
         root.add(fx.tl.play(), t + 0.12);
         root.set(card, { visibility: "visible", zIndex: 10 + i }, t);
-        if (c.tr === "wipe") root.fromTo(card, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "power3.inOut" }, t);
-        if (c.tr === "iris") root.fromTo(card, { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(75% at 50% 50%)", duration: 0.36, ease: "power2.in" }, t);
-        if (c.tr === "glitch") {
-          root.fromTo(card, { x: -40, filter: "hue-rotate(90deg) saturate(3)" }, { x: 0, filter: "hue-rotate(0deg) saturate(1)", duration: 0.24, ease: "steps(6)" }, t);
-          root.set("#mflash", { opacity: 0.55 }, t); root.to("#mflash", { opacity: 0, duration: 0.18, ease: "steps(3)" }, t + 0.01);
-          root.fromTo(card, { skewX: 14 }, { skewX: 0, duration: 0.2, ease: "steps(4)" }, t);
-        }
-        if (c.tr === "whip") {
-          if (prev) root.to(prev, { x: -1080, filter: "blur(16px)", duration: 0.28, ease: "power3.in" }, t - 0.12);
-          root.fromTo(card, { x: 1080, filter: "blur(16px)" }, { x: 0, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, t);
-        }
-        if (c.tr === "push") {
-          if (prev) root.to(prev, { y: -1080, duration: 0.35, ease: "power3.inOut" }, t);
-          root.fromTo(card, { y: 1080 }, { y: 0, duration: 0.35, ease: "power3.inOut" }, t);
-        }
-        if (c.tr === "zoom") {
-          if (prev) root.to(prev, { scale: 5, opacity: 0, duration: 0.32, ease: "power2.in" }, t - 0.04);
-          root.fromTo(card, { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: "power3.out" }, t + 0.06);
-        }
-        if (c.tr === "pixel") {                         // blocks of the palette grow from the right, the card swaps in under them
-          root.set(card, { opacity: 0 }, t);
-          const px = TextFX.pixel(root, $("#mont"), { at: t - 0.3, colors: [c.accent || C.palette.a1, C.palette.a2 || c.bg], origin: [0.62, 0.5], W: 1080, H: 1080, cols: 22, seed: 3 + i });
-          root.set(card, { opacity: 1 }, px.cover);
-        }
-        if (c.tr === "blur") TextFX.blurSwap(root, prev, card, t - 0.08);
+        // every montage transition is TextFX.transition (text-fx.js), the same code the planner previews
+        TextFX.transition(root, c.tr, prev, card, t, { W: 1080, H: 1080, container: $("#mont"), flash: "#mflash", seed: 3 + i,
+                                                       colors: [c.accent || C.palette.a1, C.palette.a2 || c.bg] });
         if (prev) root.set(prev, { visibility: "hidden" }, t + 0.4);
       });
       const T5 = M.t0 + M.cards.length * B;              // out: an iris on the accent colour

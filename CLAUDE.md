@@ -11,9 +11,9 @@ inside this folder with `bash setup.sh` (no Homebrew, no admin password) and wal
 When `python3` lacks Pillow, or `ffmpeg` / `npx` is not found, prefix the command with `. .tools/env.sh 2>/dev/null;`.
 
 **Everything happens in this chat.** The people using this are product marketers, not developers: ask with
-AskUserQuestion, show stills, sheets and drafts with SendUserFile, use the in-chat text-animation picker. Never open or
-point them to a web page, a local server, `hyperframes preview` / Studio, a Terminal window or a settings file, and never
-ask them to type a command.
+AskUserQuestion, show stills, sheets and drafts with SendUserFile, use the in-chat text-animation picker and scene
+planner, and for a film built from scenes, a storyboard before the render. Never open or point them to a web page, a
+local server, `hyperframes preview` / Studio, a Terminal window or a settings file, and never ask them to type a command.
 
 - **Any video request in this folder goes through the `youtube-edit` skill** (`.claude/skills/youtube-edit/SKILL.md`),
   starting with its "Before every video: ask first" section. The global HyperFrames skills (`hyperframes`,
@@ -31,7 +31,12 @@ ask them to type a command.
 - **Screens that must change** (new copy inside the UI, removed elements): the youtube-edit skill and HyperFrames.
 - **A launch demo** (a 60-90 s announcement: the pain, the product's name, the feature on an iPhone, a montage on the
   music's drop, a logo lockup on the music's final hit): the `launch-demo` skill. It is the recipe of Video maker's own
-  demo, so launch videos look the same whoever makes them.
+  demo, so launch videos look the same whoever makes them. A 16:9 launch film of text and music (no voice) is its
+  `film.py`: built from a scene plan, each scene's line in its own animation, transitions on the music's beats.
+- **See a film before it renders:** the `storyboard` skill, for films built from a scene plan (`film.json`, with the
+  timing `film.py` writes). One snapshot pass gives a sheet of every scene as it lands, a
+  sheet of every transition frame by frame and a short clip of them playing, sent in the chat in seconds to minutes;
+  notes come back by scene number and only those scenes are taken again.
 - **A finished video in another language** (new voiceover and subtitles, same picture): the `localize` skill.
   The voice is separated out of the mix so the music stays, every line is dubbed into its original slot with a voice
   per character, and a frosted band covers the burned-in subtitles with the translated ones. Ask yes on the
@@ -69,13 +74,17 @@ ask them to type a command.
    for again; never generate samples to pick a voice (they listen free on elevenlabs.io → Voices); show the credits
    left (`elevenlabs.py balance`). `--draft` (the Mac's own voice, free) only when someone wants to hear the timing
    before approving the script.
-5. Which text animations: show the `text-animations` picker (live previews of all 51, a dropdown by group) and save
-   the pick in `brief.json` `text_animations`.
+5. Which text animations: show the `text-animations` picker (live previews of all 57 and the backgrounds, a dropdown
+   by group) and save the pick in `brief.json` `text_animations`. A film built from scenes gets the scene planner
+   instead: each scene's own line in its animation, the transition into the next scene and the background, in the
+   video's colours; the picks come back as one line for `film.json`. Then a storyboard of the built film before any
+   render.
 
 ## Where things are
 - One folder per video: `videos/<project>/` with `raw/` (clips, screen recordings), `refs/` (reference videos for the
   style), `img/`, `audio/`, `docs/`,
-  `script.txt` (voiceover), `brief.json` (purpose, look, shape, notes) and `scenes.json` (moments to animate).
+  `script.txt` (voiceover), `brief.json` (purpose, look, shape, notes) and `scenes.json` (moments to animate); a film
+  built from scenes has `film.json` (its scene plan and timing) and `review/` (planner, storyboard, transitions).
   Claude writes `cut.json` / `storyboard.json`, `scene-plan.json` and `music.json` there.
 - Finished videos: `~/Movies/YouTube Renders/<project>/<project>-v<N>-<size>.mp4`, one file per version, never
   overwritten; each version's cut or storyboard is kept in `videos/<project>/versions/v<N>/`.

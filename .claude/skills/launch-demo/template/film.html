@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>/*TITLE*/</title>
+<style>
+/*FONTS*/
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: /*W*/px; height: /*H*/px; overflow: hidden; background: /*BG*/; }
+  #stage { position: relative; width: /*W*/px; height: /*H*/px; overflow: hidden; background: /*BG*/; font-family: /*FAMILY*/, sans-serif; color: /*INK*/; }
+  #bg { position: absolute; left: 0; top: 0; width: /*W*/px; height: /*H*/px; object-fit: cover; }
+  #veil { position: absolute; inset: 0; background: radial-gradient(ellipse 62% 56% at 50% 50%, /*VEIL*/ 0%, /*VEIL2*/ 48%, transparent 78%); }
+  .layer { position: absolute; left: 0; top: 0; width: /*W*/px; height: /*H*/px; opacity: 0; }
+  .st { position: absolute !important; }                  /* text-fx makes its stages relative; here every stage is placed */
+  .mark { position: absolute; left: 0; width: /*W*/px; display: flex; align-items: center; justify-content: center; gap: .35em; opacity: 0;
+          font-weight: 700; letter-spacing: -.01em; color: /*INK*/; }
+  .mark img.icon { height: 1.25em; width: auto; }
+  .mark img.logo { height: 1em; width: auto; }
+  #fx { position: absolute; left: 0; top: 0; width: /*W*/px; height: /*H*/px; pointer-events: none; z-index: 50; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 51; }
+  #fade { position: absolute; inset: 0; background: /*BG*/; opacity: 0; pointer-events: none; z-index: 60; }
+/*CUSTOM-CSS*/
+</style>
+</head>
+<body>
+<div id="stage" data-composition-id="film" data-start="0" data-duration="/*DURATION*/" data-fps="30" data-width="/*W*/" data-height="/*H*/">
+<!--BG-->
+<!--SCENES-->
+  <div id="fx"></div><div id="flash"></div><div id="fade"></div>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/text-fx.js"></script>
+  <script>
+  (function () {
+    var P = /*PLAN*/{}/*END*/, PAL = P.palette, W = P.W, H = P.H;
+    var $ = function (s) { return document.querySelector(s); };
+    var root = gsap.timeline({ paused: true }), SC = {}, MOVES = ["wipe", "iris", "whip", "push", "zoom", "glitch"];
+    function fit(text, size) {                          // one line never wider than its box (Poppins bold: ~0.58 em a letter)
+      var n = String(text || "").split("|").reduce(function (m, s) { return Math.max(m, s.length); }, 1);
+      return Math.min(size, Math.floor(P.boxW * 0.92 / (n * 0.58)));
+    }
+    function fx(el, id, opts, at) {                     // a text-fx piece, hidden until it plays
+      root.set(el, { opacity: 0 }, 0); root.set(el, { opacity: 1 }, at);
+      var r = TextFX.build(el, id, Object.assign({}, PAL, opts));
+      root.add(r.tl.paused(false), at);
+      return r;
+    }
+
+    P.scenes.forEach(function (s, i) {
+      var L = $("#L" + i), S = $("#S" + i), Hd = $("#H" + i), kind = s.kind || "text", into = i ? (P.scenes[i - 1].tr || "cut") : null;
+      // a scene that slides, wipes or zooms in must already have its content as it arrives; after a cut, dissolve or blur it builds in
+      var t0 = !i ? 0.3 : MOVES.indexOf(into) >= 0 ? s.at - (TextFX.transitionCover[into] || 0) + 0.05 : s.at + 0.15;
+      SC[s.id] = { el: L, at: s.at, end: s.end, lands: s.lands, start: t0 };
+      if (kind === "text" || kind === "custom") {
+        if (Hd) fx(Hd, s.head_anim || "accent-words", { text: s.text, size: fit(s.text, P.sizes.head) }, t0);
+        if (kind === "text")
+          fx(S, s.anim || "accent-words", { text: s.multi ? (s.parts || s.text) : s.text, size: s.size || (s.card ? P.sizes.card : fit(s.multi ? (s.parts || s.text).replace("|", " ") : s.text, P.sizes.line)) }, Hd ? t0 + 0.25 : t0);
+        (s.lines || []).forEach(function (line, n) {    // more lines in the same scene, one after another
+          var prev = n ? $("#S" + i + "_" + (n - 1)) : S, el = $("#S" + i + "_" + n), t = s.line_at[n];
+          TextFX.blurSwap(root, prev, el, t - 0.1);
+          fx(el, s.line_anim || "accent-words", { text: line, size: s.size || fit(line, P.sizes.line) }, t);
+        });
+      } else {                                           // logo and lockup: the mark (icon and name), then the line
+        var K = $("#K" + i);
+        root.fromTo(K, { opacity: 0, scale: 1.08, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out", immediateRender: false }, t0);
+        if (s.text) fx(S, s.anim || "accent-words", { text: s.text, size: fit(s.text, P.sizes.mark_line) }, t0 + 0.6);
+        if (kind === "lockup" && P.hit != null) root.fromTo(K, { scale: 1.035 }, { scale: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, P.hit);
+      }
+    });
+
+    /*CUSTOM-JS*/
+
+    P.scenes.forEach(function (s, i) {                   // each transition lands its cover on the next scene's start
+      if (i === P.scenes.length - 1) return;
+      var k = s.tr || "cut", b = P.scenes[i + 1].at;
+      TextFX.transition(root, k, $("#L" + i), $("#L" + (i + 1)), b - (TextFX.transitionCover[k] || 0),
+        { manage: true, clearFrom: true, W: W, H: H, container: $("#fx"), flash: "#flash", seed: 3 + i, cols: Math.round(W / 54),
+          colors: [PAL.accent, P.pixel2], origin: [0.5 + 0.12 * Math.sin(i * 1.7), 0.5] });
+    });
+    if (P.fade) root.to("#fade", { opacity: 1, duration: P.fade, ease: "power2.in" }, P.duration - P.fade);
+    root.to({}, { duration: P.duration }, 0);
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines["film"] = root;
+  })();
+  </script>
+</div>
+</body>
+</html>

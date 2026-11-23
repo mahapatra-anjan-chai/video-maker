@@ -1,0 +1,24 @@
+{
+ "title": "Video maker",
+ "name": "Video maker",
+ "look": "brand",
+ "size": "1920x1080",
+ "background": "halftone-light",
+ "bpm": 110,
+ "offset": 0.1,
+ "fade": 0.8,
+ "scenes": [
+  {"id": 1, "label": "Everything a launch needs", "text": "Every launch needs a video.", "parts": "Your launch|Script|Footage|Music|Captions|Voice|Edits|Export|Review",
+   "anim": "card-cloud", "tr": "pixel", "beats": 12},
+  {"id": 2, "label": "The problem, line by line", "text": "Most teams don't have an editor.", "lines": ["So the video waits.", "What if it didn't?"],
+   "anim": "accent-words", "tr": "pixel", "beats": 18},
+  {"id": 3, "label": "The name", "kind": "logo", "text": "Video maker, in your chat.", "anim": "accent-words", "tr": "blur", "beats": 10},
+  {"id": 4, "label": "Ask for it", "text": "Ask for the video you need.", "parts": "Make a 60 second launch demo|You",
+   "anim": "prompt-type", "tr": "wipe", "beats": 14},
+  {"id": 5, "label": "It does the work", "text": "It plans, builds and checks itself.", "parts": "Today|Script approved|Scenes planned|Storyboard sent|Rendered",
+   "anim": "stack-cards", "tr": "pixel", "beats": 16},
+  {"id": 6, "label": "What it's for", "text": "Built for launches.", "parts": "Built for|launches.|demos.|explainers.",
+   "anim": "roll-list", "tr": "blur", "beats": 10},
+  {"id": 7, "label": "Lockup", "kind": "lockup", "text": "Make your next video in the chat.", "anim": "accent-words", "beats": 14}
+ ]
+}

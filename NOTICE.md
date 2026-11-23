@@ -3,11 +3,12 @@
 The MIT licence in `LICENSE` covers Video maker's own work:
 
 - `.claude/skills/fast-cut/` (scripts, tests, skill)
-- `.claude/skills/text-animations/` (the animations, picker, gallery and scripts; the list of effects follows the
+- `.claude/skills/text-animations/` (the animations, picker, scene planner, gallery and scripts; the list of effects follows the
   "Claude + Figma Motion: Text Animations" board curated by Shlomo Genchin, Unbore.com)
 - `.claude/skills/localize/` (scripts, tests, skill and the voice list)
 - `.claude/skills/reference-style/` (scripts, tests, skill and the style template)
 - `.claude/skills/launch-demo/` (template, scripts, tests, skill and examples), except `vendor/devices.css` (below)
+- `.claude/skills/storyboard/` (script, tests, skill)
 - `.claude/skills/share-skill/` (scripts, tests, skill), except `gh`, which `get-gh.sh` downloads (GitHub's MIT licence)
 - `.claude/skills/setup/` and `docs/demo/photos/CREDITS.md`
 - `docs/` (the visuals, the demo and the scripts that make them)
