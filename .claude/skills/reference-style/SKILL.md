@@ -74,7 +74,7 @@ never do. Run from the project folder with `R=".claude/skills/reference-style/sc
    - name, slug and summary;
    - pacing;
    - a `look` block in compose.py's format: colours with roles, and an open-licence font that resembles the
-     reference's (Poppins and DM Sans are on hand; pick from Google Fonts otherwise);
+     reference's (Poppins, DM Sans and Manrope are on hand; pick from Google Fonts otherwise);
    - type: `font_file` paths relative to `.claude/skills/`;
    - techniques and transitions;
    - motion: the measured eases and lengths for entrances, emphasis and camera moves, stagger, hold, delay after a cut,

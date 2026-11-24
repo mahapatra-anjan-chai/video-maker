@@ -140,8 +140,8 @@ runs the tests. Check again after updating HyperFrames or moving the skill.
 Then, from the scripts folder (not from inside `tests/`): `cd "$SK/scripts" && python3 -m unittest tests`. The tests use
 synthetic media and must end with `OK` (the media tests skip themselves without ffmpeg). Run them after touching any script.
 
-- **What ships:** the scripts, `formats/`, and the fonts in `assets/fonts/` (DM Sans 400/500/700, SIL Open Font
-  License), which compose.py stages into `public/fonts/` itself. **No sounds, images, logos or footage ship.** Keep yours
+- **What ships:** the scripts, `formats/`, and the fonts in `assets/fonts/` (DM Sans 400/500/700 and Manrope, variable weight,
+  SIL Open Font License), which compose.py stages into `public/fonts/` itself. **No sounds, images, logos or footage ship.** Keep yours
   in a shared folder that compose.py copies with `--shared DIR` (`DIR/sfx/`, `DIR/img/`, `DIR/img/thumbs/`): sounds from
   your Epidemic Sound account (its connector) or the free HyperFrames library (`npx hyperframes skills update media-use`
   puts 19 effects in the media-use skill's `audio/assets/sfx/`, Pixabay Content License, no attribution needed); logos

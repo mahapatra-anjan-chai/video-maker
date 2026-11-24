@@ -28,6 +28,7 @@ The MIT licence in `LICENSE` covers Video maker's own work:
 | Stock footage in the launch video's highlights | `docs/images/launch-demo.gif` (the opening shots) | Mixkit clips 25575 and 39854, Mixkit Stock Video Free License; not covered by this repo's licence |
 | Noto Sans JP | `.claude/skills/localize/fonts/` (fetched by `setup.sh`, not committed) | SIL Open Font License (`OFL.txt` next to it) |
 | Demucs | installed on first use by `localize/scripts/separate.sh` into its own venv | MIT (Meta) |
+| Manrope (variable, Latin) | `.claude/skills/youtube-edit/assets/fonts/Manrope.woff2` | SIL Open Font License (`OFL-Manrope.txt` next to it) |
 | Poppins | `.claude/skills/fast-cut/assets/fonts/`, `.claude/skills/youtube-edit/styles/brand/fonts/` | SIL Open Font License (`OFL.txt` next to the fonts) |
 | Sound effects | `videos/_shared/sfx/` (fetched by `setup.sh`, not committed) | Pixabay Content License |
 | GSAP | fetched by `setup.sh`, not committed | GSAP's standard licence |
